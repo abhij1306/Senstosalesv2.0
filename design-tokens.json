@@ -1,0 +1,42 @@
+{
+    "theme": "dark",
+    "brand": {
+        "primary": "neutral_project_agnostic",
+        "background": "claymorphic_dark"
+    },
+    "effects": {
+        "surface": "claymorphic",
+        "depth": "3d_soft_emboss",
+        "interaction": {
+            "hover": "lift_shadow_scale",
+            "transition_ms": 180
+        },
+        "glass": "optional"
+    },
+    "motion": {
+        "library": "framer_motion_optional",
+        "reduce_on_low_power_devices": true
+    },
+    "layout": {
+        "radius_scale": [
+            "sm",
+            "md",
+            "lg",
+            "xl",
+            "2xl"
+        ],
+        "shadow_style": "soft_standard",
+        "padding_min": "p2",
+        "feedback_states": [
+            "hover",
+            "focus",
+            "press"
+        ]
+    },
+    "performance": {
+        "lazy_load_heavy_components": true,
+        "avoid_re_render_chains": true,
+        "memoize_static_ui_parts": true,
+        "critical_css_in_bundle": true
+    }
+}

@@ -1,0 +1,117 @@
+{
+    "dark": {
+        "color": {
+            "bg": {
+                "primary": {
+                    "value": "#0f172a",
+                    "description": "Main background - dark slate"
+                },
+                "surface": {
+                    "value": "#1e293b",
+                    "description": "Elevated surfaces - lighter slate"
+                },
+                "mesh": {
+                    "value": "radial-gradient(circle at top left, #0f172a, #1e293b 30%, #334155 100%)",
+                    "description": "Mesh gradient background"
+                }
+            },
+            "text": {
+                "primary": {
+                    "value": "#f8fafc",
+                    "description": "Primary text - near white"
+                },
+                "secondary": {
+                    "value": "#cbd5e1",
+                    "description": "Secondary text - light slate"
+                },
+                "tertiary": {
+                    "value": "#94a3b8",
+                    "description": "Tertiary text - medium slate"
+                },
+                "accent": {
+                    "value": "#60a5fa",
+                    "description": "Accent text - bright blue"
+                }
+            },
+            "surface": {
+                "glass": {
+                    "value": "rgba(30, 41, 59, 0.45)",
+                    "description": "Glass surface - dark with transparency"
+                },
+                "glass_border": {
+                    "value": "rgba(148, 163, 184, 0.2)",
+                    "description": "Glass border - subtle light"
+                },
+                "glass_hover": {
+                    "value": "rgba(51, 65, 85, 0.55)",
+                    "description": "Glass hover state"
+                }
+            },
+            "brand": {
+                "primary": {
+                    "value": "#3b82f6",
+                    "description": "Primary brand - blue 500"
+                },
+                "secondary": {
+                    "value": "#60a5fa",
+                    "description": "Secondary brand - blue 400"
+                },
+                "glow": {
+                    "value": "rgba(59, 130, 246, 0.3)",
+                    "description": "Brand glow effect"
+                }
+            },
+            "status": {
+                "success": {
+                    "value": "#34d399",
+                    "description": "Success - emerald 400"
+                },
+                "error": {
+                    "value": "#f87171",
+                    "description": "Error - red 400"
+                },
+                "warning": {
+                    "value": "#fbbf24",
+                    "description": "Warning - amber 400"
+                },
+                "info": {
+                    "value": "#60a5fa",
+                    "description": "Info - blue 400"
+                }
+            }
+        },
+        "effect": {
+            "shadow": {
+                "sm": {
+                    "value": "0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3)"
+                },
+                "md": {
+                    "value": "0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3)"
+                },
+                "lg": {
+                    "value": "0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3)"
+                },
+                "xl": {
+                    "value": "0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3)"
+                },
+                "glow": {
+                    "value": "0 0 20px rgba(59, 130, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.2)"
+                },
+                "glow_success": {
+                    "value": "0 0 20px rgba(52, 211, 153, 0.4)"
+                },
+                "glow_error": {
+                    "value": "0 0 20px rgba(248, 113, 113, 0.4)"
+                }
+            },
+            "blur": {
+                "glass": {
+                    "value": "blur(24px)"
+                },
+                "glass_low": {
+                    "value": "blur(12px)"
+                }
+            }
+        }
+    }
+}

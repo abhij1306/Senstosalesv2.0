@@ -1,0 +1,67 @@
+{
+    "project": {
+        "name": "SenstoSales",
+        "version": "6.0.0-dark-prod",
+        "root": "."
+    },
+    "paths": {
+        "database": {
+            "file": "db/business.db",
+            "backup_dir": "db-backups",
+            "description": "Main SQLite database - NEVER assume different location"
+        },
+        "frontend": {
+            "root": "frontend",
+            "components": "frontend/components",
+            "pages": "frontend/app",
+            "public": "frontend/public",
+            "styles": "frontend/app"
+        },
+        "backend": {
+            "root": "backend",
+            "app": "backend/app",
+            "routers": "backend/app/routers",
+            "models": "backend/app/models",
+            "repositories": "backend/app/repositories"
+        },
+        "docs": {
+            "root": "docs",
+            "api": "docs/api",
+            "guides": "docs"
+        },
+        "tokens": {
+            "root": "tokens",
+            "global": "tokens/global.json",
+            "semantic": "tokens/semantic.json",
+            "dark_theme": "tokens/dark-theme.json"
+        },
+        "audit": {
+            "mcp_servers": "mcp-servers",
+            "performance": "mcp-servers/performance",
+            "reports": "mcp-servers/performance"
+        }
+    },
+    "critical_files": {
+        "database": "db/business.db",
+        "env_backend": "backend/.env",
+        "env_frontend": "frontend/.env.local",
+        "package_json": "frontend/package.json",
+        "requirements": "requirements.txt"
+    },
+    "audit_config": {
+        "database_path": "db/business.db",
+        "frontend_path": "frontend",
+        "backend_path": "backend",
+        "token_path": "tokens"
+    },
+    "deployment": {
+        "database_backup_required": true,
+        "database_integrity_check_required": true,
+        "pre_push_audit_required": true
+    },
+    "notes": {
+        "database_location": "CRITICAL: Database is ALWAYS at db/business.db - Never check root directory",
+        "audit_tools": "All audit scripts must read this config file for paths",
+        "ai_agents": "AI agents MUST read this file before making assumptions about file locations"
+    }
+}

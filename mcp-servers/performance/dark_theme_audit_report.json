@@ -1,0 +1,223 @@
+{
+  "summary": {
+    "total_issues": 11,
+    "by_severity": {
+      "critical": 0,
+      "warning": 6,
+      "info": 5
+    },
+    "score": 88,
+    "grade": "B+"
+  },
+  "by_category": {
+    "performance": [
+      {
+        "file": "components\\ProductionReadinessDashboard.tsx",
+        "line": 4,
+        "severity": "info",
+        "category": "performance",
+        "message": "Transition without will-change hint",
+        "suggestion": "Add will-change property for better performance"
+      },
+      {
+        "file": "components\\ThemeToggle.tsx",
+        "line": 2,
+        "severity": "info",
+        "category": "performance",
+        "message": "Transition without will-change hint",
+        "suggestion": "Add will-change property for better performance"
+      },
+      {
+        "file": "components\\WebVitalsReporter.tsx",
+        "line": 6,
+        "severity": "info",
+        "category": "performance",
+        "message": "Transition without will-change hint",
+        "suggestion": "Add will-change property for better performance"
+      },
+      {
+        "file": "components\\design-system\\organisms\\SummaryCards.tsx",
+        "line": 14,
+        "severity": "info",
+        "category": "performance",
+        "message": "Transition without will-change hint",
+        "suggestion": "Add will-change property for better performance"
+      },
+      {
+        "file": "components\\design-system\\organisms\\SummaryCards.tsx",
+        "line": 15,
+        "severity": "info",
+        "category": "performance",
+        "message": "Transition without will-change hint",
+        "suggestion": "Add will-change property for better performance"
+      }
+    ],
+    "token_adherence": [
+      {
+        "file": "components\\reports\\InsightsPanel.tsx",
+        "line": 9,
+        "severity": "warning",
+        "category": "token_adherence",
+        "message": "Using raw Tailwind color instead of design token",
+        "suggestion": "Use semantic classes like text-sys-primary, bg-sys-surface, etc."
+      },
+      {
+        "file": "components\\reports\\InsightStrip.tsx",
+        "line": 6,
+        "severity": "warning",
+        "category": "token_adherence",
+        "message": "Using raw Tailwind color instead of design token",
+        "suggestion": "Use semantic classes like text-sys-primary, bg-sys-surface, etc."
+      },
+      {
+        "file": "components\\reports\\InvoiceDateSummary.tsx",
+        "line": 7,
+        "severity": "warning",
+        "category": "token_adherence",
+        "message": "Using raw Tailwind color instead of design token",
+        "suggestion": "Use semantic classes like text-sys-primary, bg-sys-surface, etc."
+      },
+      {
+        "file": "components\\reports\\PODateSummary.tsx",
+        "line": 7,
+        "severity": "warning",
+        "category": "token_adherence",
+        "message": "Using raw Tailwind color instead of design token",
+        "suggestion": "Use semantic classes like text-sys-primary, bg-sys-surface, etc."
+      },
+      {
+        "file": "components\\reports\\TrendsSection.tsx",
+        "line": 6,
+        "severity": "warning",
+        "category": "token_adherence",
+        "message": "Using raw Tailwind color instead of design token",
+        "suggestion": "Use semantic classes like text-sys-primary, bg-sys-surface, etc."
+      }
+    ],
+    "dark_theme": [
+      {
+        "file": "components\\design-system\\molecules\\Tabs.tsx",
+        "line": 4,
+        "severity": "warning",
+        "category": "dark_theme",
+        "message": "Hardcoded color detected: rgba(0,0,0,0.06)",
+        "suggestion": "Replace with CSS variable from design tokens (e.g., var(--color-sys-text-primary))"
+      }
+    ]
+  },
+  "by_file": {
+    "components\\ProductionReadinessDashboard.tsx": [
+      {
+        "file": "components\\ProductionReadinessDashboard.tsx",
+        "line": 4,
+        "severity": "info",
+        "category": "performance",
+        "message": "Transition without will-change hint",
+        "suggestion": "Add will-change property for better performance"
+      }
+    ],
+    "components\\ThemeToggle.tsx": [
+      {
+        "file": "components\\ThemeToggle.tsx",
+        "line": 2,
+        "severity": "info",
+        "category": "performance",
+        "message": "Transition without will-change hint",
+        "suggestion": "Add will-change property for better performance"
+      }
+    ],
+    "components\\WebVitalsReporter.tsx": [
+      {
+        "file": "components\\WebVitalsReporter.tsx",
+        "line": 6,
+        "severity": "info",
+        "category": "performance",
+        "message": "Transition without will-change hint",
+        "suggestion": "Add will-change property for better performance"
+      }
+    ],
+    "components\\reports\\InsightsPanel.tsx": [
+      {
+        "file": "components\\reports\\InsightsPanel.tsx",
+        "line": 9,
+        "severity": "warning",
+        "category": "token_adherence",
+        "message": "Using raw Tailwind color instead of design token",
+        "suggestion": "Use semantic classes like text-sys-primary, bg-sys-surface, etc."
+      }
+    ],
+    "components\\reports\\InsightStrip.tsx": [
+      {
+        "file": "components\\reports\\InsightStrip.tsx",
+        "line": 6,
+        "severity": "warning",
+        "category": "token_adherence",
+        "message": "Using raw Tailwind color instead of design token",
+        "suggestion": "Use semantic classes like text-sys-primary, bg-sys-surface, etc."
+      }
+    ],
+    "components\\reports\\InvoiceDateSummary.tsx": [
+      {
+        "file": "components\\reports\\InvoiceDateSummary.tsx",
+        "line": 7,
+        "severity": "warning",
+        "category": "token_adherence",
+        "message": "Using raw Tailwind color instead of design token",
+        "suggestion": "Use semantic classes like text-sys-primary, bg-sys-surface, etc."
+      }
+    ],
+    "components\\reports\\PODateSummary.tsx": [
+      {
+        "file": "components\\reports\\PODateSummary.tsx",
+        "line": 7,
+        "severity": "warning",
+        "category": "token_adherence",
+        "message": "Using raw Tailwind color instead of design token",
+        "suggestion": "Use semantic classes like text-sys-primary, bg-sys-surface, etc."
+      }
+    ],
+    "components\\reports\\TrendsSection.tsx": [
+      {
+        "file": "components\\reports\\TrendsSection.tsx",
+        "line": 6,
+        "severity": "warning",
+        "category": "token_adherence",
+        "message": "Using raw Tailwind color instead of design token",
+        "suggestion": "Use semantic classes like text-sys-primary, bg-sys-surface, etc."
+      }
+    ],
+    "components\\design-system\\molecules\\Tabs.tsx": [
+      {
+        "file": "components\\design-system\\molecules\\Tabs.tsx",
+        "line": 4,
+        "severity": "warning",
+        "category": "dark_theme",
+        "message": "Hardcoded color detected: rgba(0,0,0,0.06)",
+        "suggestion": "Replace with CSS variable from design tokens (e.g., var(--color-sys-text-primary))"
+      }
+    ],
+    "components\\design-system\\organisms\\SummaryCards.tsx": [
+      {
+        "file": "components\\design-system\\organisms\\SummaryCards.tsx",
+        "line": 14,
+        "severity": "info",
+        "category": "performance",
+        "message": "Transition without will-change hint",
+        "suggestion": "Add will-change property for better performance"
+      },
+      {
+        "file": "components\\design-system\\organisms\\SummaryCards.tsx",
+        "line": 15,
+        "severity": "info",
+        "category": "performance",
+        "message": "Transition without will-change hint",
+        "suggestion": "Add will-change property for better performance"
+      }
+    ]
+  },
+  "recommendations": [
+    "\ud83c\udf19 Dark Theme: 1 hardcoded colors found. Replace with CSS variables to enable dark mode support.",
+    "\u26a1 Performance: 5 optimization opportunities. Add lazy loading, will-change hints, and avoid inline styles.",
+    "\ud83c\udfa8 Design Tokens: 5 violations. Use semantic token classes for consistent theming."
+  ]
+}

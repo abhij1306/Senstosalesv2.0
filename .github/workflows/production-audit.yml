@@ -1,0 +1,115 @@
+name: Production Readiness Audit
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  audit:
+    name: Run Production Readiness Audits
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+      
+      - name: Install Backend Dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install ruff
+      
+      - name: Run Dark Theme Audit
+        run: python mcp-servers/performance/dark-theme-audit.py
+        continue-on-error: true
+      
+      - name: Run ESLint
+        working-directory: ./frontend
+        run: npm run lint
+        continue-on-error: true
+      
+      - name: Run TypeScript Check
+        working-directory: ./frontend
+        run: npx tsc --noEmit
+        continue-on-error: true
+      
+      - name: Run Backend Audit
+        run: ruff check backend/
+        continue-on-error: true
+      
+      - name: Run Master Production Audit
+        id: audit
+        run: python mcp-servers/run_production_audit.py
+        continue-on-error: true
+      
+      - name: Upload Audit Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: production-readiness-report
+          path: |
+            production_readiness_report.json
+            mcp-servers/performance/dark_theme_audit_report.json
+          retention-days: 30
+      
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('production_readiness_report.json', 'utf8'));
+            
+            const score = report.overall.overall_score;
+            const grade = report.overall.overall_grade;
+            
+            const emoji = score >= 90 ? '🎉' : score >= 70 ? '⚠️' : '❌';
+            
+            let comment = `## ${emoji} Production Readiness Audit\n\n`;
+            comment += `**Overall Score:** ${score}/100 (${grade})\n\n`;
+            comment += `### Category Scores\n\n`;
+            
+            for (const [key, data] of Object.entries(report.audits)) {
+              comment += `- **${data.name}:** ${data.score}/100\n`;
+            }
+            
+            if (report.recommendations && report.recommendations.length > 0) {
+              comment += `\n### 💡 Recommendations\n\n`;
+              for (const rec of report.recommendations) {
+                comment += `- ${rec}\n`;
+              }
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+      
+      - name: Fail if score below threshold
+        if: steps.audit.outcome == 'failure'
+        run: |
+          echo "Production readiness score is below threshold"
+          exit 1

@@ -1,0 +1,140 @@
+{
+    "bootstrap_layer": {
+        "required": true,
+        "entrypoint_enforced": [
+            "run_agent.py",
+            "startAgentSession()"
+        ],
+        "pre_session_hook": "load_and_register_guardrails_before_agent_start",
+        "block_start_on_failure": true,
+        "guardrail_file": "guardrails.json",
+        "guardrail_hash_required": true,
+        "env_flag_lock": {
+            "required": true,
+            "flag_name": "GUARDRAILS_ENFORCED",
+            "must_be_true_to_start": true,
+            "block_message": "abort_session_due_to_missing_guardrails_enforcement"
+        }
+    },
+    "guardrail_registry": {
+        "convert_json_to_runtime_rules": true,
+        "store_in_memory_as_functions_or_methods": true,
+        "immutable_once_loaded": true,
+        "core_rules": {
+            "no_hallucination": "if data missing → return null or logged error, never fabricate",
+            "business_records_immutable": true,
+            "corrections_via_reingestion_only": true,
+            "schema_changes_blocked_unless_explicit": true,
+            "backup_mandatory_before_delete_or_modify": true,
+            "deterministic_paths_for_numbers": true,
+            "fail_safe": "never_silent_failures"
+        },
+        "loop_protection": {
+            "max_steps": 200,
+            "timeout_ms": 10000,
+            "state_assertion_required": true
+        }
+    },
+    "middleware_enforcement": {
+        "required": true,
+        "attach_to_all_agents": true,
+        "intercepts": [
+            "LLM_outputs",
+            "database_writes",
+            "file_system_actions",
+            "routing_navigation",
+            "rule_generation_learning"
+        ],
+        "validation_mandates": {
+            "hallucination_check": "compare output with verified sources or execution logs",
+            "db_write_guard": "reject overwrite of immutable parsed records",
+            "file_delete_guard": "allow only after validated backup and checksum parity",
+            "navigation_guard": "assert expected_url == actual_url",
+            "learning_guard": "must include evidence and confidence scoring"
+        },
+        "violation_policy": "throw GuardrailViolationError and block action"
+    },
+    "audit_system": {
+        "required": true,
+        "log_every_action": true,
+        "log_schema": {
+            "timestamp": "ISO8601",
+            "agent": "string",
+            "action": "string",
+            "input_state_hash": "sha256",
+            "output_state_hash": "sha256",
+            "files_touched": "array",
+            "db_tables_touched": "array",
+            "error_if_any": "string | null",
+            "guardrail_hash": "sha256"
+        },
+        "store_location": "audit_logs/",
+        "tamper_proof_hash_chain": true
+    },
+    "self_learning": {
+        "enabled": true,
+        "learn_from_verified_sources_only": true,
+        "allowed_inputs": [
+            "code_execution_logs",
+            "audit_reports",
+            "validated_database_or_api_data",
+            "failed_test_results"
+        ],
+        "forbidden_inputs": [
+            "assumptions",
+            "incomplete_or_unverified_operations",
+            "fabricated_data"
+        ],
+        "promotion_criteria": {
+            "confidence_min": 0.92,
+            "impact_min": 0.7,
+            "evidence_required": true
+        },
+        "memory_schema": {
+            "pattern": "string",
+            "evidence": "string",
+            "impact_score": "0-1 float",
+            "confidence_score": "0-1 float",
+            "suggested_action": "string",
+            "validated": "boolean"
+        },
+        "write_new_rules_only_via_registry": true,
+        "never_overwrite_existing_rules": true
+    },
+    "version_control_discipline": {
+        "snapshot_before_critical_ops": true,
+        "critical_ops": [
+            "github_push",
+            "db_consolidation",
+            "file_cleanup",
+            "rule_promotion"
+        ],
+        "snapshot_types": {
+            "database": ".db.backup",
+            "codebase": "git bundle",
+            "parsed_data": ".records.json"
+        },
+        "validation_steps": [
+            "capture_pre_state_hash_checksums_rowcount",
+            "perform_operation",
+            "capture_post_state_and_verify_diff_parity"
+        ],
+        "mismatch_policy": "rollback_and_report",
+        "no_data_loss_assertion": true
+    },
+    "agent_initialization_injection": {
+        "auto_inject_system_message": true,
+        "message_template": "[BOOTSTRAP] Operating under GuardrailRegistry.<guardrail_hash>. All actions validated by middleware. Deterministic mode enforced for facts and numbers."
+    },
+    "hygiene": {
+        "periodic_cleanup": true,
+        "only_delete_files_marked_unused_by_registry": true,
+        "must_validate_backup_before_cleanup": true,
+        "delete_dirs": [
+            "temp/",
+            "test_unused/",
+            "mock/"
+        ],
+        "retain_logic_integrity_tests": true
+    }
+}

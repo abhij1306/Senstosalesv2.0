@@ -1,0 +1,435 @@
+"""
+Delivery Challan Router
+"""
+
+import logging
+import sqlite3
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException
+
+from app.core.exceptions import (
+    ConflictError,
+    DomainError,
+    ResourceNotFoundError,
+    map_error_code_to_http_status,
+)
+from app.db import get_db
+from app.errors import internal_error, not_found
+from app.models import DCCreate, DCListItem, DCStats
+from app.services.dc import (
+    check_dc_has_invoice,
+)
+from app.services.dc import (
+    create_dc as service_create_dc,
+)
+from app.services.dc import (
+    update_dc as service_update_dc,
+)
+from app.services.status_service import calculate_entity_status, calculate_pending_quantity
+from app.services import report_service
+
+logger = logging.getLogger(__name__)
+router = APIRouter()
+
+
+@router.get("/po/{po_number}/lots")
+def get_po_limit_lots(po_number: int, db: sqlite3.Connection = Depends(get_db)):
+    """
+    Get available lots/items for dispatch from a PO.
+    Used by DC Create page to populate items.
+    """
+    lots = report_service.get_reconciliation_lots(po_number, db)
+    if not lots:
+        return {"lots": []}
+    return {"lots": lots}
+
+
+@router.get("/stats", response_model=DCStats)
+def get_dc_stats(db: sqlite3.Connection = Depends(get_db)):
+    """Get DC Page Statistics"""
+    try:
+        # Total Challans
+        total_challans = db.execute(
+            "SELECT COUNT(*) FROM delivery_challans"
+        ).fetchone()[0]
+
+        # Completed (Linked to Invoice)
+        completed = db.execute("""
+            SELECT COUNT(DISTINCT dc_number) FROM gst_invoice_dc_links
+        """).fetchone()[0]
+
+        # Total Value
+        total_value = db.execute("""
+            SELECT COALESCE(SUM(dci.dispatch_qty * poi.po_rate), 0)
+            FROM delivery_challan_items dci
+            JOIN purchase_order_items poi ON dci.po_item_id = poi.id
+        """).fetchone()[0]
+
+        # Pending Calculation
+        pending = max(0, total_challans - completed)
+
+        return {
+            "total_challans": total_challans,
+            "total_challans_change": 0.0,
+            "pending_delivery": pending,
+            "completed_delivery": completed,
+            "completed_change": 0.0,
+            "total_value": total_value,
+        }
+    except Exception as e:
+        logger.error(f"Failed to fetch DC stats: {e}", exc_info=e)
+        raise internal_error("Failed to fetch DC statistics", e)
+
+
+@router.get("/", response_model=List[DCListItem])
+def list_dcs(po: Optional[int] = None, db: sqlite3.Connection = Depends(get_db)):
+    """List all Delivery Challans, optionally filtered by PO"""
+
+    # Optimized query with JOIN to eliminate N+1 problem + quantity aggregates
+    query = """
+        SELECT 
+            dc.dc_number, 
+            dc.dc_date, 
+            dc.po_number, 
+            dc.consignee_name, 
+            dc.created_at,
+            (SELECT COUNT(*) FROM gst_invoice_dc_links WHERE dc_number = dc.dc_number) as is_linked,
+            COALESCE(SUM(dci.dispatch_qty * poi.po_rate), 0) as total_value,
+            COALESCE(SUM(pod.dely_qty), 0) as total_ordered_quantity,
+            COALESCE(SUM(dci.dispatch_qty), 0) as total_dispatched_quantity,
+            (
+                SELECT COALESCE(SUM(si.received_qty), 0)
+                FROM srv_items si
+                JOIN srvs s ON si.srv_number = s.srv_number
+                JOIN delivery_challan_items dci2 ON si.challan_no = dci2.dc_number
+                WHERE s.is_active = 1 
+                  AND dci2.dc_number = dc.dc_number
+            ) as total_received_quantity
+        FROM delivery_challans dc
+        LEFT JOIN delivery_challan_items dci ON dc.dc_number = dci.dc_number
+        LEFT JOIN purchase_order_items poi ON dci.po_item_id = poi.id
+        LEFT JOIN purchase_order_deliveries pod ON dci.po_item_id = pod.po_item_id AND dci.lot_no = pod.lot_no
+    """
+    params = []
+
+    if po:
+        query += " WHERE dc.po_number = ?"
+        params.append(po)
+
+    query += " GROUP BY dc.dc_number, dc.dc_date, dc.po_number, dc.consignee_name, dc.created_at"
+    query += " ORDER BY dc.created_at DESC"
+
+    rows = db.execute(query, params).fetchall()
+
+    results = []
+    for row in rows:
+        total_ordered = row["total_ordered_quantity"] or 0
+        total_dispatched = row["total_dispatched_quantity"] or 0
+        total_received = row["total_received_quantity"] or 0
+        total_pending = calculate_pending_quantity(total_ordered, total_dispatched)
+
+        # Determine Status using centralized service
+        status = calculate_entity_status(total_ordered, total_dispatched, total_received)
+
+        results.append(
+            DCListItem(
+                dc_number=row["dc_number"],
+                dc_date=row["dc_date"],
+                po_number=row["po_number"],
+                consignee_name=row["consignee_name"],
+                status=status,
+                total_value=row["total_value"],
+                created_at=row["created_at"],
+                total_ordered_quantity=total_ordered,
+                total_dispatched_quantity=total_dispatched,
+                total_pending_quantity=total_pending,
+                total_received_quantity=total_received,
+            )
+        )
+
+    return results
+
+
+
+@router.get("/{dc_number}/invoice")
+def check_dc_has_invoice_endpoint(
+    dc_number: str, db: sqlite3.Connection = Depends(get_db)
+):
+    """Check if DC has an associated GST Invoice"""
+    invoice_number = check_dc_has_invoice(dc_number, db)
+
+    if invoice_number:
+        return {"has_invoice": True, "invoice_number": invoice_number}
+    else:
+        return {"has_invoice": False}
+
+
+@router.get("/{dc_number}/download")
+def download_dc_excel(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
+    """Download DC as Excel"""
+    try:
+        logger.info(f"Downloading DC Excel: {dc_number}")
+        # Get full detail logic
+        dc_data = get_dc_detail(dc_number, db)
+        logger.info(f"DC data fetched successfully for {dc_number}")
+
+        from app.services.excel_service import ExcelService
+
+        # Use exact generator
+        return ExcelService.generate_exact_dc_excel(
+            dc_data["header"], dc_data["items"], db
+        )
+
+    except Exception as e:
+        raise internal_error(f"Failed to generate Excel: {str(e)}", e)
+
+
+@router.get("/{dc_number}")
+def get_dc_detail(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
+    """Get Delivery Challan detail with items"""
+
+    # Get DC header with PO Date
+    dc_row = db.execute(
+        """
+        SELECT dc.*, po.po_date
+        FROM delivery_challans dc
+        LEFT JOIN purchase_orders po ON dc.po_number = po.po_number
+        WHERE dc.dc_number = ?
+    """,
+        (dc_number,),
+    ).fetchone()
+
+    if not dc_row:
+        raise not_found(f"Delivery Challan {dc_number} not found", "DC")
+
+    header_dict = dict(dc_row)
+
+    # Calculate status per DC
+    agg = db.execute("""
+        SELECT 
+            SUM(pod.dely_qty) as total_ord,
+            SUM(dci.dispatch_qty) as total_del,
+            (
+                SELECT COALESCE(SUM(si.received_qty), 0)
+                FROM srv_items si
+                JOIN srvs s ON si.srv_number = s.srv_number
+                WHERE s.is_active = 1 
+                  AND si.challan_no = ?
+            ) as total_recd
+        FROM delivery_challan_items dci
+        LEFT JOIN purchase_order_deliveries pod ON dci.po_item_id = pod.po_item_id AND dci.lot_no = pod.lot_no
+        WHERE dci.dc_number = ?
+    """, (dc_number, dc_number)).fetchone()
+
+    if agg:
+        t_ord = agg["total_ord"] or 0
+        t_del = agg["total_del"] or 0
+        t_recd = agg["total_recd"] or 0
+        header_dict["status"] = calculate_entity_status(t_ord, t_del, t_recd)
+    else:
+        header_dict["status"] = "Draft"
+
+    # Get DC items with PO item details
+    items = db.execute(
+        """
+        SELECT 
+            dci.id,
+            dci.dispatch_qty as dispatched_quantity,
+            dci.hsn_code,
+            dci.hsn_rate,
+            dci.lot_no,
+            dci.po_item_id,
+            poi.po_item_no,
+            poi.material_code,
+            poi.material_description,
+            poi.unit,
+            poi.po_rate,
+            pod.dely_qty as lot_ordered_qty,
+            (
+                SELECT COALESCE(SUM(si.received_qty), 0)
+                FROM srv_items si
+                JOIN srvs s ON si.srv_number = s.srv_number
+                WHERE s.is_active = 1 
+                  AND si.po_item_no = poi.po_item_no
+                  AND si.challan_no = dci.dc_number
+            ) as received_quantity
+        FROM delivery_challan_items dci
+        JOIN purchase_order_items poi ON dci.po_item_id = poi.id
+        LEFT JOIN purchase_order_deliveries pod ON dci.po_item_id = pod.po_item_id AND dci.lot_no = pod.lot_no
+        WHERE dci.dc_number = ?
+    """,
+        (dc_number,),
+    ).fetchall()
+
+    result_items = []
+    for item in items:
+        item_dict = dict(item)
+
+        # Calculate remaining info
+        po_item_id = item_dict["po_item_id"]
+        lot_no = item_dict["lot_no"]
+        lot_ordered = item_dict["lot_ordered_qty"] or 0
+        item_dict["received_quantity"] = item_dict.get("received_quantity", 0)
+
+        if lot_no:
+            total_dispatched = db.execute(
+                """
+                SELECT COALESCE(SUM(dispatch_qty), 0) FROM delivery_challan_items 
+                WHERE po_item_id = ? AND lot_no = ?
+             """,
+                (po_item_id, lot_no),
+            ).fetchone()[0]
+        else:
+            total_dispatched = db.execute(
+                """
+                SELECT COALESCE(SUM(dispatch_qty), 0) FROM delivery_challan_items 
+                WHERE po_item_id = ?
+             """,
+                (po_item_id,),
+            ).fetchone()[0]
+
+        item_dict["remaining_post_dc"] = calculate_pending_quantity(lot_ordered, total_dispatched)
+        result_items.append(item_dict)
+
+    return {"header": header_dict, "items": result_items}
+
+
+@router.post("/")
+def create_dc(
+    dc: DCCreate, items: List[dict], db: sqlite3.Connection = Depends(get_db)
+):
+    """
+    Create new Delivery Challan with items
+    items format: [{
+        "po_item_id": "uuid",
+        "lot_no": 1,
+        "dispatch_qty": 10,
+        "hsn_code": "7326",
+        "hsn_rate": 18
+    }]
+    """
+
+    # Validate Uniqueness
+    from app.core.validation import get_financial_year, validate_unique_number
+
+    fy = get_financial_year(dc.dc_date)
+    validate_unique_number(
+        db, "delivery_challans", "dc_number", "financial_year", dc.dc_number, fy
+    )
+
+    # Use service layer with transaction protection
+    try:
+        # CRITICAL: Use BEGIN IMMEDIATE for SQLite concurrency protection
+        db.execute("BEGIN IMMEDIATE")
+
+        try:
+            result = service_create_dc(dc, items, db)
+            db.commit()
+
+            # Service returns ServiceResult - extract data
+            if result.success:
+                return result.data
+            else:
+                # Should not happen if service raises DomainError
+                raise HTTPException(
+                    status_code=500, detail=result.message or "Unknown error"
+                )
+
+        except DomainError as e:
+            # Convert domain error to HTTP response
+            db.rollback()
+            status_code = map_error_code_to_http_status(e.error_code)
+            raise HTTPException(
+                status_code=status_code,
+                detail={
+                    "message": e.message,
+                    "error_code": e.error_code.value,
+                    "details": e.details,
+                },
+            )
+        except Exception:
+            db.rollback()
+            raise
+
+    except sqlite3.IntegrityError as e:
+        logger.error(f"DC creation failed due to integrity error: {e}", exc_info=e)
+        raise internal_error(f"Database integrity error: {str(e)}", e)
+
+
+@router.put("/{dc_number}")
+def update_dc(
+    dc_number: str,
+    dc: DCCreate,
+    items: List[dict],
+    db: sqlite3.Connection = Depends(get_db),
+):
+    """Update existing Delivery Challan - BLOCKED if invoice exists"""
+
+    # Use service layer with transaction protection
+    try:
+        # CRITICAL: Use BEGIN IMMEDIATE for SQLite concurrency protection
+        db.execute("BEGIN IMMEDIATE")
+
+        try:
+            result = service_update_dc(dc_number, dc, items, db)
+            db.commit()
+
+            # Service returns ServiceResult - extract data
+            if result.success:
+                return result.data
+            else:
+                # Should not happen if service raises DomainError
+                raise HTTPException(
+                    status_code=500, detail=result.message or "Unknown error"
+                )
+
+        except DomainError as e:
+            # Convert domain error to HTTP response
+            db.rollback()
+            status_code = map_error_code_to_http_status(e.error_code)
+            raise HTTPException(
+                status_code=status_code,
+                detail={
+                    "message": e.message,
+                    "error_code": e.error_code.value,
+                    "details": e.details,
+                },
+            )
+        except Exception:
+            db.rollback()
+            raise
+
+    except sqlite3.IntegrityError as e:
+        logger.error(f"DC update failed due to integrity error: {e}", exc_info=e)
+        raise internal_error(f"Database integrity error: {str(e)}", e)
+
+
+@router.delete("/{dc_number}")
+def delete_dc(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
+    """
+    Delete a Delivery Challan
+    CRITICAL: Validates invoice linkage before deletion
+    """
+    try:
+        # Use BEGIN IMMEDIATE for transaction safety
+        db.execute("BEGIN IMMEDIATE")
+
+        from app.services.dc import delete_dc as service_delete_dc
+
+        result = service_delete_dc(dc_number, db)
+
+        db.commit()
+        return result.data
+
+    except (ResourceNotFoundError, ConflictError) as e:
+        db.rollback()
+        status_code = map_error_code_to_http_status(e.error_code)
+        raise HTTPException(
+            status_code=status_code,
+            detail={"message": e.message, "error_code": e.error_code.value},
+        )
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error deleting DC {dc_number}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

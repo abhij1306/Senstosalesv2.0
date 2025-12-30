@@ -1,0 +1,5 @@
+app/reports/page.tsx(242,10): error TS2304: Cannot find name 'TableText'.
+app/reports/page.tsx(242,87): error TS2304: Cannot find name 'TableText'.
+app/settings/page.tsx(35,3): error TS2305: Module '"@/components/design-system/organisms"' has no exported member 'Mono'.
+app/settings_backup_365/my-details/page.tsx(40,5): error TS2353: Object literal may only specify known properties, and 'supplier_email' does not exist in type 'Settings'.
+app/settings_backup_365/my-details/page.tsx(102,35): error TS2339: Property 'restartServer' does not exist on type '{ getDashboardSummary: () => Promise<any>; getDashboardInsights: () => Promise<any[]>; getRecentActivity: (limit?: number) => Promise<any[]>; listPOs: () => Promise<POListItem[]>; ... 45 more ...; baseUrl: string; }'.

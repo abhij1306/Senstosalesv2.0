@@ -1,0 +1,156 @@
+@theme {
+    /* --- TIER 1: PRIMITIVES --- */
+    --apple-blue: #0071e3;
+    --apple-blue-dark: #0a84ff;
+
+    /* --- TIER 1.5: FONTS --- */
+    --font-sans: var(--font-inter);
+    --font-heading: var(--font-heading);
+    --font-mono: var(--font-jetbrains-mono);
+
+    /* --- TIER 2: ELEVATION SCALE (SEMANTIC) --- */
+    --bg-base: var(--background);
+    --bg-surface: var(--surface);
+    --bg-overlay: var(--overlay);
+    --border-subtle: var(--border);
+    --app-fg: var(--foreground);
+}
+
+:root {
+    /* --- TIERED ELEVATION SYSTEM (LIGHT MODE) --- */
+    /* Level 0 (App Background) - Google Cloud Light Gray */
+    --bg-base: #F8F9FA;
+    /* Level 1 (Card Background) - Pure White */
+    --bg-surface: #FFFFFF;
+    /* Level 1.5 (Elevated Headers) */
+    --bg-surface-elevated: #F1F3F4;
+    /* Level 2 (Hover/Active) */
+    --bg-overlay: #E8EAED;
+
+    /* Sidebar */
+    --bg-sidebar: #FFFFFF;
+
+    /* Glass Effects */
+    --glass-blur: blur(12px);
+    /* Subtle Separation - Google-style border */
+    --border-subtle: #DADCE0;
+
+    /* Typography */
+    --app-fg: #202124;
+    /* Google Dark Gray */
+    --app-fg-muted: #5F6368;
+    /* Google Muted Gray */
+
+    /* Accent - Cobalt Blue Strategy */
+    --accent: #1A73E8;
+    /* Google Blue */
+    --accent-hover: #174EA6;
+    --excel-green: #1E8E3E;
+
+    /* Standard Next/Tailwind mappings */
+    --background: var(--bg-base);
+    --foreground: var(--app-fg);
+
+    /* --- LEGACY ALIASES --- */
+    --color-sys-bg-primary: var(--bg-base);
+    --color-sys-bg-secondary: var(--bg-surface-elevated);
+    --color-sys-bg-tertiary: var(--bg-overlay);
+    --color-sys-bg-surface: var(--bg-surface);
+    --color-sys-bg-header: var(--bg-surface);
+    --color-sys-bg-search: var(--bg-surface-elevated);
+
+    --color-sys-text-primary: var(--app-fg);
+    --color-sys-text-secondary: var(--app-fg-muted);
+    --color-sys-text-tertiary: #9AA0A6;
+
+    --color-sys-brand-primary: var(--accent);
+    --color-sys-brand-secondary: #8AB4F8;
+
+    --color-sys-status-success: #1E8E3E;
+    --color-sys-status-warning: #E37400;
+    --color-sys-status-error: #D93025;
+    --color-sys-status-info: #1A73E8;
+
+    --color-sys-surface-glass_border_light: rgba(0, 0, 0, 0.08);
+
+    /* Shadows - Google Material Style */
+    --shadow-clay-surface: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+    --shadow-3d-lifted: 0 4px 8px 3px rgba(60, 64, 67, 0.15), 0 1px 3px rgba(60, 64, 67, 0.3);
+    --shadow-spotlight: 0 12px 24px -4px rgba(0, 0, 0, 0.2);
+}
+
+.dark {
+    /* --- TIERED ELEVATION SYSTEM (DARK MODE) --- */
+    /* Level 0 (App Background) - Deep Black/Gray */
+    --bg-base: #0B0E14;
+    /* Level 1 (Card Background) - Dark Gray Surface */
+    --bg-surface: #161B22;
+    /* Level 1.5 (Elevated Headers) */
+    --bg-surface-elevated: #21262D;
+    /* Level 2 (Hover/Active) */
+    --bg-overlay: #30363D;
+
+    /* Sidebar */
+    --bg-sidebar: #0B0E14;
+
+    /* Glass Effects */
+    --glass-blur: blur(20px);
+    /* Subtle Separation - Dark Mode Border */
+    --border-subtle: rgba(48, 54, 61, 0.5);
+
+    /* Typography */
+    --app-fg: #F0F6FC;
+    /* High Contrast Text */
+    --app-fg-muted: #8B949E;
+    /* Muted Text */
+
+    /* Accent - Sky Blue Strategy */
+    --accent: #58A6FF;
+    --accent-hover: #79C0FF;
+    --excel-green: #238636;
+
+    /* Standard Next/Tailwind mappings */
+    --background: var(--bg-base);
+    --foreground: var(--app-fg);
+
+    /* --- LEGACY ALIASES (DARK) --- */
+    --color-sys-bg-primary: var(--bg-base);
+    --color-sys-bg-secondary: var(--bg-surface-elevated);
+    --color-sys-bg-tertiary: var(--bg-overlay);
+    --color-sys-bg-surface: var(--bg-surface);
+    --color-sys-bg-header: var(--bg-surface);
+    --color-sys-bg-search: #0D1117;
+
+    --color-sys-text-primary: var(--app-fg);
+    --color-sys-text-secondary: var(--app-fg-muted);
+    --color-sys-text-tertiary: #484F58;
+
+    --color-sys-brand-primary: var(--accent);
+
+    --color-sys-status-success: #3FB950;
+    --color-sys-status-warning: #D29922;
+    --color-sys-status-error: #F85149;
+    --color-sys-status-info: #58A6FF;
+
+    --color-sys-surface-glass_border_light: rgba(240, 246, 252, 0.1);
+
+    /* Shadows - Dark Mode */
+    --shadow-clay-surface: 0 0 0 1px rgba(240, 246, 252, 0.1);
+    --shadow-3d-lifted: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(240, 246, 252, 0.1);
+    --shadow-spotlight: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(240, 246, 252, 0.15);
+}
+
+@theme {
+    --color-app-bg: var(--bg-base);
+    --color-app-surface: var(--bg-surface);
+    --color-app-surface-elevated: var(--bg-surface-elevated);
+    --color-app-overlay: var(--bg-overlay);
+    --color-app-sidebar: var(--bg-sidebar);
+    --color-app-border: var(--border-subtle);
+    --color-app-fg: var(--app-fg);
+    --color-app-accent: var(--accent);
+    --color-app-excel: var(--excel-green);
+
+    --shadow-app-lifted: var(--shadow-3d-lifted);
+    --shadow-app-spotlight: var(--shadow-spotlight);
+}

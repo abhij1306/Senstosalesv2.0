@@ -1,0 +1,16 @@
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# Mandated rule sets from Phase 1
+select = ["E", "F", "B", "I"] # Error, Flake, Bugbear, Isort
+ignore = ["B008"] # Allow FastAPI Depends() in routers
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"app/main.py" = ["E402"]

@@ -1,0 +1,27 @@
+{
+    "mcpServers": {
+        "chrome-devtools": {
+            "command": "npx",
+            "args": [
+                "chrome-devtools-mcp@latest",
+                "--browser-url=http://127.0.0.1:9222",
+                "-y"
+            ]
+        },
+        "next-devtools": {
+            "command": "node",
+            "args": [
+                "mcp-servers/next-devtools.js"
+            ],
+            "env": {
+                "NEXT_APP_URL": "http://localhost:3000"
+            }
+        },
+        "project-docs": {
+            "command": "node",
+            "args": [
+                "mcp-servers/docs-server.js"
+            ]
+        }
+    }
+}

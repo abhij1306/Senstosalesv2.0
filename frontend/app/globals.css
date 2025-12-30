@@ -1,0 +1,243 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+@layer base {
+
+  :root {
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+  }
+
+  body {
+    background-color: var(--bg-base);
+    color: var(--app-fg);
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--app-fg);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    font-family: var(--font-heading), system-ui, sans-serif;
+  }
+}
+
+@layer components {
+
+  /* Premium Elevation Layers - Google M3 Standard */
+
+  /* Glassmorphism Header - Part of scrollable content */
+  .glass-header {
+    width: 100%;
+    min-height: 64px;
+    background: transparent;
+    border-bottom: 1px solid var(--border-subtle);
+    transition: all 0.2s ease;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Improved Table with Layered Separation */
+  .table-container {
+    width: 100%;
+    border-radius: 0.75rem;
+    background: var(--bg-surface);
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+  }
+
+  /* Sticky Header Implementation */
+  .table-th {
+    padding: 0.75rem 1rem;
+    background: var(--bg-surface-elevated);
+    /* L1.5 */
+    color: var(--app-fg-muted);
+    font-weight: 600;
+    /* SemiBold */
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .table-td {
+    padding: 0.75rem 1rem;
+    color: var(--app-fg);
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 13px;
+    /* Ensure body size matches Typography */
+  }
+
+  /* Striping Logic: Level 0 vs Level 1 */
+  .table-row-odd {
+    background-color: var(--bg-surface);
+  }
+
+  .table-row-even {
+    background-color: var(--bg-base);
+    /* L0 contrast */
+  }
+
+  .table-row:hover .table-td {
+    background-color: var(--bg-overlay);
+    /* L2 Hover */
+  }
+
+  /* Active State Glow for Sidebar/Tabs */
+  .active-glow {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 12px -2px var(--accent);
+  }
+
+  .active-glow-soft {
+    background: color-mix(in srgb, var(--app-accent), transparent 90%);
+    box-shadow: 0 0 15px -10px var(--app-accent);
+    border-left: 3px solid var(--app-accent);
+  }
+
+  /* Status Badges - Glass Style */
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    backdrop-filter: blur(4px);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .status-badge-pending {
+    background: color-mix(in srgb, var(--color-sys-status-warning), transparent 88%);
+    color: var(--color-sys-status-warning);
+    border: 1px solid color-mix(in srgb, var(--color-sys-status-warning), transparent 80%);
+  }
+
+  .status-badge-closed {
+    background: color-mix(in srgb, var(--color-sys-status-success), transparent 88%);
+    color: var(--color-sys-status-success);
+    border: 1px solid color-mix(in srgb, var(--color-sys-status-success), transparent 80%);
+  }
+
+  .status-badge-delivered {
+    background: color-mix(in srgb, var(--color-sys-status-info), transparent 88%);
+    color: var(--color-sys-status-info);
+    border: 1px solid color-mix(in srgb, var(--color-sys-status-info), transparent 80%);
+  }
+
+  .status-badge-draft {
+    background: var(--app-surface-hover);
+    color: var(--app-fg-muted);
+    border: 1px solid var(--app-border);
+  }
+
+  /* Utility for high contrast headers */
+  .high-contrast-header {
+    background: var(--bg-surface-elevated) !important;
+    color: var(--app-fg) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em !important;
+    padding: 0.75rem 1.25rem !important;
+    border-radius: 0.5rem;
+  }
+
+  /* Custom Scrollbar */
+  @media (min-width: 768px) {
+    .hover-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .hover-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .hover-scrollbar::-webkit-scrollbar-thumb {
+      background: var(--border-subtle);
+      border-radius: 10px;
+    }
+
+    .hover-scrollbar:hover::-webkit-scrollbar-thumb {
+      background: color-mix(in srgb, var(--border-subtle), black 20%);
+    }
+
+    .dark .hover-scrollbar:hover::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+/* Professional Print Styles - Document Focus */
+@media print {
+
+  .glass-header,
+  nav,
+  aside,
+  button,
+  .ReadinessStrip_container__W_H7_,
+  [id="header-action-portal"],
+  .tabs-list {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 10pt !important;
+  }
+
+  .surface-card {
+    border: 1px solid #eee !important;
+    box-shadow: none !important;
+    background: white !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .table-container,
+  table {
+    border: 1px solid #eee !important;
+  }
+
+  .table-th {
+    background: #f9f9f9 !important;
+    color: black !important;
+    border-bottom: 1px solid #eee !important;
+  }
+
+  .table-td {
+    border-bottom: 1px solid #eee !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

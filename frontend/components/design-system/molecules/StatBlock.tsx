@@ -1,0 +1,7 @@
+
+import React from"react";
+import { cn } from"@/lib/utils";
+import { TrendingUp, TrendingDown, Minus } from"lucide-react"; interface StatBlockProps { label: string; value: string | number; delta?: { value: string; trend:"up" |"down" |"neutral"; }; icon?: React.ReactNode; className?: string; variant?:"default" |"primary" |"teal" |"navy";
+} export const StatBlock = ({ label, value, delta, icon, className, variant ="default",
+}: StatBlockProps) => { const variantStyles = { default:"bg-sys-bg-white shadow-sm", primary:"bg-gradient-to-br from-sys-brand to-sys-brand text-sys-bg-white", teal:"bg-gradient-to-br from-cyan-500 via-teal-500 to-sys-success text-sys-bg-white", navy:"bg-gradient-to-br from-[#2d4a6e] via-[#1E3A5F] to-[#152841] text-sys-bg-white", }; const isColored = variant !=="default"; return ( <div className={cn("rounded-2xl p-5 flex items-center gap-4 transition-all duration-300 hover:shadow-lg backdrop-blur-md border border-sys-bg-white/20", variantStyles[variant], className, )} > {/* Icon */} {icon && ( <div className={cn("p-3 rounded-full shrink-0", isColored ?"bg-sys-bg-white/20" :"bg-primary/10", )} > <div className={isColored ?"text-sys-bg-white" :"text-primary"}> {icon} </div> </div> )} {/* Content */} <div className="flex-1"> <div className={cn(" font-semibold tabular-nums leading-none mb-1", isColored ?"text-sys-bg-white" :"text-sys-primary", )} > {value} </div> <div className={cn("text-[11px] font-medium", isColored ?"text-sys-bg-white/70" :"text-sys-secondary", )} > {label} </div> </div> </div> );
+};

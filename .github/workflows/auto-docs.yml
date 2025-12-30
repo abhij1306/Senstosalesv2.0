@@ -1,0 +1,36 @@
+name: Auto-Generate Documentation
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/app/routers/**'
+      - 'frontend/components/design-system/**'
+  pull_request:
+    branches: [main]
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Generate API Documentation
+        run: python scripts/generate_api_docs.py
+      
+      - name: Generate Component Documentation
+        run: python scripts/sync_component_docs.py
+      
+      - name: Commit Documentation
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add docs/api/ docs/COMPONENT_REFERENCE.md frontend/lib/tooltips.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "docs: auto-generate API and component documentation [skip ci]"
+          git push
