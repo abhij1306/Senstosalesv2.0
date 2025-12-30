@@ -1,6 +1,6 @@
 # SenstoSales API Documentation
 
-**Generated:** 2025-12-29 23:34:24  
+**Generated:** 2025-12-30 17:40:54  
 **Base URL:** `http://localhost:8000`
 
 ## Endpoints
@@ -74,6 +74,12 @@ Get dashboard summary statistics
 #### `POST` /
 
 No description
+
+---
+
+#### `GET` /po/{po_number}/lots
+
+
 
 ---
 
@@ -223,46 +229,6 @@ Download PO as Excel
 ---
 
 
-### PO_NOTES
-
-#### `POST` /
-
-Create a new PO Note template
-
-**Response Model:** `PONote`
-
----
-
-#### `PUT` /{note_id}
-
-Update a PO Note template
-
-**Response Model:** `PONote`
-
----
-
-#### `DELETE` /{note_id}
-
-Delete a PO Note template
-
----
-
-
-### RECONCILIATION
-
-#### `GET` /po/{po_number}
-
-
-
----
-
-#### `GET` /po/{po_number}/lots
-
-
-
----
-
-
 ### REPORTS
 
 #### `GET` /daily-dispatch
@@ -324,7 +290,7 @@ No description
 
 #### `GET` /
 
-Search across POs, DCs, and Invoices
+Search across POs, DCs, and Invoices using deterministic logic
 
 **Response Model:** `dict`
 
@@ -379,15 +345,6 @@ No description
 ---
 
 #### `DELETE` /{srv_number}
-
-
-
----
-
-
-### SYSTEM
-
-#### `POST` /reset-db
 
 
 
