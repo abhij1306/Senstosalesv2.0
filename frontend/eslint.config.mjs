@@ -1,5 +1,4 @@
 import js from "@eslint/js";
-import baseConfig from "../../../../../mcp-shared/linters/eslint.config.js";
 import globals from "globals";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
@@ -44,7 +43,6 @@ export default tseslint.config(
       }
     },
     rules: {
-      ...baseConfig.rules,
       // ENFORCEMENT: Block manual Tailwind font/color overrides
       "no-restricted-syntax": ["error", {
         selector: "JSXAttribute[name.name='className'][value.value=/text-\\[|font-\\[/]",
@@ -60,7 +58,13 @@ export default tseslint.config(
       // Project overrides
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
-      "@typescript-eslint/no-explicit-any": "off"
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": ["error", {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }],
+      "no-console": ["warn", { allow: ["warn", "error"] }],
+      "no-unused-vars": "off" // Use TypeScript's unused vars instead
     }
   }
 );
