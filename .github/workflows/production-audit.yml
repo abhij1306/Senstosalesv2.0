@@ -108,17 +108,8 @@ jobs:
               body: comment
             });
       
-      - name: Check score threshold
-        if: always()
+      - name: Fail if score below threshold
+        if: steps.audit.outcome == 'failure'
         run: |
-          if [ -f production_readiness_report.json ]; then
-            SCORE=$(python -c "import json; print(json.load(open('production_readiness_report.json'))['overall']['overall_score'])")
-            echo "Production Readiness Score: $SCORE/100"
-            if [ "$SCORE" -lt "70" ]; then
-              echo "::warning::Production readiness score ($SCORE) is below recommended threshold (70)"
-            else
-              echo "✅ Production readiness score meets threshold"
-            fi
-          else
-            echo "::warning::Production readiness report not found"
-          fi
+          echo "Production readiness score is below threshold"
+          exit 1
