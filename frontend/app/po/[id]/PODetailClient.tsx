@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
     Edit2,
@@ -45,7 +45,7 @@ export default function PODetailClient({
     );
     const [activeTab, setActiveTab] = useState("basic");
 
-    const handleSave = async () => {
+    const handleSave = useCallback(async () => {
         if (!data || !data.header) return;
         setLoading(true);
         try {
@@ -56,9 +56,9 @@ export default function PODetailClient({
         } finally {
             setLoading(false);
         }
-    };
+    }, [data]);
 
-    const addItem = () => {
+    const addItem = useCallback(() => {
         if (!data || !data.items) return;
         const maxItemNo = Math.max(
             ...data.items.map((i: POItem) => i.po_item_no || 0),
@@ -78,9 +78,9 @@ export default function PODetailClient({
         };
         setData({ ...data, items: [...data.items, newItem] });
         setExpandedItems(new Set([...Array.from(expandedItems), maxItemNo + 1]));
-    };
+    }, [data, expandedItems]);
 
-    const toggleItem = (itemNo: number) => {
+    const toggleItem = useCallback((itemNo: number) => {
         const s = new Set(expandedItems);
         if (s.has(itemNo)) {
             s.delete(itemNo);
@@ -88,14 +88,14 @@ export default function PODetailClient({
             s.add(itemNo);
         }
         setExpandedItems(s);
-    };
+    }, [expandedItems]);
 
-    const updateHeader = (field: string, value: any) => {
+    const updateHeader = useCallback((field: string, value: any) => {
         if (!data) return;
         setData({ ...data, header: { ...data.header, [field]: value } });
-    };
+    }, [data]);
 
-    const updateItem = (index: number, field: string, value: any) => {
+    const updateItem = useCallback((index: number, field: string, value: any) => {
         if (!data || !data.items) return;
         const newItems = [...data.items];
         newItems[index] = { ...newItems[index], [field]: value };
@@ -104,9 +104,9 @@ export default function PODetailClient({
                 (newItems[index].ordered_quantity || 0) * (newItems[index].po_rate || 0);
         }
         setData({ ...data, items: newItems });
-    };
+    }, [data]);
 
-    const addDelivery = (itemIdx: number) => {
+    const addDelivery = useCallback((itemIdx: number) => {
         if (!data || !data.items) return;
         const newItems = [...data.items];
         const item = newItems[itemIdx];
@@ -121,22 +121,22 @@ export default function PODetailClient({
         };
         newItems[itemIdx].deliveries = [...(item.deliveries || []), newLot];
         setData({ ...data, items: newItems });
-    };
+    }, [data]);
 
-    const removeDelivery = (itemIdx: number, deliveryIdx: number) => {
+    const removeDelivery = useCallback((itemIdx: number, deliveryIdx: number) => {
         if (!data || !data.items) return;
         const newItems = [...data.items];
         newItems[itemIdx].deliveries = newItems[itemIdx].deliveries.filter(
             (_, i) => i !== deliveryIdx,
         );
         setData({ ...data, items: newItems });
-    };
+    }, [data]);
 
-    const removeItem = (index: number) => {
+    const removeItem = useCallback((index: number) => {
         if (!data || !data.items) return;
         const newItems = data.items.filter((_, i) => i !== index);
         setData({ ...data, items: newItems });
-    };
+    }, [data]);
 
     const { header, items } = data;
 
