@@ -1,6 +1,6 @@
 # SenstoSales API Documentation
 
-**Generated:** 2025-12-30 17:40:54  
+**Generated:** 2025-12-31 16:53:24  
 **Base URL:** `http://localhost:8000`
 
 ## Endpoints
@@ -216,15 +216,54 @@ Get Purchase Order detail with items and deliveries
 
 ---
 
+#### `GET` /{po_number}/context
+
+Fetch PO context (Supplier/Buyer info) for DC/Invoice auto-fill
+
+---
+
 #### `GET` /{po_number}/dc
 
 Check if PO has an associated Delivery Challan
 
 ---
 
-#### `GET` /{po_number}/download
+#### `GET` /{po_number}/excel
 
 Download PO as Excel
+
+---
+
+
+### PO_NOTES
+
+#### `POST` /
+
+Create a new PO Note template
+
+**Response Model:** `PONoteOut`
+
+---
+
+#### `GET` /{note_id}
+
+Get a specific PO Note template
+
+**Response Model:** `PONoteOut`
+
+---
+
+#### `PUT` /{note_id}
+
+Update a PO Note template
+
+**Response Model:** `PONoteOut`
+
+---
+
+#### `DELETE` /{note_id}
+
+Soft delete a PO Note template
 
 ---
 
@@ -345,6 +384,15 @@ No description
 ---
 
 #### `DELETE` /{srv_number}
+
+
+
+---
+
+
+### SYSTEM
+
+#### `POST` /reset-db
 
 
 
