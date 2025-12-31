@@ -1,6 +1,6 @@
 # SenstoSales API Documentation
 
-**Generated:** 2025-12-31 16:53:24  
+**Generated:** 2025-12-31 17:06:02  
 **Base URL:** `http://localhost:8000`
 
 ## Endpoints
