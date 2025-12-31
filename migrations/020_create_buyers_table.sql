@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS buyers (
     billing_address TEXT NOT NULL,
     shipping_address TEXT,
     place_of_supply TEXT NOT NULL,
+    state TEXT,
+    state_code TEXT,
     is_default BOOLEAN DEFAULT 0,
     is_active BOOLEAN DEFAULT 1,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP

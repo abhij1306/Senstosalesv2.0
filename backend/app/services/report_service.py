@@ -165,9 +165,9 @@ def get_invoice_register(
     SELECT 
         invoice_number,
         invoice_date,
-        linked_dc_numbers,
+        dc_number,
         po_numbers,
-        customer_gstin,
+        buyer_gstin,
         taxable_value,
         cgst,
         sgst,
@@ -241,7 +241,7 @@ def get_po_register(
         print(f"Error generating PO Register: {e}")
         return pd.DataFrame()
 
-def get_reconciliation_lots(po_number: int, db: sqlite3.Connection) -> list:
+def get_reconciliation_lots(po_number: str, db: sqlite3.Connection) -> list:
     """
     Get available lots/items for dispatch from a PO.
     Calculates remaining quantity (Ordered - Dispatched).
@@ -258,7 +258,14 @@ def get_reconciliation_lots(po_number: int, db: sqlite3.Connection) -> list:
             SELECT SUM(dci.dispatch_qty)
             FROM delivery_challan_items dci
             WHERE dci.po_item_id = poi.id AND dci.lot_no = COALESCE(pod.lot_no, 1)
-        ), 0) as lot_dispatched_qty
+        ), 0) as lot_dispatched_qty,
+        COALESCE((
+            SELECT SUM(srvi.received_qty)
+            FROM srv_items srvi
+            WHERE srvi.po_number = poi.po_number 
+              AND srvi.po_item_no = poi.po_item_no
+              AND COALESCE(srvi.lot_no, 1) = COALESCE(pod.lot_no, 1)
+        ), 0) as lot_received_qty
     FROM purchase_order_items poi
     LEFT JOIN purchase_order_deliveries pod ON poi.id = pod.po_item_id
     WHERE poi.po_number = ?
@@ -269,15 +276,18 @@ def get_reconciliation_lots(po_number: int, db: sqlite3.Connection) -> list:
         results = []
         for row in rows:
             r = dict(row)
-            remaining = r['lot_ordered_qty'] - r['lot_dispatched_qty']
-            # Return all items, let frontend handle visibility/filtering of completed items
+            # High Water Mark: Delivered is MAX(Dispatched, Received)
+            already_delivered = max(r['lot_dispatched_qty'], r['lot_received_qty'])
+            remaining = r['lot_ordered_qty'] - already_delivered
+            
             results.append({
                 "po_item_id": r['po_item_id'],
                 "lot_no": r['lot_no'],
                 "material_description": r['material_description'],
                 "drg_no": r['drg_no'],
                 "ordered_qty": r['lot_ordered_qty'],
-                "remaining_qty": max(0, remaining) # Ensure no negative floating point dust
+                "received_qty": r['lot_received_qty'],
+                "remaining_qty": max(0, remaining)
             })
         return results
     except Exception as e:

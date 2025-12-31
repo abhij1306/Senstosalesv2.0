@@ -1,0 +1,28 @@
+{
+    "bootstrap_layer": {
+        "required": true,
+        "entrypoint_enforced": [
+            "run_agent.py",
+            "startAgentSession()"
+        ],
+        "guardrail_hash": "sha256:current_implementation_v1"
+    },
+    "core_rules": {
+        "no_hallucination": "strict",
+        "business_records_immutable": true,
+        "corrections_via_reingestion_only": true,
+        "schema_changes_blocked_unless_explicit": true,
+        "backup_mandatory_before_delete_or_modify": true,
+        "deterministic_paths_for_numbers": true,
+        "fail_safe": "never_silent_failures"
+    },
+    "loop_protection": {
+        "max_steps": 200,
+        "timeout_ms": 10000
+    },
+    "audit": {
+        "enabled": true,
+        "storage": "audit_logs/",
+        "tamper_proof": true
+    }
+}

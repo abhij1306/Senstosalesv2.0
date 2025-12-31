@@ -6,6 +6,7 @@ Enforces the "Triangle of Truth" logic to ensure data consistency.
 """
 import sqlite3
 import logging
+from app.core.number_utils import to_float, to_int, to_qty
 from typing import List, Dict, Optional
 
 logger = logging.getLogger(__name__)
@@ -37,14 +38,8 @@ class ReconciliationService:
             if exclude_dc_number:
                 dispatch_query += " AND dc_number != ?"
                 dispatch_params.append(exclude_dc_number)
-            dc_query = "SELECT COALESCE(SUM(dispatch_qty), 0) FROM delivery_challan_items WHERE po_item_id = ? AND lot_no = ?"
-            dc_params = [po_item_id, lot_no]
-            if exclude_dc_number:
-                dc_query += " AND dc_number != ?"
-                dc_params.append(exclude_dc_number)
-                
-            disp_res = db.execute(dc_query, dc_params).fetchone()
-            lot_dispatch = float(disp_res[0]) if disp_res else 0.0
+            
+            lot_dispatch = to_qty(db.execute(dispatch_query, dispatch_params).fetchone()[0])
 
             # Calculate Total Received for Lot
             srv_query = """
@@ -58,8 +53,7 @@ class ReconciliationService:
                 srv_query += " AND srv_number != ?"
                 srv_params.append(exclude_srv_number)
 
-            rec_res = db.execute(srv_query, srv_params).fetchone()
-            lot_received = float(rec_res[0]) if rec_res else 0.0
+            lot_received = to_qty(db.execute(srv_query, srv_params).fetchone()[0])
 
             # High Water Mark
             lot_delivered = max(lot_dispatch, lot_received)
@@ -78,8 +72,7 @@ class ReconciliationService:
             item_dc_query += " AND dc_number != ?"
             item_dc_params.append(exclude_dc_number)
             
-        total_disp_res = db.execute(item_dc_query, item_dc_params).fetchone()
-        total_dispatch = float(total_disp_res[0]) if total_disp_res else 0.0
+        total_dispatch = to_qty(db.execute(item_dc_query, item_dc_params).fetchone()[0])
 
         # Calculate Total Received & Rejected for Item
         po_info = db.execute("SELECT po_number, po_item_no FROM purchase_order_items WHERE id = ?", (po_item_id,)).fetchone()
@@ -103,8 +96,8 @@ class ReconciliationService:
         
         total_srv_res = db.execute(item_srv_query, item_srv_params).fetchone()
         
-        total_received = float(total_srv_res[0]) if total_srv_res else 0.0
-        total_rejected = float(total_srv_res[1]) if total_srv_res else 0.0
+        total_received = to_qty(total_srv_res[0])
+        total_rejected = to_qty(total_srv_res[1])
 
         # High Water Mark for Item
         item_delivered = max(total_dispatch, total_received)
@@ -200,9 +193,10 @@ class ReconciliationService:
             for item in srv_items:
                 po_item_no = item["po_item_no"]
                 lot_no = item.get("lot_no")
-                received_qty = float(item.get("received_qty", 0))
-                accepted_qty = float(item.get("accepted_qty", 0))
-                rejected_qty = float(item.get("rejected_qty", 0))
+                delivered = to_qty(item.get("dispatch_qty") or 0)
+                received = to_qty(item.get("received_qty") or 0)
+                rejected = to_qty(item.get("rejected_qty") or 0)
+                accepted = received - rejected
                 challan_no = item.get("challan_no")
 
                 po_item_row = db.execute("SELECT id FROM purchase_order_items WHERE po_number = ? AND po_item_no = ?", (po_number, po_item_no)).fetchone()
@@ -215,11 +209,11 @@ class ReconciliationService:
                         UPDATE delivery_challan_items
                         SET received_qty = received_qty + ?, accepted_qty = accepted_qty + ?, rejected_qty = rejected_qty + ?
                         WHERE dc_number = ? AND po_item_id = ? AND (lot_no = ? OR ? IS NULL)
-                    """, (received_qty, accepted_qty, rejected_qty, challan_no, po_item_id, lot_no, lot_no))
+                    """, (received, accepted, rejected, challan_no, po_item_id, lot_no, lot_no))
 
                 # 2. Update Lot Level (for received_qty only, delivered checked by recalc)
                 if lot_no:
-                    db.execute("UPDATE purchase_order_deliveries SET received_qty = received_qty + ? WHERE po_item_id = ? AND lot_no = ?", (received_qty, po_item_id, lot_no))
+                    db.execute("UPDATE purchase_order_deliveries SET received_qty = received_qty + ? WHERE po_item_id = ? AND lot_no = ?", (received, po_item_id, lot_no))
 
                 # 3. Recalculate Item/Lot Delivery Status (High Water Mark)
                 ReconciliationService._recalculate_delivery_status(db, po_item_id, lot_no)

@@ -59,8 +59,8 @@ function CreateDCPageContent() {
     setError(null);
     try {
       const [lots, pod] = await Promise.all([
-        api.getReconciliationLots(parseInt(po)),
-        api.getPODetail(parseInt(po)),
+        api.getReconciliationLots(po),
+        api.getPODetail(po),
       ]);
 
       // Process Lots
@@ -72,6 +72,7 @@ function CreateDCPageContent() {
         drg_no: lot.drg_no || "",
         ordered_quantity: lot.ordered_qty || 0,
         remaining_post_dc: lot.remaining_qty || 0,
+        received_quantity: lot.received_qty || 0,
         dispatch_quantity: 0,
         po_item_id: lot.po_item_id,
       }));
@@ -143,7 +144,7 @@ function CreateDCPageContent() {
       const dcPayload = {
         dc_number: formData.dc_number,
         dc_date: formData.dc_date,
-        po_number: poNumber ? parseInt(poNumber) : undefined,
+        po_number: poNumber || undefined,
         supplier_phone: formData.supplier_phone,
         supplier_gstin: formData.supplier_gstin,
         consignee_name: formData.consignee_name,
@@ -420,6 +421,11 @@ function CreateDCPageContent() {
                     </th>
                     <th className="py-3 px-6 text-right">
                       <Label className="text-app-fg-muted">
+                        Rec
+                      </Label>
+                    </th>
+                    <th className="py-3 px-6 text-right">
+                      <Label className="text-app-fg-muted">
                         Bal
                       </Label>
                     </th>
@@ -468,6 +474,11 @@ function CreateDCPageContent() {
                         <td className="py-4 px-6 text-right">
                           <Accounting className="text-app-fg-muted text-right block">
                             {item.ordered_quantity}
+                          </Accounting>
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <Accounting className="text-app-fg-muted text-right block">
+                            {item.received_quantity || 0}
                           </Accounting>
                         </td>
                         <td className="py-4 px-6 text-right">

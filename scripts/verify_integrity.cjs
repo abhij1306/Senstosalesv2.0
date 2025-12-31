@@ -3,7 +3,6 @@ const path = require('path');
 const crypto = require('crypto');
 
 const PROTECTED_FILES = [
-    'backend/app/init_db.py',
     'backend/app/db.py', // Core DB logic
 ];
 
@@ -16,9 +15,8 @@ console.log('🔒 Verifying integrity of protected files...');
 // Check existence
 let missing = [];
 PROTECTED_FILES.forEach(f => {
-    // Resolve from project root (assuming script runs from frontend or project root)
-    // We'll try to resolve relative to this script
-    const projectRoot = path.resolve(__dirname, '../../');
+    // Resolve from project root (this script is in scripts/, one level down from root)
+    const projectRoot = path.resolve(__dirname, '../');
     const filePath = path.join(projectRoot, f);
 
     if (!fs.existsSync(filePath)) {

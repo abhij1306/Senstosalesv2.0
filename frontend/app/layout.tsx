@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 // Header import removed
 import PageTransition from "@/components/PageTransition";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ReadinessStrip } from "@/components/ReadinessStrip";
+
 import { WebVitalsReporter } from "@/components/WebVitalsReporter";
 import { Providers } from "./providers";
 import { GlobalSearch } from "@/components/design-system/organisms";
@@ -59,14 +59,7 @@ export default function RootLayout({
                                     </div>
                                 </header>
 
-                                <ReadinessStrip
-                                    steps={[
-                                        { label: "Design System", status: "completed", date: "Dec 30" },
-                                        { label: "Search & Reports", status: "completed", date: "Dec 30" },
-                                        { label: "System Audit", status: "completed", date: "Dec 30" },
-                                        { label: "Operational", status: "current", date: "v1.0" },
-                                    ]}
-                                />
+
 
                                 {/* Main Content Area - Shifted Up */}
                                 <main className="flex-1 overflow-y-scroll overflow-x-hidden scrollbar-thin scrollbar-thumb-muted-foreground/10 hover:scrollbar-thumb-muted-foreground/20 px-12 pb-32 pt-6">

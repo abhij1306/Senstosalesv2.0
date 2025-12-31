@@ -26,6 +26,6 @@ CREATE TABLE IF NOT EXISTS schema_version (
     applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO schema_version (version, description) VALUES 
+INSERT OR IGNORE INTO schema_version (version, description) VALUES 
     (1, 'Initial schema - PO, DC, Invoice tables'),
     (2, 'Add alerts system');

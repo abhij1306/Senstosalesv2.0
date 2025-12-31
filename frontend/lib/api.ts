@@ -467,7 +467,7 @@ export const api = {
     ),
 
   // SRVS
-  listSRVs: (poId?: number) =>
+  listSRVs: (poId?: string | number) =>
     apiFetch<SRVListItem[]>(poId ? `/api/srv/po/${poId}/srvs` : "/api/srv/"),
   getSRVStats: () => apiFetch<SRVStats>("/api/srv/stats"),
   uploadSRVBatch: (files: File[]) => {
@@ -511,9 +511,9 @@ export const api = {
     apiFetch<void>(`/api/po-notes/${id}`, { method: "DELETE" }),
 
   // REPORTS (RECONCILIATION)
-  getReconciliation: (poNumber: number) =>
+  getReconciliation: (poNumber: string | number) =>
     apiFetch<any[]>(`/api/reports/reconciliation?po=${poNumber}`), // Corrected to reports endpoint
-  getReconciliationLots: (poNumber: number) =>
+  getReconciliationLots: (poNumber: string | number) =>
     apiFetch<any>(`/api/dc/po/${poNumber}/lots`),
 
 

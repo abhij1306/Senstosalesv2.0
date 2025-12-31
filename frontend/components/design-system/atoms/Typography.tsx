@@ -184,3 +184,7 @@ export const MonoCode = memo(React.forwardRef<HTMLElement, TypographyProps>(
     )
 ));
 MonoCode.displayName = "MonoCode";
+
+// ALIASES for backward compatibility or different naming preferences
+export const Mono = MonoCode;
+export const TableText = Body;

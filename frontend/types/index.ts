@@ -74,7 +74,7 @@ export interface PONoteCreate {
 // ============================================================
 
 export interface ReconciliationItem {
-    po_number: number;
+    po_number: string;
     po_date: string;
     supplier_name: string;
     po_item_no: number;
@@ -88,7 +88,7 @@ export interface ReconciliationItem {
 export interface DCWithoutInvoice {
     dc_number: string;
     dc_date: string;
-    po_number: number;
+    po_number: string;
     consignee_name: string;
     created_at: string;
 }
@@ -133,7 +133,7 @@ export interface POItem {
 }
 
 export interface POHeader {
-    po_number: number;
+    po_number: string;
     po_date?: string;
     supplier_name?: string;
     supplier_gstin?: string;
@@ -141,7 +141,7 @@ export interface POHeader {
     supplier_phone?: string;
     supplier_fax?: string;
     supplier_email?: string;
-    department_no?: number;
+    department_no?: string;
     enquiry_no?: string;
     enquiry_date?: string;
     quotation_ref?: string;
@@ -176,7 +176,7 @@ export interface PODetail {
 }
 
 export interface POListItem {
-    po_number: number;
+    po_number: string;
     po_date: string | null;
     supplier_name: string | null;
     po_value: number | null;
@@ -226,8 +226,8 @@ export interface DCItemRow {
 export interface DCHeader {
     dc_number: string;
     dc_date: string;
-    po_number?: number;
-    department_no?: number;
+    po_number?: string;
+    department_no?: string;
     consignee_name?: string;
     consignee_gstin?: string;
     consignee_address?: string;

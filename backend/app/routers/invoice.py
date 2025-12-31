@@ -28,7 +28,7 @@ router = APIRouter()
 class InvoiceItemCreate(BaseModel):
     po_sl_no: str  # lot_no from DC
     description: str
-    quantity: float
+    quantity: int
     unit: str = "NO"
     rate: float
     hsn_sac: Optional[str] = None
@@ -128,22 +128,21 @@ def list_invoices(
 
     query = """
         SELECT 
-            inv.invoice_number, inv.invoice_date, inv.po_numbers, inv.linked_dc_numbers,
-            inv.customer_gstin, inv.taxable_value, inv.total_invoice_value, inv.created_at,
+            inv.invoice_number, inv.invoice_date, inv.po_numbers, inv.dc_number,
+            inv.buyer_gstin, inv.taxable_value, inv.total_invoice_value, inv.created_at,
             COUNT(DISTINCT inv_item.id) as total_items,
             COALESCE(SUM(inv_item.quantity), 0) as total_ordered_quantity,
             (
                 SELECT COALESCE(SUM(dci.dispatch_qty), 0)
                 FROM delivery_challan_items dci
-                JOIN delivery_challans dc ON dci.dc_number = dc.dc_number
-                WHERE (',' || inv.linked_dc_numbers || ',') LIKE ('%,' || dc.dc_number || ',%')
+                WHERE dci.dc_number = inv.dc_number
             ) as total_dispatched_quantity,
             (
                 SELECT COALESCE(SUM(si.received_qty), 0)
                 FROM srv_items si
                 JOIN srvs s ON si.srv_number = s.srv_number
                 WHERE s.is_active = 1 
-                  AND CAST(si.invoice_no AS TEXT) = CAST(inv.invoice_number AS TEXT)
+                  AND CAST(s.invoice_number AS TEXT) = CAST(inv.invoice_number AS TEXT)
             ) as total_received_quantity
         FROM gst_invoices inv
         LEFT JOIN gst_invoice_items inv_item ON inv.invoice_number = inv_item.invoice_number
@@ -156,11 +155,11 @@ def list_invoices(
         params.append(f"%{po}%")
 
     if dc:
-        query += " AND inv.linked_dc_numbers LIKE ?"
-        params.append(f"%{dc}%")
+        query += " AND inv.dc_number = ?"
+        params.append(dc)
 
-    query += " GROUP BY inv.invoice_number, inv.invoice_date, inv.po_numbers, inv.linked_dc_numbers,"
-    query += " inv.customer_gstin, inv.taxable_value, inv.total_invoice_value, inv.created_at"
+    query += " GROUP BY inv.invoice_number, inv.invoice_date, inv.po_numbers, inv.dc_number,"
+    query += " inv.buyer_gstin, inv.taxable_value, inv.total_invoice_value, inv.created_at"
     query += " ORDER BY inv.created_at DESC"
     
     rows = db.execute(query, tuple(params)).fetchall()
@@ -228,7 +227,7 @@ def get_invoice_detail(invoice_number: str, db: sqlite3.Connection = Depends(get
         header_dict = dict(invoice_row)
         header_dict["buyers_order_no"] = header_dict.get("po_numbers")
         header_dict["buyers_order_date"] = header_dict.get("po_date")
-        header_dict["dc_number"] = header_dict.get("linked_dc_numbers")
+        header_dict["dc_number"] = header_dict.get("dc_number")
 
         # Calculate live status based on aggregates
         agg = db.execute("""
@@ -237,15 +236,14 @@ def get_invoice_detail(invoice_number: str, db: sqlite3.Connection = Depends(get
                 (
                     SELECT COALESCE(SUM(dci.dispatch_qty), 0)
                     FROM delivery_challan_items dci
-                    JOIN delivery_challans dc ON dci.dc_number = dc.dc_number
-                    WHERE (',' || i2.linked_dc_numbers || ',') LIKE ('%,' || dc.dc_number || ',%')
+                    WHERE dci.dc_number = i2.dc_number
                 ) as total_del,
                 (
                     SELECT COALESCE(SUM(si.received_qty), 0)
                     FROM srv_items si
                     JOIN srvs s ON si.srv_number = s.srv_number
                     WHERE s.is_active = 1 
-                      AND CAST(si.invoice_no AS TEXT) = CAST(i2.invoice_number AS TEXT)
+                      AND CAST(s.invoice_number AS TEXT) = CAST(i2.invoice_number AS TEXT)
                 ) as total_recd
             FROM gst_invoice_items inv_item
             JOIN gst_invoices i2 ON inv_item.invoice_number = i2.invoice_number

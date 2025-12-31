@@ -16,7 +16,9 @@ export {
     Label,
     SmallText,
     MonoCode,
+    Mono,
     Accounting,
+    TableText,
 } from "./atoms/Typography";
 export { Card } from "./atoms/Card";
 export type { CardProps } from "./atoms/Card";
@@ -75,7 +77,6 @@ export { PONotesSkeleton } from "./organisms/PONotesSkeleton";
 export { PONotePageActions } from "./organisms/PONotePageActions";
 export { GlobalCommandPalette } from "./organisms/GlobalCommandPalette";
 export { SearchTrigger } from "./molecules/SearchTrigger";
-export { POBatchUpload } from "./organisms/POBatchUpload";
 export { StatusBadge } from "./organisms/StatusBadge";
 export { EmptyState } from "./molecules/EmptyState";
 export { RevenueMomentum } from "./organisms/RevenueMomentum";

@@ -6,6 +6,7 @@ Validates and inserts SRV data into the database.
 import sqlite3
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
+from app.core.number_utils import to_float, to_int, to_qty
 
 from app.services.srv_scraper import scrape_srv_html
 
@@ -56,9 +57,9 @@ def validate_srv_data(srv_data: Dict, db: sqlite3.Connection) -> Tuple[bool, str
     # Validate each item
     for idx, item in enumerate(items):
         # Validate quantities (always, regardless of PO existence)
-        received_qty = item.get("received_qty", 0)
-        rejected_qty = item.get("rejected_qty", 0)
-        accepted_qty = item.get("accepted_qty", 0)
+        received_qty = to_qty(item.get("received_qty", 0))
+        rejected_qty = to_qty(item.get("rejected_qty", 0))
+        accepted_qty = to_qty(item.get("accepted_qty", 0))
 
         if received_qty < 0:
             return (
@@ -82,7 +83,7 @@ def validate_srv_data(srv_data: Dict, db: sqlite3.Connection) -> Tuple[bool, str
             )
 
         # Enforce accounting invariant: Received = Accepted + Rejected
-        # Allow small tolerance for floating point precision (0.001)
+        # Using 0.001 tolerance for fractional quantities
         calculated_accepted = received_qty - rejected_qty
         if accepted_qty > 0 and abs(accepted_qty - calculated_accepted) > 0.001:
             return (
@@ -163,16 +164,14 @@ def ingest_srv_to_db(
         # 1. Insert NEW SRV header (Soft Delete logic removed as duplicates are rejected)
         db.execute(
             """
-            INSERT INTO srvs (srv_number, srv_date, po_number, srv_status, po_found, file_hash, is_active, created_at, updated_at)
-            VALUES (:srv_number, :srv_date, :po_number, :srv_status, :po_found, :file_hash, 1, :created_at, :updated_at)
+            INSERT INTO srvs (srv_number, srv_date, po_number, invoice_number, is_active, created_at, updated_at)
+            VALUES (:srv_number, :srv_date, :po_number, :invoice_number, 1, :created_at, :updated_at)
         """,
             {
                 "srv_number": header["srv_number"],
                 "srv_date": header["srv_date"],
                 "po_number": header["po_number"],
-                "srv_status": "Received",
-                "po_found": 1 if po_found else 0,
-                "file_hash": header.get("file_hash"),
+                "invoice_number": items[0].get("invoice_no") if items and items[0].get("invoice_no") else None,
                 "created_at": datetime.now().isoformat(),
                 "updated_at": datetime.now().isoformat(),
             },
@@ -181,9 +180,9 @@ def ingest_srv_to_db(
         # 2. Insert SRV items
         for item in items:
             # Enforce accounting invariant: Received = Accepted + Rejected
-            received_qty = item.get("received_qty", 0)
-            rejected_qty = item.get("rejected_qty", 0)
-            accepted_qty = item.get("accepted_qty", 0)
+            received_qty = to_qty(item.get("received_qty", 0))
+            rejected_qty = to_qty(item.get("rejected_qty", 0))
+            accepted_qty = to_qty(item.get("accepted_qty", 0))
 
             if accepted_qty == 0 and received_qty > 0:
                 accepted_qty = max(0, received_qty - rejected_qty)
@@ -192,14 +191,10 @@ def ingest_srv_to_db(
                 """
                 INSERT INTO srv_items 
                 (srv_number, po_number, po_item_no, lot_no, received_qty, rejected_qty, 
-                 challan_no, invoice_no, remarks, created_at,
-                 invoice_date, challan_date, order_qty, challan_qty, accepted_qty, unit,
-                 div_code, pmir_no, finance_date, cnote_no, cnote_date)
+                 challan_no, created_at)
                 VALUES 
                 (:srv_number, :po_number, :po_item_no, :lot_no, :received_qty, :rejected_qty,
-                 :challan_no, :invoice_no, :remarks, :created_at,
-                 :invoice_date, :challan_date, :order_qty, :challan_qty, :accepted_qty, :unit,
-                 :div_code, :pmir_no, :finance_date, :cnote_no, :cnote_date)
+                 :challan_no, :created_at)
             """,
                 {
                     "srv_number": header["srv_number"],
@@ -209,20 +204,7 @@ def ingest_srv_to_db(
                     "received_qty": received_qty,
                     "rejected_qty": rejected_qty,
                     "challan_no": item.get("challan_no"),
-                    "invoice_no": item.get("invoice_no"),
-                    "remarks": item.get("remarks"),
                     "created_at": datetime.now().isoformat(),
-                    "invoice_date": item.get("invoice_date"),
-                    "challan_date": item.get("challan_date"),
-                    "order_qty": item.get("order_qty", 0),
-                    "challan_qty": item.get("challan_qty", 0),
-                    "accepted_qty": accepted_qty,
-                    "unit": item.get("unit"),
-                    "div_code": item.get("div_code"),
-                    "pmir_no": item.get("pmir_no"),
-                    "finance_date": item.get("finance_date"),
-                    "cnote_no": item.get("cnote_no"),
-                    "cnote_date": item.get("cnote_date"),
                 },
             )
 
@@ -288,8 +270,8 @@ def process_srv_file(
     contents: bytes,
     filename: str,
     db: sqlite3.Connection,
-    po_from_filename: Optional[int] = None,
-) -> Tuple[bool, List[str]]:
+    po_from_filename: Optional[str] = None,
+) -> Tuple[bool, List[str], int, int]:
     """
     Process an uploaded SRV HTML file.
     Parses content, validates against DB, and ingests if valid.
@@ -304,7 +286,7 @@ def process_srv_file(
         srv_list = scrape_srv_html(html_content)
 
         if not srv_list:
-            return False, ["No valid SRVs found in file"]
+            return False, ["No valid SRVs found in file"], 0, 0
 
         results = []
         for srv_data in srv_list:
@@ -389,10 +371,12 @@ def process_srv_file(
             else:
                 all_messages.append(f"{prefix}Failed: {r['error']}")
 
+        failed_count = sum(1 for r in results if not r["success"])
+
         if success_count > 0:
-            return True, all_messages
+            return True, all_messages, success_count, failed_count
         else:
-            return False, all_messages
+            return False, all_messages, 0, failed_count
 
     except Exception as e:
         print(f"Error processing SRV file {filename}: {e}")

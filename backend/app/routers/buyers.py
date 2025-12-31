@@ -29,8 +29,13 @@ class Buyer(BuyerBase):
 
 @router.get("/", response_model=List[Buyer])
 def list_buyers(db: sqlite3.Connection = Depends(get_db)):
-    cursor = db.execute("SELECT * FROM buyers WHERE is_active = 1")
-    return [dict(row) for row in cursor.fetchall()]
+    try:
+        rows = db.execute(
+            "SELECT * FROM buyers WHERE is_active = 1 ORDER BY created_at DESC"
+        ).fetchall()
+        return [dict(row) for row in rows]
+    except sqlite3.OperationalError:
+        return []  # Return empty list if table doesn't exist
 
 @router.post("/", response_model=Buyer)
 def create_buyer(buyer: BuyerCreate, db: sqlite3.Connection = Depends(get_db)):

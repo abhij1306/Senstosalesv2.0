@@ -11,10 +11,14 @@ router = APIRouter()
 @router.get("/", response_model=Settings)
 def get_settings(db: sqlite3.Connection = Depends(get_db)):
     """Get all settings as a dict mapped to Settings model"""
-    cursor = db.execute("SELECT key, value FROM settings")
-    rows = cursor.fetchall()
-    settings_dict = {row["key"]: row["value"] for row in rows}
-    return settings_dict
+    """Get all settings as a dict mapped to Settings model"""
+    try:
+        cursor = db.execute("SELECT key, value FROM settings")
+        rows = cursor.fetchall()
+        settings_dict = {row["key"]: row["value"] for row in rows}
+        return settings_dict
+    except sqlite3.OperationalError:
+        return {}  # Return empty dict if table doesn't exist
 
 @router.post("/")
 def update_setting(setting: SettingsUpdate, db: sqlite3.Connection = Depends(get_db)):

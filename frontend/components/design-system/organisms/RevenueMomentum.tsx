@@ -114,26 +114,17 @@ export function RevenueMomentum({ data, loading }: RevenueMomentumProps) {
                             animationDuration={1500}
                         >
                             {data.map((entry, index) => {
-                                // Create gradient effect from blue to purple
-                                const progress = index / Math.max(data.length - 1, 1);
                                 const isLast = index === data.length - 1;
 
-                                // Define vibrant gradient colors
-                                const colors = [
-                                    'hsl(220, 90%, 60%)',  // Bright blue
-                                    'hsl(250, 85%, 65%)',  // Blue-purple
-                                    'hsl(280, 80%, 65%)',  // Purple
-                                    'hsl(290, 85%, 60%)',  // Deep purple
-                                ];
-
-                                const colorIndex = Math.floor(progress * (colors.length - 1));
-                                const color = isLast ? 'hsl(280, 90%, 65%)' : colors[colorIndex];
+                                // Use CSS variable for blue color
+                                const color = 'var(--color-sys-brand-primary)';
+                                const opacity = isLast ? 1 : 0.7 + (index / Math.max(data.length - 1, 1)) * 0.3;
 
                                 return (
                                     <Cell
                                         key={`cell-${index}`}
                                         fill={color}
-                                        fillOpacity={isLast ? 1 : 0.85}
+                                        fillOpacity={opacity}
                                     />
                                 );
                             })}

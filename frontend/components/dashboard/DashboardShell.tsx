@@ -189,14 +189,7 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
                     <H1 className="text-app-fg">DASHBOARD</H1>
                     <Body className="text-app-fg-muted">Business intelligence overview</Body>
                 </Stack>
-                <Flex align="center" gap={3}>
-                    <Button variant="secondary" onClick={handleAnalytics}>
-                        Analytics
-                    </Button>
-                    <Button variant="primary" onClick={handleNewPO}>
-                        New Purchase Order
-                    </Button>
-                </Flex>
+
             </Flex>
 
             <Box className="min-h-[140px]">

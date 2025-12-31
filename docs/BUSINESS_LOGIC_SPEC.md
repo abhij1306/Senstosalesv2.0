@@ -22,32 +22,31 @@ The lifecycle represents the "Order-to-Cash" process from the Supplier's perspec
 
 ### 1.3 Completion Criteria
 A Purchase Order is considered **CLOSED** (Complete) only when:
-> `Total Received Quantity (SRV) == Total Ordered Quantity (PO)`
+> `Total Received Quantity (SRV) >= Total Ordered Quantity (PO) - 0.001`
+
+**High-Water Mark (DLV)**: The system enforces that the high-water mark of fulfillment is at least the maximum of shipments (DC) or receipts (SRV).
 
 ---
 
-## 2. BUSINESS GLOSSARY
-
 | Term | Definition | Source of Truth |
 | :--- | :--- | :--- |
-| **PO (Purchase Order)** | Buyer's contract to purchase goods. Contains Items and Delivery Schedules. | `purchase_orders` |
-| **DC (Delivery Challan)** | Supplier's proof of shipment. Deducts inventory from the PO. | `delivery_challans` |
-| **Invoice (GST Invoice)** | Supplier's bill for payment. Determines Tax liability. | `gst_invoices` |
-| **SRV (Store Receipt Voucher)** | Buyer's proof of acceptance. Updates "Received" status. | `srvs` |
-| **Ordered Qty (ORD)** | Total quantity requested in the PO. | `purchase_order_items.ord_qty` |
-| **Dispatched Qty (DSP)** | Quantity shipped via DCs. | `SUM(dispatch_qty)` |
-| **Received Qty (RECD)** | Quantity acknowledged by customer (SRV). | `SUM(received_qty)` |
-| **Delivered Qty (DLV)** | The "High Water Mark" of fulfillment. `MAX(DSP, RECD)`. | `purchase_order_items.delivered_qty` |
-| **Balance (BAL)** | Quantity remaining to be fulfilled. `ORD - DLV`. | Calculated |
+| **PO (Purchase Order)** | Buyer's contract. Supports Alphanumeric IDs. | `purchase_orders` |
+| **DC (Delivery Challan)** | Shipment proof. Linked 1:1 with Invoice. | `delivery_challans` |
+| **Invoice (GST Invoice)** | Tax bill. Linked 1:1 with DC. | `gst_invoices` |
+| **Ordered Qty (ORD)** | Total quantity (supports 3 decimal places). | `purchase_order_items.ord_qty` |
+| **Dispatched Qty (DSP)** | Quantity shipped via DCs (3 decimals). | `SUM(dispatch_qty)` |
+| **Received Qty (RECD)** | Quantity acknowledged by customer (3 decimals). | `SUM(received_qty)` |
+| **Delivered Qty (DLV)** | High Water Mark. `MAX(DSP, RECD) + Tolerance`. | `purchase_order_items.delivered_qty` |
+| **Balance (BAL)** | Remaining quantity. `ORD - DLV`. | Calculated (Decimal) |
 
 ---
 
 ## 3. SYSTEM FEATURES
 
 ### 3.1 Multi-Buyer Management
-The system is architected to handle multiple distinct Buyers simultaneously.
-- **Buyer Segregation**: POs are grouped by `Department No` (DVN) and `Supplier Code`.
-- **Financial Year Tracking**: All documents (Invoices, DCs) are scoped to a Financial Year (e.g., FY24-25) to prevent collision.
+The system is architected to handle multiple distinct Buyers (Units) simultaneously.
+- **Buyer Precision**: Unique linkage is established via `Department No` (DVN) and `Supplier Code`.
+- **Financial Year Tracking**: All documents (Invoices, DCs) are scoped to a Financial Year (FY) to prevent number collision across cycles.
 
 ### 3.2 Taxation & Financials
 - **GST Compliance**:
@@ -59,8 +58,14 @@ The system is architected to handle multiple distinct Buyers simultaneously.
 
 ### 3.3 Data Ingestion Features
 - **Batch Upload**: Processing of multiple HTML PO files in parallel.
-- **Smart Scraper**: Auto-extraction of tables, merged rows, and nested delivery schedules from BHEL-format HTMLs.
-- **Amendment Handling**: Auto-detection of PO Amendments via `Amnt No`. Updates existing records while preserving delivery history.
+- **Smart Scraper**: Auto-extraction of tables, merged rows, and nested delivery schedules.
+- **Amendment Handling (V6.0)**: Detects `Amnt No` revisions.
+    - **Soft Cancellation**: Items missing in the latest amendment file are marked `status = 'Cancelled'`.
+    - **Pending Protection**: Cancelled items have their `pending_qty` forced to `0` regardless of previous fulfillment.
+    - **Item Preservation**: Existing delivery/receipt history for matching items is preserved and reconciled during refresh.
+- **TOT-2 (Reconciliation)**: `delivered_qty` is calculated as `MAX(total_dispatched_via_dc, total_received_via_srv)`.
+- **TOT-5 (Reconciliation Sync)**: `ReconciliationService.sync_po()` is the atomic authority on quantity state.
+- **Precision (P-01)**: All quantities processed with 15,3 decimal precision and 0.001 tolerance.
 
 ---
 
@@ -88,8 +93,9 @@ The system extracts and stores the following fields from every Purchase Order:
 | **Material Code** | Buyer's internal code for the product. |
 | **Description** | Full product specification. |
 | **Unit** | UOM (No, Set, Mtr). |
-| **Quantities** | Ordered Qty, Received Qty, Delivered Qty. |
-| **Rates** | PO Rate (Unit Price), Item Value. |
+| **Quantities** | Ordered Qty, Received Qty, Delivered Qty (3 Decimals). |
+| **Rates** | PO Rate (Unit Price), Item Value (2 Decimals). |
+| **Status** | Active/Cancelled (Audit trail). |
 | **Category** | Material Category Code. |
 | **Delivery Schedule** | Lot No, Delivery Date, Delivery Qty, Destination Code. |
 
@@ -114,9 +120,10 @@ The system extracts and stores the following fields from every Purchase Order:
 - **SRV-2 (High Water Mark)**: `Delivered Qty = MAX(Total Dispatched, Total Received)`.
 
 ### 5.4 Invoice (INV)
-- **INV-1 (Uniqueness)**: `invoice_number` + `financial_year` must be unique.
+- **INV-1 (Uniqueness)**: Unique primary key is `(invoice_number, financial_year)`.
 - **INV-2 (Server Tax)**: Taxes (CGST/SGST/IGST) are calculated **Server-Side Only**.
-- **INV-3 (Total)**: `Grand Total = Sum(Line Items) + Taxes`. Round to 2 decimals.
+- **INV-3 (Total)**: `Grand Total = Sum(Line Items) + Taxes`. Rounded to 2 decimals.
+- **INV-4 (DC Link)**: Strictly enforced 1:1 relationship with a Delivery Challan.
 
 ---
 
@@ -135,7 +142,7 @@ All quantity updates MUST go through the **Reconciliation Service**. Ad-hoc `UPD
 
 2.  **Receipt Sync (TOT-3)**:
     `purchase_order_items.rcd_qty` refers to customer acceptance.
-    It is updated solely by SRV ingestion.
+    It is updated solely by SRV ingestion and MUST include `rejected_qty` tracking.
     Formula: `Sum(SRV Received)`
 
 ---
@@ -144,7 +151,10 @@ All quantity updates MUST go through the **Reconciliation Service**. Ad-hoc `UPD
 
 ### 7.1 Global Variables
 - **Time**: All timestamps stored in **UTC/ISO-8601**.
-- **Money**: Stored and calculated as **Float/Decimal** with **2 decimal precision**.
+- **Quantities**: Stored as **DECIMAL(15,3)** to support fractional units.
+- **Money**: Stored and calculated as **DECIMAL(15,2)**.
+- **Tolerance**: A global **0.001** tolerance applied to all inventory equality checks.
+- **Audit Trail**: Every business entity (`PO`, `Buyer`, `Invoice`, `SRV`) has a `updated_at` trigger.
 
 ### 7.2 Status Calculation (Algorithm)
 | Condition | Status | Color |

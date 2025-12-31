@@ -72,7 +72,7 @@ def validate_dc_items(
                 details={"item_index": idx},
             )
 
-        dispatch_qty = float(item["dispatch_qty"])
+        dispatch_qty = to_qty(item["dispatch_qty"])
         if dispatch_qty <= 0:
             raise ValidationError(
                 f"Item {idx + 1}: Dispatch quantity must be positive",
@@ -166,7 +166,7 @@ def validate_dc_items(
             # Allow small float tolerance if needed
             remaining_global = global_ordered - global_delivered
 
-            if dispatch_qty > remaining_global + 0.001:  # Simple float tolerance
+            if dispatch_qty > remaining_global + 0.001:
                 raise BusinessRuleViolation(
                     f"Item {idx + 1}: Over-dispatch error. Total Ordered: {global_ordered}, "
                     f"Already Delivered: {global_delivered}, Remaining: {remaining_global}. "
@@ -209,6 +209,7 @@ def create_dc(
     """
     try:
         from app.core.utils import get_financial_year
+        from app.core.number_utils import to_float, to_int, to_qty
 
         fy = get_financial_year(dc.dc_date)
 
@@ -274,7 +275,7 @@ def create_dc(
             item_id = str(uuid.uuid4())
             po_item_id = item["po_item_id"]
             lot_no = item.get("lot_no")
-            dispatch_qty = float(item["dispatch_qty"])
+            dispatch_qty = to_qty(item["dispatch_qty"])
 
             # We use a single INSERT ... SELECT statement to ensure atomicity.
             # The WHERE clause enforces that (Ordered - AlreadyDispatched) >= CurrentDispatch
@@ -303,7 +304,7 @@ def create_dc(
                             FROM delivery_challan_items
                             WHERE po_item_id = ? AND lot_no = COALESCE(?, 1)
                         )
-                    ) >= ? - 0.001 -- Tolerance for float arithmetic
+                    ) >= ? - 0.001
                 )
                 """,
                 (
@@ -439,7 +440,7 @@ def update_dc(
             item_id = str(uuid.uuid4())
             po_item_id = item["po_item_id"]
             lot_no = item.get("lot_no")
-            dispatch_qty = float(item["dispatch_qty"])
+            dispatch_qty = to_qty(item["dispatch_qty"])
             hsn_code = item.get("hsn_code")
             hsn_rate = item.get("hsn_rate")
 

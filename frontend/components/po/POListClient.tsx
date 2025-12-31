@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { POListItem, POStats } from "@/lib/api";
@@ -125,8 +125,18 @@ export function POListClient({ initialPOs, initialStats }: POListClientProps) {
     const [pageSize] = useState(10);
 
     // Global Upload Hook
-    const { startUpload } = useUpload();
+    const { startUpload, isUploading } = useUpload();
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Refresh data when upload completes
+    const prevUploading = useRef(false);
+
+    useEffect(() => {
+        if (prevUploading.current && !isUploading) {
+            router.refresh();
+        }
+        prevUploading.current = isUploading;
+    }, [isUploading, router]);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);

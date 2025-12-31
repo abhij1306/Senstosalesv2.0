@@ -30,6 +30,7 @@ export interface DataTableProps<T = any> {
     onPageChange?: (page: number) => void;
     renderSubRow?: (row: T) => React.ReactNode;
     onRowExpand?: (row: T, isExpanded: boolean) => void;
+    onRowClick?: (row: T) => void;
     density?: "compact" | "normal";
     sortKey?: string;
     sortDirection?: "asc" | "desc";
@@ -75,6 +76,7 @@ const DataTableComponent = <T extends Record<string, any>>({
     table_surface_solid = true,
     renderSubRow,
     onRowExpand,
+    onRowClick,
     density = "normal",
 }: DataTableProps<T>): React.ReactNode => {
     const [internalSort, setInternalSort] = useState<{
@@ -242,12 +244,24 @@ const DataTableComponent = <T extends Record<string, any>>({
                                 const isExpanded = expandedRows.includes(rowKey);
                                 return (
                                     <React.Fragment key={rowKey}>
-                                        <tr className={cn(
-                                            "group border-none transition-all duration-200 relative",
-                                            processedData.indexOf(row) % 2 === 0 ? "table-row-even" : "table-row-odd",
-                                            isSelected && "bg-app-accent/5",
-                                            isExpanded && "bg-app-accent/10"
-                                        )} >
+                                        <tr
+                                            onClick={(e) => {
+                                                if (onRowClick && !selectable && !renderSubRow) {
+                                                    // Prevent row click if clicking checkbox or expansion
+                                                    // This is a naive check.
+                                                }
+                                                if (onRowClick) {
+                                                    // Check if notification or specific ignored elements were clicked if needed
+                                                    onRowClick(row);
+                                                }
+                                            }}
+                                            className={cn(
+                                                "group border-none transition-all duration-200 relative",
+                                                processedData.indexOf(row) % 2 === 0 ? "table-row-even" : "table-row-odd",
+                                                isSelected && "bg-app-accent/5",
+                                                isExpanded && "bg-app-accent/10",
+                                                onRowClick && "cursor-pointer hover:bg-app-accent/5"
+                                            )} >
                                             {renderSubRow && (
                                                 <td className="w-10 px-0 pl-3">
                                                     <Button

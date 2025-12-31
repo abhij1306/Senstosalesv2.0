@@ -87,14 +87,15 @@ def scrape_srv_html(html_content: str) -> List[Dict]:
                     po_number_raw = get_cell_val(
                         ["PO NO", "PURCHASE ORDER", "PO_NO", "PO NUMBER"]
                     )
-                    po_number = str(parse_int(po_number_raw)) if po_number_raw else None
+                    # Keep as TEXT - do NOT convert to int (database schema changed to TEXT)
+                    po_number = str(po_number_raw) if po_number_raw else None
                     srv_date = parse_date(get_cell_val(["SRV DATE", "DATE"]))
 
                     srv_groups[srv_number] = {
                         "header": {
-                            "srv_number": srv_number,
+                            "srv_number": srv_number,  # Already TEXT
                             "srv_date": srv_date,
-                            "po_number": po_number,
+                            "po_number": po_number,  # TEXT
                             "srv_status": "Received",
                             "po_found": True,  # Default, updated in ingestion
                         },

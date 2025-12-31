@@ -55,16 +55,13 @@ async def upload_batch_srvs(
                 po_match = re.search(r"^(\d+)", file.filename)
 
             if po_match:
-                # Normalize to integer string to remove leading zeros (matches srv_scraper behavior)
-                try:
-                    po_from_filename = str(int(po_match.group(1)))
-                except ValueError:
-                    po_from_filename = po_match.group(1)
+                # Keep as raw string to preserve leading zeros
+                po_from_filename = po_match.group(1)
             else:
                 po_from_filename = None
 
             content = await file.read()
-            success, messages = process_srv_file(
+            success, messages, s_count, f_count = process_srv_file(
                 content, file.filename, db, po_from_filename
             )
 
@@ -74,6 +71,8 @@ async def upload_batch_srvs(
                     "success": success,
                     "message": "; ".join(messages),
                     "messages": messages,
+                    "successful": s_count,
+                    "failed": f_count
                 }
             )
 
@@ -88,8 +87,8 @@ async def upload_batch_srvs(
 
     return {
         "total": len(files),
-        "successful": sum(1 for r in results if r["success"]),
-        "failed": sum(1 for r in results if not r["success"]),
+        "successful": sum(r.get("successful", 0) for r in results),
+        "failed": sum(r.get("failed", 0) for r in results),
         "results": results,
     }
 
@@ -109,17 +108,18 @@ def get_srv_list(
             s.srv_number,
             s.srv_date,
             s.po_number,
-            COALESCE(s.po_found, 1) as po_found,
+            CASE WHEN po.po_number IS NOT NULL THEN 1 ELSE 0 END as po_found,
             COALESCE(SUM(si.received_qty), 0) as total_received_qty,
             COALESCE(SUM(si.rejected_qty), 0) as total_rejected_qty,
-            COALESCE(SUM(si.order_qty), 0) as total_order_qty,
-            COALESCE(SUM(si.challan_qty), 0) as total_challan_qty,
-            COALESCE(SUM(si.accepted_qty), 0) as total_accepted_qty,
+            0 as total_order_qty,
+            0 as total_challan_qty,
+            (COALESCE(SUM(si.received_qty), 0) - COALESCE(SUM(si.rejected_qty), 0)) as total_accepted_qty,
             GROUP_CONCAT(DISTINCT si.challan_no) as challan_numbers,
-            GROUP_CONCAT(DISTINCT si.invoice_no) as invoice_numbers,
+            '' as invoice_numbers,
             s.created_at
         FROM srvs s
         LEFT JOIN srv_items si ON s.srv_number = si.srv_number
+        LEFT JOIN purchase_orders po ON s.po_number = po.po_number
     """
 
     params = {}
@@ -128,7 +128,7 @@ def get_srv_list(
         params["po_number"] = po_number
 
     query += """
-        GROUP BY s.srv_number, s.srv_date, s.po_number, s.po_found, s.created_at
+        GROUP BY s.srv_number, s.srv_date, s.po_number, s.created_at
         ORDER BY s.srv_date DESC, s.srv_number DESC
         LIMIT :limit OFFSET :skip
     """
@@ -176,9 +176,10 @@ def get_srv_stats(db: sqlite3.Connection = Depends(get_db)):
             COUNT(DISTINCT s.srv_number) as total_srvs,
             COALESCE(SUM(si.received_qty), 0) as total_received,
             COALESCE(SUM(si.rejected_qty), 0) as total_rejected,
-            COUNT(DISTINCT CASE WHEN s.po_found = 0 THEN s.srv_number END) as missing_po_count
+            COUNT(DISTINCT CASE WHEN po.po_number IS NULL THEN s.srv_number END) as missing_po_count
         FROM srvs s
         LEFT JOIN srv_items si ON s.srv_number = si.srv_number
+        LEFT JOIN purchase_orders po ON s.po_number = po.po_number
     """).fetchone()
 
     total_received = float(result["total_received"] or 0)
@@ -215,10 +216,7 @@ def get_srv_detail(srv_number: str, db: sqlite3.Connection = Depends(get_db)):
         """
             SELECT 
                 id, po_item_no, lot_no, received_qty, rejected_qty,
-                challan_no, invoice_no, remarks,
-                order_qty, challan_qty, accepted_qty, unit,
-                challan_date, invoice_date, div_code, pmir_no,
-                finance_date, cnote_no, cnote_date
+                challan_no
             FROM srv_items
             WHERE srv_number = ?
             ORDER BY po_item_no, lot_no
@@ -244,18 +242,18 @@ def get_srvs_for_po(po_number: str, db: sqlite3.Connection = Depends(get_db)):
     result = db.execute(
         """
             SELECT 
-                s.srv_number, s.srv_date, s.po_number, s.srv_status, s.created_at, s.po_found,
+                s.srv_number, s.srv_date, s.po_number, 'Received' as srv_status, s.created_at, 1 as po_found,
                 COALESCE(SUM(si.received_qty), 0) as total_received_qty,
                 COALESCE(SUM(si.rejected_qty), 0) as total_rejected_qty,
-                COALESCE(SUM(si.order_qty), 0) as total_order_qty,
-                COALESCE(SUM(si.challan_qty), 0) as total_challan_qty,
-                COALESCE(SUM(si.accepted_qty), 0) as total_accepted_qty,
+                0 as total_order_qty,
+                0 as total_challan_qty,
+                (COALESCE(SUM(si.received_qty), 0) - COALESCE(SUM(si.rejected_qty), 0)) as total_accepted_qty,
                 GROUP_CONCAT(DISTINCT si.challan_no) as challan_numbers,
-                GROUP_CONCAT(DISTINCT si.invoice_no) as invoice_numbers
+                '' as invoice_numbers
             FROM srvs s
             LEFT JOIN srv_items si ON s.srv_number = si.srv_number
             WHERE s.po_number = ?
-            GROUP BY s.srv_number
+            GROUP BY s.srv_number, s.srv_date, s.po_number, s.created_at
             ORDER BY s.srv_date DESC
         """,
         (po_number,),

@@ -9,7 +9,7 @@ import sqlite3
 from typing import List
 
 from app.db import get_db
-from app.errors import not_found
+from app.core.exceptions import ResourceNotFoundError
 from app.models import PODetail, POHeader, POItem, POListItem, POStats
 from app.services.status_service import calculate_entity_status, calculate_pending_quantity
 
@@ -60,7 +60,7 @@ class POService:
         Calculates ordered, dispatched, and pending quantities.
         """
         rows = db.execute("""
-            SELECT po_number, po_date, supplier_name, po_value, amend_no, po_status, created_at
+            SELECT po_number, po_date, supplier_name, po_value, amend_no, po_status, financial_year, created_at
             FROM purchase_orders
             ORDER BY created_at DESC
         """).fetchall()
@@ -124,7 +124,9 @@ class POService:
 
             # Calculate Total pending (Derived)
             # Rule: BAL = ORD - DLV (Global Invariant BAL-1)
-            total_pending = calculate_pending_quantity(total_ordered, total_dispatched)
+            # DLV is High Water Mark: MAX(DISP, RECD)
+            total_delivered_hwm = max(total_dispatched, total_received)
+            total_pending = calculate_pending_quantity(total_ordered, total_delivered_hwm)
 
             # Determine Status using centralized service
             status = calculate_entity_status(total_ordered, total_dispatched, total_received)
@@ -147,27 +149,31 @@ class POService:
                     total_pending_quantity=total_pending,
                     total_items_count=total_items,
                     drg_no=db.execute("SELECT drg_no FROM purchase_order_items WHERE po_number = ? LIMIT 1", (po_num,)).fetchone()[0] if total_items > 0 else None,
+                    financial_year=row["financial_year"],
                     created_at=row["created_at"],
                 )
             )
 
         return results
 
-    def get_po_detail(self, db: sqlite3.Connection, po_number: int) -> PODetail:
+    def get_po_detail(self, db: sqlite3.Connection, po_number: str) -> PODetail:
         """
         Get full Purchase Order detail with items and delivery schedules.
         Includes SRV aggregated received/rejected quantities.
         """
-        # Get header
-        header_row = db.execute(
-            """
-            SELECT * FROM purchase_orders WHERE po_number = ?
-        """,
-            (po_number,),
-        ).fetchone()
+        try:
+            header_row = db.execute(
+                """
+                SELECT * FROM purchase_orders WHERE po_number = ?
+            """,
+                (po_number,),
+            ).fetchone()
+        except Exception as e:
+            print(f"ERROR: Failed to fetch PO header for {po_number}: {e}")
+            raise e
 
         if not header_row:
-            raise not_found(f"Purchase Order {po_number} not found", "PO")
+            raise ResourceNotFoundError("PO", po_number)
 
         header_dict = dict(header_row)
 
@@ -181,11 +187,7 @@ class POService:
             WHERE poi.po_number = ?
         """, (po_number, po_number, po_number)).fetchone()
 
-        t_ord = agg["total_ord"] or 0
-        t_del = agg["total_del"] or 0
-        t_recd = agg["total_recd"] or 0
-
-        if agg:
+        if agg and agg["total_ord"] is not None:
             t_ord = agg["total_ord"] or 0
             t_del = agg["total_del"] or 0
             t_recd = agg["total_recd"] or 0
@@ -207,7 +209,7 @@ class POService:
             """
             SELECT id, po_item_no, material_code, material_description, drg_no, mtrl_cat,
                    unit, po_rate, ord_qty as ordered_quantity, rcd_qty as received_quantity, 
-                   item_value, hsn_code
+                   hsn_code
             FROM purchase_order_items
             WHERE po_number = ?
             ORDER BY po_item_no
@@ -215,61 +217,61 @@ class POService:
             (po_number,),
         ).fetchall()
 
-        # For each item, get deliveries and SRV data
+        # 1. Batch fetch all deliveries for all items of this PO
+        item_ids = [r["id"] for r in item_rows]
+        placeholders = ",".join(["?"] * len(item_ids))
+        all_deliveries = []
+        if item_ids:
+            all_deliveries = db.execute(
+                f"SELECT id, po_item_id, lot_no, dely_qty as delivered_quantity, dely_date FROM purchase_order_deliveries WHERE po_item_id IN ({placeholders}) ORDER BY lot_no",
+                item_ids
+            ).fetchall()
+        
+        # 2. Batch fetch all dispatched quantities
+        all_dispatched = []
+        if item_ids:
+            all_dispatched = db.execute(
+                f"SELECT po_item_id, COALESCE(SUM(dispatch_qty), 0) FROM delivery_challan_items WHERE po_item_id IN ({placeholders}) GROUP BY po_item_id",
+                item_ids
+            ).fetchall()
+        dispatched_map = {r[0]: r[1] for r in all_dispatched}
+
+        # 3. Batch fetch all SRV data
+        all_srvs = db.execute(
+            "SELECT po_item_no, COALESCE(SUM(received_qty), 0), COALESCE(SUM(rejected_qty), 0) FROM srv_items WHERE po_number = ? GROUP BY po_item_no",
+            (po_number,)
+        ).fetchall()
+        srv_map = {r[0]: (r[1], r[2]) for r in all_srvs}
+
+        # For each item, map pre-fetched data
         items_with_deliveries = []
         for item_row in item_rows:
             item_dict = dict(item_row)
             item_id = item_dict["id"]
             po_item_no = item_dict["po_item_no"]
 
-            # Get deliveries for this item
-            delivery_rows = db.execute(
-                """
-                SELECT id, lot_no, dely_qty as delivered_quantity, dely_date, entry_allow_date, dest_code
-                FROM purchase_order_deliveries
-                WHERE po_item_id = ?
-                ORDER BY lot_no
-            """,
-                (item_id,),
-            ).fetchall()
+            # Map deliveries
+            item_deliveries = [dict(d) for d in all_deliveries if d["po_item_id"] == item_id]
+            
+            # Map dispatched
+            item_dispatched = dispatched_map.get(item_id, 0.0)
 
-            deliveries = [dict(d) for d in delivery_rows]
+            # Map SRV
+            srv_received, srv_rejected = srv_map.get(po_item_no, (0.0, 0.0))
 
-            # Calculate per-item dispatched quantity
-            dispatched_res = db.execute(
-                """
-                SELECT COALESCE(SUM(dispatch_qty), 0) FROM delivery_challan_items WHERE po_item_id = ?
-            """,
-                (item_id,),
-            ).fetchone()
-            item_dispatched = dispatched_res[0] if dispatched_res else 0.0
-
-            # Get SRV aggregated quantities for this item
-            srv_res = db.execute(
-                """
-                SELECT 
-                    COALESCE(SUM(received_qty), 0) as total_received,
-                    COALESCE(SUM(rejected_qty), 0) as total_rejected
-                FROM srv_items
-                WHERE po_number = ? AND po_item_no = ?
-            """,
-                (po_number, po_item_no),
-            ).fetchone()
-
-            srv_received = srv_res[0] if srv_res else 0.0
-            srv_rejected = srv_res[1] if srv_res else 0.0
-
-            # Update item with SRV quantities
+            # Update item with SRV and Dispatch quantities
             item_dict["received_quantity"] = srv_received
             item_dict["rejected_quantity"] = srv_rejected
-            item_dict["delivered_quantity"] = item_dispatched
+            
+            # High Water Mark: Delivered is MAX(Dispatched, Received)
+            item_delivered = max(item_dispatched, srv_received)
+            item_dict["delivered_quantity"] = item_delivered
 
             # Calculate pending: Ordered - Delivered (Global Invariant BAL-1)
-            # CRITICAL: Must match SYSTEM_INVARIANTS.md
             item_ordered = item_dict.get("ordered_quantity", 0)
-            item_dict["pending_quantity"] = calculate_pending_quantity(item_ordered, item_dispatched)
+            item_dict["pending_quantity"] = calculate_pending_quantity(item_ordered, item_delivered)
 
-            item_with_deliveries = {**item_dict, "deliveries": deliveries}
+            item_with_deliveries = {**item_dict, "deliveries": item_deliveries}
             items_with_deliveries.append(POItem(**item_with_deliveries))
 
         return PODetail(header=header, items=items_with_deliveries)

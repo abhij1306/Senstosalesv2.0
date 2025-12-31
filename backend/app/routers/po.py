@@ -33,13 +33,30 @@ def list_pos(db: sqlite3.Connection = Depends(get_db)):
 
 
 @router.get("/{po_number}", response_model=PODetail)
-def get_po_detail(po_number: int, db: sqlite3.Connection = Depends(get_db)):
+def get_po_detail(po_number: str, db: sqlite3.Connection = Depends(get_db)):
     """Get Purchase Order detail with items and deliveries"""
     return po_service.get_po_detail(db, po_number)
 
 
+@router.get("/{po_number}/context")
+def get_po_context(po_number: str, db: sqlite3.Connection = Depends(get_db)):
+    """Fetch PO context (Supplier/Buyer info) for DC/Invoice auto-fill"""
+    po = db.execute("""
+        SELECT po.po_number, po.po_date, po.supplier_name, po.supplier_gstin,
+               b.name as buyer_name, b.gstin as buyer_gstin, b.billing_address as buyer_address
+        FROM purchase_orders po
+        LEFT JOIN buyers b ON po.buyer_id = b.id
+        WHERE po.po_number = ?
+    """, (po_number,)).fetchone()
+    
+    if not po:
+        raise ResourceNotFoundError("PO", po_number)
+        
+    return dict(po)
+
+
 @router.get("/{po_number}/dc")
-def check_po_has_dc(po_number: int, db: sqlite3.Connection = Depends(get_db)):
+def check_po_has_dc(po_number: str, db: sqlite3.Connection = Depends(get_db)):
     """Check if PO has an associated Delivery Challan"""
     try:
         dc_row = db.execute(
@@ -203,16 +220,25 @@ async def upload_po_html(
         # DB transaction is already active via get_db dependency
         success, warnings = ingestion_service.ingest_po(db, po_header, po_items)
 
-        # Update any SRVs that were waiting for this PO
-        # Update and link any related data using the Triangle of Truth sync
-        po_number = str(po_header.get("PURCHASE ORDER"))
-        ReconciliationService.sync_po(db, po_number)
-        linked_srvs_count = 0  # Placeholder as we now rely on sync_po
+        if success:
+            # CRITICAL: Explicitly commit after successful ingest
+            db.commit()
+            
+            check = db.execute("SELECT count(*) FROM purchase_orders WHERE po_number = ?", 
+                             (po_header.get("PURCHASE ORDER"),)).fetchone()[0]
+            print(f"🔥🔥🔥 VERIFICATION: PO {po_header.get('PURCHASE ORDER')} SAVED? {check > 0}", flush=True)
 
-        if linked_srvs_count > 0:
-            warnings.append(
-                f"\u2705 Linked {linked_srvs_count} existing SRV(s) to PO {po_number}"
-            )
+            # Update any SRVs that were waiting for this PO
+            # Update and link any related data using the Triangle of Truth sync
+            po_number = str(po_header.get("PURCHASE ORDER"))
+            ReconciliationService.sync_po(db, po_number)
+            db.commit() # Commit sync changes
+            linked_srvs_count = 0  # Placeholder as we now rely on sync_po
+
+            if linked_srvs_count > 0:
+                warnings.append(
+                    f"✅ Linked {linked_srvs_count} existing SRV(s) to PO {po_number}"
+                )
 
         return {
             "success": success,
@@ -263,19 +289,31 @@ async def upload_po_batch(
             po_items = extract_items(soup)
 
             if not po_header.get("PURCHASE ORDER"):
+                print(f"🔥🔥🔥 PARSING FAILED for {file.filename}: PO Number missing", flush=True)
                 result["message"] = "Could not extract PO number from HTML"
                 failed += 1
                 results.append(result)
                 continue
+            
+            print(f"🔥🔥🔥 EXTRACTED PO: {po_header.get('PURCHASE ORDER')} from {file.filename}", flush=True)
 
             # Ingest into database
             success, warnings = ingestion_service.ingest_po(db, po_header, po_items)
 
             if success:
+                # CRITICAL: Explicitly commit after successful ingest
+                db.commit()
+
+                # VERIFICATION: Check if PO exists immediately
+                check = db.execute("SELECT count(*) FROM purchase_orders WHERE po_number = ?", 
+                                 (po_header.get("PURCHASE ORDER"),)).fetchone()[0]
+                print(f"VERIFICATION: PO {po_header.get('PURCHASE ORDER')} exists? {check > 0}")
+
                 # Update any SRVs that were waiting for this PO
                 # Update and link data using the Triangle of Truth sync
                 po_number = str(po_header.get("PURCHASE ORDER"))
                 ReconciliationService.sync_po(db, po_number)
+                db.commit() # Commit sync changes
                 linked_srvs_count = 0 # Placeholder
                 total_linked_srvs += linked_srvs_count
 
@@ -311,8 +349,8 @@ async def upload_po_batch(
     }
 
 
-@router.get("/{po_number}/download")
-def download_po_excel(po_number: int, db: sqlite3.Connection = Depends(get_db)):
+@router.get("/{po_number}/excel")
+def download_po_excel(po_number: str, db: sqlite3.Connection = Depends(get_db)):
     """Download PO as Excel"""
     try:
         po_detail = po_service.get_po_detail(db, po_number)

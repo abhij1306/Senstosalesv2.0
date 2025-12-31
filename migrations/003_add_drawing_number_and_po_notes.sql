@@ -28,5 +28,5 @@ INSERT INTO po_notes_templates (id, title, content) VALUES
     ('template-003', 'Partial shipment', 'Partial shipment allowed as per delivery schedule mentioned in PO.');
 
 -- Update schema version
-INSERT INTO schema_version (version, description) VALUES 
+INSERT OR IGNORE INTO schema_version (version, description) VALUES 
     (3, 'Add drawing_number, po_notes, and templates table');

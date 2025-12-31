@@ -42,32 +42,34 @@ def init_db(conn: sqlite3.Connection):
     """Initialize database with schema from migrations"""
     logger.info("Initializing new database...")
 
-    # Order of migrations to apply
+    # Define migration application order
     migration_files = [
         "v1_initial.sql",
         "002_add_alerts.sql",
         "003_add_drawing_number_and_po_notes.sql",
         "004_complete_schema_alignment.sql",
+
         "v4_add_srv_tables.sql",
         "005_add_srv_po_found.sql",
         "006_fix_srv_schema.sql",
         "007_add_missing_srv_fields.sql",
         "008_add_extended_srv_fields.sql",
         "009_add_lot_no_to_dc_items.sql",
-        "add_invoice_enhancements.sql",
-        "add_indexes.sql",
-        "add_constraints.sql",
         "012_add_rejected_qty_to_poi.sql",
         "013_add_document_sequences.sql",
         "014_add_settings.sql",
         "015_add_unique_constraints.sql",
         "016_atomic_accounting_triggers.sql",
         "017_fy_wise_unique_constraints.sql",
-        "018_standardize_numeric_precision.sql",
         "019_add_missing_invoice_fields.sql",
         "020_create_buyers_table.sql",
-        "021_add_integrity_check_constraints.sql",
-        "add_constraints.sql",
+        "add_invoice_enhancements.sql",
+        "add_indexes.sql",
+        "022_dashboard_indexes.sql",
+        "023_add_missing_sync_columns.sql",
+        "024_strengthen_data_types.sql",
+        "025_advanced_logic_strengthening.sql",
+        "026_create_po_notes_table.sql",
     ]
 
     cursor = conn.cursor()

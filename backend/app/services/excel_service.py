@@ -84,7 +84,7 @@ class ExcelService:
         """
         # Fetch settings from DB
         try:
-            rows = db.execute("SELECT key, value FROM business_settings").fetchall()
+            rows = db.execute("SELECT key, value FROM settings").fetchall()
             settings = {row["key"]: row["value"] for row in rows}
         except Exception as e:
             logger.error(f"Failed to fetch business settings, using defaults: {e}")
@@ -220,7 +220,7 @@ class ExcelService:
         """
         # Fetch Supplier Settings
         try:
-            rows = db.execute("SELECT key, value FROM business_settings").fetchall()
+            rows = db.execute("SELECT key, value FROM settings").fetchall()
             {row["key"]: row["value"] for row in rows}
         except Exception as e:
             logger.error(f"Failed to fetch business settings for buyer block: {e}")
@@ -413,7 +413,7 @@ class ExcelService:
 
         # Fetch settings from DB
         try:
-            rows = db.execute("SELECT key, value FROM business_settings").fetchall()
+            rows = db.execute("SELECT key, value FROM settings").fetchall()
             settings = {row["key"]: row["value"] for row in rows}
         except Exception as e:
             logger.error(f"Failed to fetch business settings, using defaults: {e}")
@@ -500,7 +500,7 @@ class ExcelService:
         # Challan No (Row 4)
         worksheet.merge_range(4, 8, 4, 12, "Challan No", header_bold)
         worksheet.merge_range(
-            4, 13, 4, 15, str(header.get("linked_dc_numbers", "")), cell_center
+            4, 13, 4, 15, str(header.get("dc_number", "")), cell_center
         )
         worksheet.merge_range(4, 16, 4, 16, "Dated", header_bold)
         worksheet.merge_range(4, 17, 4, 19, header.get("dc_date", ""), cell_center)

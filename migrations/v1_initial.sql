@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS purchase_orders (
     supplier_fax TEXT,
     supplier_email TEXT,
     department_no INTEGER,
+    financial_year TEXT,
     
     -- Reference Info
     enquiry_no TEXT,
@@ -77,12 +78,12 @@ CREATE TABLE IF NOT EXISTS purchase_order_items (
     mtrl_cat INTEGER,              -- MTRL CAT
     unit TEXT,                     -- UNIT
     po_rate NUMERIC,               -- PO RATE
-    ord_qty NUMERIC,               -- ORD QTY (total ordered)
-    rcd_qty NUMERIC DEFAULT 0,     -- RCD QTY
+    ord_qty INTEGER,               -- ORD QTY (total ordered)
+    rcd_qty INTEGER DEFAULT 0,     -- RCD QTY
     item_value NUMERIC,            -- ITEM VALUE
     hsn_code TEXT,                 -- HSN CODE
-    delivered_qty NUMERIC DEFAULT 0,  -- Auto-calculated from deliveries
-    pending_qty NUMERIC,           -- Auto-calculated
+    delivered_qty INTEGER DEFAULT 0,  -- Auto-calculated from deliveries
+    pending_qty INTEGER,           -- Auto-calculated
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(po_number, po_item_no)
@@ -100,7 +101,7 @@ CREATE TABLE IF NOT EXISTS purchase_order_deliveries (
     id TEXT PRIMARY KEY,
     po_item_id TEXT NOT NULL REFERENCES purchase_order_items(id) ON DELETE CASCADE,
     lot_no INTEGER,                -- LOT NO
-    dely_qty NUMERIC,              -- DELY QTY
+    dely_qty INTEGER,              -- DELY QTY
     dely_date DATE,                -- DELY DATE
     entry_allow_date DATE,         -- ENTRY ALLOW DATE
     dest_code INTEGER,             -- DEST CODE
@@ -119,6 +120,7 @@ CREATE TABLE IF NOT EXISTS delivery_challans (
     dc_date DATE NOT NULL,
     po_number INTEGER NOT NULL REFERENCES purchase_orders(po_number) ON DELETE CASCADE,
     department_no INTEGER,
+    financial_year TEXT,
     consignee_name TEXT,
     consignee_gstin TEXT,
     consignee_address TEXT,
@@ -143,7 +145,7 @@ CREATE TABLE IF NOT EXISTS delivery_challan_items (
     id TEXT PRIMARY KEY,
     dc_number TEXT NOT NULL REFERENCES delivery_challans(dc_number) ON DELETE CASCADE,
     po_item_id TEXT NOT NULL REFERENCES purchase_order_items(id) ON DELETE CASCADE,
-    dispatch_qty NUMERIC NOT NULL,
+    dispatch_qty INTEGER NOT NULL,
     hsn_code TEXT,
     hsn_rate NUMERIC,
     CHECK (dispatch_qty > 0)
@@ -159,7 +161,8 @@ CREATE INDEX IF NOT EXISTS idx_dci_po_item_id ON delivery_challan_items(po_item_
 CREATE TABLE IF NOT EXISTS gst_invoices (
     invoice_number TEXT PRIMARY KEY,
     invoice_date DATE NOT NULL,
-    linked_dc_numbers TEXT,
+    financial_year TEXT,
+    dc_number TEXT UNIQUE REFERENCES delivery_challans(dc_number),
     po_numbers TEXT,
     customer_gstin TEXT,
     place_of_supply TEXT,

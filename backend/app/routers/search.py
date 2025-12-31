@@ -74,9 +74,9 @@ def global_search(q: str, db: sqlite3.Connection = Depends(get_db)):
         # 3. Search Invoices - Use invoice_number as unique ID
         cursor = db.execute(
             """
-            SELECT invoice_number, invoice_date as date, total_invoice_value as amount, linked_dc_numbers,
+            SELECT invoice_number, invoice_date as date, total_invoice_value as amount, dc_number,
                    (SELECT COALESCE(SUM(quantity), 0) FROM gst_invoice_items WHERE invoice_number = inv.invoice_number) as t_del,
-                   (SELECT COALESCE(SUM(received_qty), 0) FROM srv_items WHERE invoice_no = inv.invoice_number) as t_recd,
+                   (SELECT COALESCE(SUM(si.received_qty), 0) FROM srv_items si JOIN srvs s ON si.srv_number = s.srv_number WHERE s.invoice_number = inv.invoice_number) as t_recd,
                    -- Invoice total ordered volume is often same as delivered volume in its context
                    (SELECT COALESCE(SUM(quantity), 0) FROM gst_invoice_items WHERE invoice_number = inv.invoice_number) as t_ord
             FROM gst_invoices inv

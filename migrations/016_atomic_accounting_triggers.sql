@@ -41,7 +41,7 @@ SELECT
         SELECT SUM(gii.quantity)
         FROM gst_invoice_items gii
         JOIN gst_invoices gi ON gii.invoice_number = gi.invoice_number
-        JOIN delivery_challan_items dci ON dci.dc_number = gi.linked_dc_numbers
+        JOIN delivery_challan_items dci ON dci.dc_number = gi.dc_number
         WHERE dci.po_item_id = poi.id AND gii.po_sl_no = dci.lot_no
     ), 0) as total_invoiced_qty
 

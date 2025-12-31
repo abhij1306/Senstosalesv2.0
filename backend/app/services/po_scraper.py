@@ -5,7 +5,6 @@ Extracts PO data from HTML files
 
 import re
 from datetime import datetime
-from app.services.shared_utils import clean, normalize_date, has_value, to_int, find_value
 
 # --------------------------------------------------
 # Regex
@@ -16,12 +15,60 @@ RX_DRG = re.compile(
 )
 
 
+# --------------------------------------------------
+# Helpers
+# --------------------------------------------------
+def clean(text):
+    return re.sub(r"\s+", " ", text or "").strip()
+
+
+def has_value(text):
+    return bool(text and any(c.isalnum() for c in text))
+
+
+def to_int(val):
+    try:
+        v = re.sub(r"[^\d]", "", str(val))
+        return int(v) if v else None
+    except Exception:
+        return None
+
+
 def to_float(val):
     try:
         v = re.sub(r"[^\d.\-]", "", str(val))
         return float(v) if v else None
     except Exception:
         return None
+
+
+def normalize_date(val):
+    if not val:
+        return ""
+
+    s = str(val).strip().upper()
+
+    # dd/mm/yyyy or dd-mm-yyyy
+    m = re.search(r"(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})", s)
+    if m:
+        d, mth, y = m.groups()
+        if len(y) == 2:
+            y = "20" + y
+        return f"{int(d):02d}/{int(mth):02d}/{int(y)}"
+
+    # dd-MMM-yy or dd-MMM-yyyy
+    m = re.search(r"(\d{1,2})[\/\-]([A-Z]{3})[\/\-](\d{2,4})", s)
+    if m:
+        d, mon, y = m.groups()
+        if len(y) == 2:
+            y = "20" + y
+        try:
+            dt = datetime.strptime(f"{d}-{mon}-{y}", "%d-%b-%Y")
+            return dt.strftime("%d/%m/%Y")
+        except Exception:
+            return ""
+
+    return ""
 
 
 # --------------------------------------------------
@@ -31,7 +78,7 @@ def extract_po_header(soup):
     tables = soup.find_all("table")
     header = {}
 
-    def _find_internal(label_rx, prefer="below"):
+    def find_value(label_rx, prefer="below"):
         for table in tables:
             rows = table.find_all("tr")
             for r_idx, row in enumerate(rows):
@@ -97,24 +144,20 @@ def extract_po_header(soup):
         "SUPP NAME M/S": r"^SUPP\s+NAME\s+M/S$",
     }.items():
         pref = "any" if k in ["PURCHASE ORDER", "PO DATE"] else "below"
-        header[k] = _find_internal(rx, prefer=pref)
-
-    header["po_number"] = _find_internal(re.compile(r"PURCHASE\s*ORDER\s*NO", re.I))
-    header["po_date"] = _find_internal(re.compile(r"DATE", re.I))
-    header["supplier_name"] = _find_internal(re.compile(r"SUPPLIER", re.I))
+        header[k] = find_value(rx, prefer=pref)
 
     # Fallback: Try adjacent if main fields missing (handles different formats like test files)
     if not header.get("PURCHASE ORDER"):
-        header["PURCHASE ORDER"] = _find_internal(r"PURCHASE\s+ORDER", prefer="adjacent")
+        header["PURCHASE ORDER"] = find_value(r"PURCHASE\s+ORDER", prefer="adjacent")
         # If still empty, try "Purchase Order No" specifically
         if not header.get("PURCHASE ORDER"):
-            header["PURCHASE ORDER"] = _find_internal(
+            header["PURCHASE ORDER"] = find_value(
                 r"Purchase\s+Order\s+No", prefer="adjacent"
             )
 
     if not header.get("PO DATE"):
         # Try finding just "Date" which is common in simple tables
-        header["PO DATE"] = _find_internal(r"(PO\s+)?DATE", prefer="adjacent")
+        header["PO DATE"] = find_value(r"(PO\s+)?DATE", prefer="adjacent")
 
     # Validate ENQUIRY - reject if too long (likely grabbed "Important Note" text)
     if header.get("ENQUIRY") and len(str(header["ENQUIRY"])) > 50:
@@ -138,8 +181,19 @@ def extract_po_header(soup):
             break
 
     # ---- numeric normalization ----
-    for k in ["PURCHASE ORDER", "TIN NO", "RC NO", "DVN", "AMEND NO"]:
+    # NOTE: Database schema changes - po_number, tin_no, rc_no are TEXT now
+    # Only convert fields that are actually INTEGER in the database
+    for k in ["DVN", "AMEND NO"]:  # department_no and amend_no are INTEGER
         header[k] = to_int(header.get(k))
+    
+    # Keep these as strings (they map to TEXT columns in database)
+    # "PURCHASE ORDER" -> po_number (TEXT)
+    # "TIN NO" -> tin_no (TEXT)  
+    # "RC NO" -> rc_no (TEXT)
+    # Convert to string to ensure consistency
+    for k in ["PURCHASE ORDER", "TIN NO", "RC NO"]:
+        val = header.get(k)
+        header[k] = str(val) if val is not None else None
 
     for k in ["PO-VALUE", "TOTAL VALUE", "NET PO VAL", "FOB VALUE", "EX RATE"]:
         header[k] = to_float(header.get(k))

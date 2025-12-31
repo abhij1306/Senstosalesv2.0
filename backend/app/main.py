@@ -25,6 +25,8 @@ from app.routers import (
     search,
     settings,
     srv,
+    system,
+    po_notes,
 )
 
 # Setup structured logging
@@ -74,6 +76,8 @@ app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
 app.include_router(settings.router, prefix="/api/settings", tags=["Settings"])
 app.include_router(buyers.router, prefix="/api/buyers", tags=["Buyers"])
 app.include_router(search.router, prefix="/api/search", tags=["Search"])
+app.include_router(system.router, tags=["System"])  # Prefix defined in router
+app.include_router(po_notes.router, prefix="/api/po-notes", tags=["PO Notes"])
 
 
 

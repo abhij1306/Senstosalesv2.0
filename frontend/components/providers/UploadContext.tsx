@@ -56,20 +56,33 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
 
                 const chunk = selectedFiles.slice(i, i + CHUNK_SIZE);
 
+
                 if (type === "PO") {
-                    // TOT-5 Awareness: The backend now performs a heavy Reconciliation Sync.
-                    // We await the entire batch chunk to ensure DB consistency.
-                    await api.uploadPOBatch(chunk);
-                    accepted += chunk.length;
+                    const response = await api.uploadPOBatch(chunk);
+                    const chunkAccepted = response.successful || 0;
+                    const chunkRejected = response.failed || 0;
+
+                    accepted += chunkAccepted;
+                    rejected += chunkRejected;
+
+                    setAcceptedCount((prev) => prev + chunkAccepted);
+                    setRejectedCount((prev) => prev + chunkRejected);
                 } else if (type === "SRV") {
-                    await api.uploadSRVBatch(chunk);
-                    accepted += chunk.length;
+                    const response = await api.uploadSRVBatch(chunk);
+                    const chunkAccepted = response.successful || 0;
+                    const chunkRejected = response.failed || 0;
+
+                    accepted += chunkAccepted;
+                    rejected += chunkRejected;
+
+                    setAcceptedCount((prev) => prev + chunkAccepted);
+                    setRejectedCount((prev) => prev + chunkRejected);
                 }
 
                 processedCount += chunk.length;
 
                 // Atomic State Updates for Progress Ring
-                setAcceptedCount((prev) => prev + chunk.length);
+                // setAcceptedCount moved to specific handlers above
                 // In future, parse API response for actual rejected count
 
                 setProgress({

@@ -1,10 +1,14 @@
-"""
-Pydantic Models for API Request/Response
-"""
+from typing import List, Optional, Any
+from pydantic import BaseModel, Field, field_validator, BeforeValidator
+from typing_extensions import Annotated
 
-from typing import List, Optional
+# Helper for string coercion from SQLite
+def coerce_to_string(v):
+    if v is None:
+        return None
+    return str(v)
 
-from pydantic import BaseModel, Field
+StringCoerced = Annotated[Optional[str], BeforeValidator(coerce_to_string)]
 
 # ============================================================
 # PURCHASE ORDER MODELS
@@ -14,7 +18,7 @@ from pydantic import BaseModel, Field
 class POHeader(BaseModel):
     """Purchase Order Header"""
 
-    po_number: int
+    po_number: str
     po_date: Optional[str] = Field(None, description="YYYY-MM-DD")
     supplier_name: Optional[str] = None
     supplier_gstin: Optional[str] = None
@@ -22,7 +26,7 @@ class POHeader(BaseModel):
     supplier_phone: Optional[str] = None
     supplier_fax: Optional[str] = None
     supplier_email: Optional[str] = None
-    department_no: Optional[int] = None
+    department_no: StringCoerced = None
 
     # Reference Info
     enquiry_no: Optional[str] = None
@@ -32,6 +36,7 @@ class POHeader(BaseModel):
     rc_no: Optional[str] = None
     order_type: Optional[str] = None
     po_status: Optional[str] = None
+    financial_year: Optional[str] = None
 
     # Financials & Tax
     tin_no: Optional[str] = None
@@ -79,7 +84,7 @@ class POItem(BaseModel):
     received_quantity: Optional[float] = 0  # Sum from SRVs
     rejected_quantity: Optional[float] = 0  # Sum from SRVs (NEW)
     item_value: Optional[float] = None
-    hsn_code: Optional[str] = None
+    hsn_code: StringCoerced = None
     delivered_quantity: Optional[float] = 0
     pending_quantity: Optional[float] = None
     deliveries: List["PODelivery"] = []
@@ -88,12 +93,13 @@ class POItem(BaseModel):
 class POListItem(BaseModel):
     """Purchase Order List Item (Summary)"""
 
-    po_number: int
+    po_number: str
     po_date: Optional[str] = None
     supplier_name: Optional[str] = None
     po_value: Optional[float] = None
     amend_no: Optional[int] = 0
     po_status: Optional[str] = None
+    financial_year: Optional[str] = None
     linked_dc_numbers: Optional[str] = None
     total_ordered_quantity: float = 0.0
     total_dispatched_quantity: float = 0.0
@@ -131,8 +137,8 @@ class DCCreate(BaseModel):
 
     dc_number: str
     dc_date: str = Field(..., description="YYYY-MM-DD")
-    po_number: Optional[int] = None
-    department_no: Optional[int] = None
+    po_number: Optional[str] = None
+    department_no: StringCoerced = None
     consignee_name: Optional[str] = None
     consignee_gstin: Optional[str] = None
     consignee_address: Optional[str] = None
@@ -150,7 +156,7 @@ class DCListItem(BaseModel):
 
     dc_number: str
     dc_date: str = Field(..., description="YYYY-MM-DD")
-    po_number: Optional[int] = None
+    po_number: Optional[str] = None
     consignee_name: Optional[str] = None
     status: Optional[str] = "Pending"
     total_value: float = 0.0
@@ -182,9 +188,9 @@ class InvoiceCreate(BaseModel):
 
     invoice_number: str
     invoice_date: str = Field(..., description="YYYY-MM-DD")
-    linked_dc_numbers: Optional[str] = None
+    dc_number: Optional[str] = None
     po_numbers: Optional[str] = None
-    customer_gstin: Optional[str] = None
+    buyer_gstin: Optional[str] = None
     place_of_supply: Optional[str] = None
     taxable_value: Optional[float] = None
     cgst: Optional[float] = 0
@@ -200,8 +206,8 @@ class InvoiceListItem(BaseModel):
     invoice_number: str
     invoice_date: str = Field(..., description="YYYY-MM-DD")
     po_numbers: Optional[str] = None
-    linked_dc_numbers: Optional[str] = None  # Added
-    customer_gstin: Optional[str] = None  # Added
+    dc_number: Optional[str] = None  # Added
+    buyer_gstin: Optional[str] = None  # Added
     taxable_value: Optional[float] = None  # Added
     total_items: int = 0  # Total invoice items count
     total_ordered_quantity: float = 0.0
@@ -220,8 +226,6 @@ class InvoiceStats(BaseModel):
     pending_payments: float
     gst_collected: float
     total_invoiced_change: float  # Percentage change
-    pending_payments_count: int
-    gst_collected_change: float
 
 
 # ============================================================
@@ -277,7 +281,7 @@ class SRVHeader(BaseModel):
 class SRVItem(BaseModel):
     """SRV Item"""
 
-    id: Optional[int] = None
+    id: Optional[str] = None
     po_item_no: int
     lot_no: Optional[int] = None
     received_qty: float
@@ -349,6 +353,10 @@ class Settings(BaseModel):
     supplier_state: Optional[str] = None
     supplier_state_code: Optional[str] = None
 
+    company_name: Optional[str] = None  # Legacy support
+    company_gstin: Optional[str] = None # Legacy support
+    company_address: Optional[str] = None # Legacy support
+
     buyer_name: Optional[str] = None
     buyer_address: Optional[str] = None
     buyer_gstin: Optional[str] = None
@@ -378,10 +386,10 @@ class Buyer(BaseModel):
     designation: Optional[str] = None
     gstin: Optional[str] = None
     billing_address: Optional[str] = None
-    shipping_address: Optional[str] = None
-    place_of_supply: Optional[str] = None
     state: Optional[str] = None
     state_code: Optional[str] = None
+    department_no: Optional[str] = None  # DVN
+    supplier_code: Optional[str] = None
     is_default: bool = False
     is_active: bool = True
     created_at: Optional[str] = None

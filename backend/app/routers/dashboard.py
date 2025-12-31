@@ -58,7 +58,7 @@ def get_dashboard_summary(db: sqlite3.Connection = Depends(get_db)):
         active_challans = db.execute("""
             SELECT COUNT(DISTINCT dc.dc_number)
             FROM delivery_challans dc
-            LEFT JOIN gst_invoices i ON (',' || i.linked_dc_numbers || ',') LIKE ('%,' || dc.dc_number || ',%')
+            LEFT JOIN gst_invoices i ON dc.dc_number = i.dc_number
             WHERE i.invoice_number IS NULL
         """).fetchone()[0]
 
@@ -131,14 +131,14 @@ def get_recent_activity(
         # Recent Invoices with live status
         inv_rows = db.execute(
             """
-            SELECT 'Invoice' as type, inv.invoice_number as number, inv.invoice_date as date, inv.customer_gstin as party, 
-                   inv.total_invoice_value as amount, inv.created_at, inv.linked_dc_numbers,
+            SELECT 'Invoice' as type, inv.invoice_number as number, inv.invoice_date as date, inv.buyer_gstin as party, 
+                   inv.total_invoice_value as amount, inv.created_at, inv.dc_number,
                    (SELECT COALESCE(SUM(quantity), 0) FROM gst_invoice_items WHERE invoice_number = inv.invoice_number) as t_ord,
                    (
                        SELECT COALESCE(SUM(dci.dispatch_qty), 0) FROM delivery_challan_items dci 
-                       WHERE (',' || inv.linked_dc_numbers || ',') LIKE ('%,' || dci.dc_number || ',%')
+                       WHERE inv.dc_number = dci.dc_number
                    ) as t_del,
-                   (SELECT COALESCE(SUM(received_qty), 0) FROM srv_items WHERE invoice_no = inv.invoice_number) as t_recd
+                   (SELECT COALESCE(SUM(si.received_qty), 0) FROM srv_items si JOIN srvs s ON si.srv_number = s.srv_number WHERE s.invoice_number = inv.invoice_number) as t_recd
             FROM gst_invoices inv
             ORDER BY inv.created_at DESC LIMIT ?
         """,
@@ -212,7 +212,7 @@ def get_dashboard_insights(db: sqlite3.Connection = Depends(get_db)):
         uninvoiced = db.execute("""
             SELECT COUNT(DISTINCT dc.dc_number)
             FROM delivery_challans dc
-            LEFT JOIN gst_invoices i ON dc.dc_number = i.linked_dc_numbers
+            LEFT JOIN gst_invoices i ON dc.dc_number = i.dc_number
             WHERE i.invoice_number IS NULL
         """).fetchone()[0]
 

@@ -8,6 +8,7 @@ import logging
 import sqlite3
 import uuid
 from typing import Dict, List, Optional
+from app.core.number_utils import to_float, to_int, to_qty
 
 from app.core.exceptions import (
     ConflictError,
@@ -78,7 +79,7 @@ def check_dc_already_invoiced(dc_number: str, db: sqlite3.Connection) -> Optiona
     """
     existing_invoice = db.execute(
         """
-        SELECT invoice_number FROM gst_invoice_dc_links WHERE dc_number = ?
+        SELECT invoice_number FROM gst_invoices WHERE dc_number = ?
     """,
         (dc_number,),
     ).fetchone()
@@ -127,8 +128,14 @@ def fetch_dc_items(dc_number: str, db: sqlite3.Connection) -> List[Dict]:
     """,
         (dc_number,),
     ).fetchall()
+    
+    # Also fetch DC header info to map to Invoice if needed
+    dc_header = db.execute(
+        "SELECT consignee_name, consignee_gstin, consignee_address, vehicle_no, transporter, lr_no, po_number FROM delivery_challans WHERE dc_number = ?",
+        (dc_number,)
+    ).fetchone()
 
-    return [dict(item) for item in dc_items]
+    return [dict(item) for item in dc_items], dict(dc_header) if dc_header else {}
 
 
 def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[Dict]:
@@ -226,8 +233,8 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
                 details={"invoice_number": invoice_number, "invariant": "INV-1"},
             )
 
-        # Fetch DC items
-        dc_items = fetch_dc_items(dc_number, db)
+        # Fetch DC items and header
+        dc_items, dc_header = fetch_dc_items(dc_number, db)
 
         if not dc_items or len(dc_items) == 0:
             raise ValidationError(f"DC {dc_number} has no items")
@@ -276,7 +283,7 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
                 override_rate = override_item.get("rate")
 
                 if override_qty is not None:
-                    qty = float(override_qty)
+                    qty = to_qty(override_qty)
                 if override_rate is not None:
                     rate = float(override_rate)
 
@@ -286,7 +293,7 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
 
             invoice_items.append(
                 {
-                    "po_sl_no": str(dc_item.get("po_item_no") or dc_item["lot_no"] or ""),
+                    "po_sl_no": str(dc_item.get("po_item_no") or dc_item.get("lot_no") or ""),
                     "description": dc_item["description"] or "",
                     "hsn_sac": dc_item["hsn_code"] or "",
                     "quantity": qty,
@@ -319,37 +326,42 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
             )
             # We naturally proceed using 'total_amount' (Backend Truth), effectively enforcing the rule.
 
+        # Mapping DC fields to Invoice
+        inv_header = {
+            "buyer_name": invoice_data.get("buyer_name") or dc_header.get("consignee_name"),
+            "buyer_gstin": invoice_data.get("buyer_gstin") or dc_header.get("consignee_gstin"),
+            "buyer_address": invoice_data.get("buyer_address") or dc_header.get("consignee_address"),
+            "po_numbers": str(invoice_data.get("buyers_order_no") or dc_header.get("po_number", "")),
+            "buyers_order_date": invoice_data.get("buyers_order_date") or actual_po_date,
+            "vehicle_no": invoice_data.get("vehicle_no") or dc_header.get("vehicle_no"),
+            "transporter": invoice_data.get("transporter") or dc_header.get("transporter"),
+            "lr_no": invoice_data.get("lr_no") or dc_header.get("lr_no"),
+        }
+
         # Insert invoice header
         db.execute(
             """
             INSERT INTO gst_invoices (
-                invoice_number, invoice_date,
-                linked_dc_numbers, po_numbers, po_date,
-                customer_gstin, place_of_supply,
-                vehicle_no, lr_no, transporter, destination, terms_of_delivery,
+                invoice_number, invoice_date, dc_number, financial_year,
+                buyer_name, buyer_gstin, buyer_address,
+                po_numbers, buyers_order_date,
                 gemc_number, gemc_date, mode_of_payment, payment_terms,
                 despatch_doc_no, srv_no, srv_date,
-                taxable_value, cgst, sgst, igst, total_invoice_value,
-                remarks, buyer_state, buyer_state_code
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                vehicle_no, lr_no, transporter, destination, terms_of_delivery,
+                buyer_state, buyer_state_code,
+                taxable_value, cgst, sgst, igst, total_invoice_value
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
             (
                 invoice_number,
-                invoice_data["invoice_date"],
+                invoice_date,
                 dc_number,
-                # Use Buyer's Order No as the PO Number if provided, else fall back to DC's linked PO
-                str(
-                    invoice_data.get("buyers_order_no") or dc_dict.get("po_number", "")
-                ),
-                invoice_data.get("buyers_order_date")
-                or actual_po_date,  # Maps to po_date column - Fallback to actual PO date
-                invoice_data.get("buyer_gstin"),
-                invoice_data.get("place_of_supply"),
-                invoice_data.get("vehicle_no"),
-                invoice_data.get("lr_no"),
-                invoice_data.get("transporter"),
-                invoice_data.get("destination"),
-                invoice_data.get("terms_of_delivery"),
+                fy,
+                inv_header["buyer_name"],
+                inv_header["buyer_gstin"],
+                inv_header["buyer_address"],
+                inv_header["po_numbers"],
+                inv_header["buyers_order_date"],
                 invoice_data.get("gemc_number"),
                 invoice_data.get("gemc_date"),
                 invoice_data.get("mode_of_payment"),
@@ -357,14 +369,18 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
                 invoice_data.get("despatch_doc_no"),
                 invoice_data.get("srv_no"),
                 invoice_data.get("srv_date"),
+                inv_header["vehicle_no"],
+                inv_header["lr_no"],
+                inv_header["transporter"],
+                invoice_data.get("destination"),
+                invoice_data.get("terms_of_delivery"),
+                invoice_data.get("buyer_state"),
+                invoice_data.get("buyer_state_code"),
                 total_taxable,
                 total_cgst,
                 total_sgst,
                 0.0,
-                total_amount,
-                invoice_data.get("remarks"),
-                invoice_data.get("buyer_state"),
-                invoice_data.get("buyer_state_code"),
+                total_amount
             ),
         )
 
@@ -373,40 +389,27 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
             db.execute(
                 """
                 INSERT INTO gst_invoice_items (
-                    invoice_number, po_sl_no, description, hsn_sac,
-                    quantity, unit, rate, taxable_value,
-                    cgst_rate, cgst_amount, sgst_rate, sgst_amount,
-                    igst_rate, igst_amount, total_amount
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    id, invoice_number, description, quantity, unit, rate, 
+                    taxable_value, cgst_amount, sgst_amount, 
+                    igst_amount, total_amount
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 (
+                    str(uuid.uuid4()),
                     invoice_number,
-                    item["po_sl_no"],
                     item["description"],
-                    item["hsn_sac"],
                     item["quantity"],
                     item["unit"],
                     item["rate"],
                     item["taxable_value"],
-                    item["cgst_rate"],
                     item["cgst_amount"],
-                    item["sgst_rate"],
                     item["sgst_amount"],
-                    item["igst_rate"],
                     item["igst_amount"],
-                    item["total_amount"],
+                    item["total_amount"]
                 ),
             )
 
-        # Create DC link
-        link_id = str(uuid.uuid4())
-        db.execute(
-            """
-            INSERT INTO gst_invoice_dc_links (id, invoice_number, dc_number)
-            VALUES (?, ?, ?)
-        """,
-            (link_id, invoice_number, dc_number),
-        )
+        # DC-Invoice link is now stored directly in gst_invoices.dc_number
 
         logger.info(
             f"Successfully created invoice {invoice_number} from DC {dc_number} with {len(invoice_items)} items"

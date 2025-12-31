@@ -34,7 +34,7 @@ router = APIRouter()
 
 
 @router.get("/po/{po_number}/lots")
-def get_po_limit_lots(po_number: int, db: sqlite3.Connection = Depends(get_db)):
+def get_po_limit_lots(po_number: str, db: sqlite3.Connection = Depends(get_db)):
     """
     Get available lots/items for dispatch from a PO.
     Used by DC Create page to populate items.
@@ -56,7 +56,7 @@ def get_dc_stats(db: sqlite3.Connection = Depends(get_db)):
 
         # Completed (Linked to Invoice)
         completed = db.execute("""
-            SELECT COUNT(DISTINCT dc_number) FROM gst_invoice_dc_links
+            SELECT COUNT(DISTINCT dc_number) FROM gst_invoices WHERE dc_number IS NOT NULL
         """).fetchone()[0]
 
         # Total Value
@@ -83,7 +83,7 @@ def get_dc_stats(db: sqlite3.Connection = Depends(get_db)):
 
 
 @router.get("/", response_model=List[DCListItem])
-def list_dcs(po: Optional[int] = None, db: sqlite3.Connection = Depends(get_db)):
+def list_dcs(po: Optional[str] = None, db: sqlite3.Connection = Depends(get_db)):
     """List all Delivery Challans, optionally filtered by PO"""
 
     # Optimized query with JOIN to eliminate N+1 problem + quantity aggregates
@@ -94,7 +94,7 @@ def list_dcs(po: Optional[int] = None, db: sqlite3.Connection = Depends(get_db))
             dc.po_number, 
             dc.consignee_name, 
             dc.created_at,
-            (SELECT COUNT(*) FROM gst_invoice_dc_links WHERE dc_number = dc.dc_number) as is_linked,
+            (SELECT COUNT(*) FROM gst_invoices WHERE dc_number = dc.dc_number) as is_linked,
             COALESCE(SUM(dci.dispatch_qty * poi.po_rate), 0) as total_value,
             COALESCE(SUM(pod.dely_qty), 0) as total_ordered_quantity,
             COALESCE(SUM(dci.dispatch_qty), 0) as total_dispatched_quantity,
@@ -127,7 +127,10 @@ def list_dcs(po: Optional[int] = None, db: sqlite3.Connection = Depends(get_db))
         total_ordered = row["total_ordered_quantity"] or 0
         total_dispatched = row["total_dispatched_quantity"] or 0
         total_received = row["total_received_quantity"] or 0
-        total_pending = calculate_pending_quantity(total_ordered, total_dispatched)
+        
+        # DLV is High Water Mark: MAX(DISP, RECD)
+        total_delivered_hwm = max(total_dispatched, total_received)
+        total_pending = calculate_pending_quantity(total_ordered, total_delivered_hwm)
 
         # Determine Status using centralized service
         status = calculate_entity_status(total_ordered, total_dispatched, total_received)
@@ -243,6 +246,7 @@ def get_dc_detail(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
             poi.po_item_no,
             poi.material_code,
             poi.material_description,
+            poi.drg_no,
             poi.unit,
             poi.po_rate,
             pod.dely_qty as lot_ordered_qty,
@@ -289,7 +293,14 @@ def get_dc_detail(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
                 (po_item_id,),
             ).fetchone()[0]
 
-        item_dict["remaining_post_dc"] = calculate_pending_quantity(lot_ordered, total_dispatched)
+        # DLV is High Water Mark: MAX(DISP, RECD for this item/lot)
+        # Note: received_quantity here is per this DC. For a true balance, 
+        # normally we should use global received. 
+        # But per-DC detail usually shows status relative to its own cycle.
+        # Balancing with global disp for accuracy.
+        item_received = item_dict.get("received_quantity", 0)
+        delivered_hwm = max(total_dispatched, item_received)
+        item_dict["remaining_post_dc"] = calculate_pending_quantity(lot_ordered, delivered_hwm)
         result_items.append(item_dict)
 
     return {"header": header_dict, "items": result_items}

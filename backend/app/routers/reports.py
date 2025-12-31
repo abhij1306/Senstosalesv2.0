@@ -46,10 +46,19 @@ def export_df_to_excel(df: pd.DataFrame, filename: str) -> StreamingResponse:
 def get_reconciliation_report(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
+    po: Optional[str] = None,
     export: bool = False,
     db: sqlite3.Connection = Depends(get_db),
 ):
     """PO vs Delivered vs Received vs Rejected"""
+    if po:
+        # If specific PO requested, get its lots reconciliation
+        data = report_service.get_reconciliation_lots(po, db)
+        if export:
+            df = pd.DataFrame(data)
+            return export_df_to_excel(df, f"PO_Reconciliation_{po}.xlsx")
+        return data
+
     # Default to last 30 days if not provided
     if not start_date or not end_date:
         from datetime import datetime, timedelta
@@ -228,14 +237,13 @@ def get_daily_dispatch_report(
             dci.no_of_packets as packets,
             dc.po_number,
             dc.dc_number,
-            l.invoice_number,
+            i.invoice_number,
             dc.consignee_name as destination,
-            -- GEMC is on Invoice table, not DC. Pull from linked invoice if any.
-            (SELECT i.gemc_number FROM gst_invoices i WHERE i.invoice_number = l.invoice_number) as gemc_number
+            i.gemc_number
         FROM delivery_challans dc
         JOIN delivery_challan_items dci ON dc.dc_number = dci.dc_number
         JOIN purchase_order_items poi ON dci.po_item_id = poi.id
-        LEFT JOIN gst_invoice_dc_links l ON dc.dc_number = l.dc_number
+        LEFT JOIN gst_invoices i ON dc.dc_number = i.dc_number
         WHERE date(dc.dc_date) = date(?)
         ORDER BY dc.created_at
     """
@@ -268,7 +276,7 @@ def get_guarantee_certificate(dc_number: str, db: sqlite3.Connection = Depends(g
     items_rows = db.execute(
         """
         SELECT 
-            poi.material_item_no as po_item_no,
+            poi.po_item_no,
             poi.material_description as description,
             dci.dispatch_qty as quantity,
             poi.unit
