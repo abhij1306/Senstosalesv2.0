@@ -109,7 +109,7 @@ const container: Variants = {
     hidden: { opacity: 0 },
     show: {
         opacity: 1,
-        transition: { staggerChildren: 0.05 },
+        transition: { staggerChildren: 0.03 },
     },
 };
 
@@ -118,7 +118,7 @@ const item: Variants = {
     show: {
         opacity: 1,
         y: 0,
-        transition: { type: "spring", stiffness: 400, damping: 25 },
+        transition: { type: "spring", stiffness: 500, damping: 30 },
     },
 };
 

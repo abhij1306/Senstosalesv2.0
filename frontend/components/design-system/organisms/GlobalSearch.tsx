@@ -409,7 +409,7 @@ export default function GlobalSearch() {
         {/* Right Pane: Preview */}
         <div className="w-[50%] bg-app-surface/20 backdrop-blur-md p-8 flex flex-col">
           {selectedItem ? (
-            <div className="animate-in fade-in zoom-in-95 duration-300">
+            <div className="animate-in fade-in zoom-in-95 duration-150">
               <div className="w-14 h-14 rounded-2xl bg-app-fg/5 flex items-center justify-center mb-6 border border-app-border/50">
                 {renderIcon(selectedItem, "w-7 h-7 text-app-fg")}
               </div>
