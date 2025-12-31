@@ -120,7 +120,7 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
         }
     }, [dcId, formData, items, notes]);
 
-    const handleDelete = async () => {
+    const handleDelete = useCallback(async () => {
         setLoading(true);
         try {
             await api.deleteDC(dcId);
@@ -131,7 +131,7 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
         } finally {
             setLoading(false);
         }
-    };
+    }, [dcId, router]);
 
     const itemColumns: Column<any>[] = [
         {
