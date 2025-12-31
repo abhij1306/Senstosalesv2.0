@@ -14,7 +14,17 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 
 import { WebVitalsReporter } from "@/components/WebVitalsReporter";
 import { Providers } from "./providers";
-import { GlobalSearch } from "@/components/design-system/organisms";
+import dynamic from "next/dynamic";
+
+const GlobalSearch = dynamic(
+    () => import("@/components/design-system/organisms/GlobalSearch").then(mod => ({ default: mod.default })),
+    {
+        loading: () => (
+            <div className="h-10 w-full max-w-[700px] bg-app-bg/50 backdrop-blur-2xl rounded-full animate-pulse" />
+        ),
+        ssr: false,
+    }
+);
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-heading", display: "swap" });
