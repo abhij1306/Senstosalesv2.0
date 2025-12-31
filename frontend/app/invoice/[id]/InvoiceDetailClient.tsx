@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Printer, FileDown, Receipt } from "lucide-react";
 import { API_BASE_URL } from "@/lib/api";
@@ -75,7 +75,7 @@ export default function InvoiceDetailClient({ data }: InvoiceDetailClientProps) 
                     <FileDown size={16} className="mr-2" /> Excel
                 </a>
             </Button>
-            <Button variant="secondary" size="sm" onClick={() => window.print()}>
+            <Button variant="secondary" size="sm" onClick={useCallback(() => window.print(), [])}>
                 <Printer size={16} /> Print
             </Button>
         </div>

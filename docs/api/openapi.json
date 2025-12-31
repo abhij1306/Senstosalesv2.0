@@ -679,6 +679,65 @@
         }
       }
     },
+    "/{note_id}": {
+      "get": {
+        "summary": "Get a specific PO Note template",
+        "operationId": "get_po_note",
+        "tags": [
+          "po_notes"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PONoteOut"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a PO Note template",
+        "operationId": "update_po_note",
+        "tags": [
+          "po_notes"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PONoteOut"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Soft delete a PO Note template",
+        "operationId": "delete_po_note",
+        "tags": [
+          "po_notes"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/{po_number}": {
       "get": {
         "summary": "Get Purchase Order detail with items and deliveries",
@@ -693,6 +752,27 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PODetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{po_number}/context": {
+      "get": {
+        "summary": "Fetch PO context (Supplier/Buyer info) for DC/Invoice auto-fill",
+        "operationId": "get_po_context",
+        "tags": [
+          "po"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
                 }
               }
             }
@@ -763,12 +843,33 @@
         }
       }
     },
-    "/{po_number}/download": {
+    "/{po_number}/excel": {
       "get": {
         "summary": "Download PO as Excel",
         "operationId": "download_po_excel",
         "tags": [
           "po"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reset-db": {
+      "post": {
+        "summary": "",
+        "operationId": "reset_database",
+        "tags": [
+          "system"
         ],
         "responses": {
           "200": {

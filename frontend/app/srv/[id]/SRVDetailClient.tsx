@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ClipboardCheck } from "lucide-react";
 
@@ -83,10 +83,10 @@ export default function SRVDetailClient({ initialSRV }: SRVDetailClientProps) {
 
     const actions = (
         <Flex gap={2}>
-            <Button variant="outline" onClick={() => router.back()}>
+            <Button variant="outline" onClick={useCallback(() => router.back(), [router])}>
                 Return to Registry
             </Button>
-            <Button variant="outline" onClick={() => window.print()}>
+            <Button variant="outline" onClick={useCallback(() => window.print(), [])}>
                 Export PDF
             </Button>
         </Flex>

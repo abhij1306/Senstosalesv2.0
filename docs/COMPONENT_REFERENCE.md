@@ -1,6 +1,6 @@
 # Component Reference
 
-**Generated:** 2025-12-30 17:40:54  
+**Generated:** 2025-12-31 16:53:24  
 **Auto-synced from JSDoc comments**
 
 ## Design System Components
@@ -371,20 +371,6 @@ DocumentTrace Organism - Atomic Design System v1.0
 
 ---
 
-#### `DraggableUploadWidget`
-
-**Props:**
-
-- `title`: `string`
-- `fileInputRef`: `React.RefObject<HTMLInputElement | null>`
-- `selectedFiles`: `File[]`
-- `isUploading`: `boolean`
-- `progress`: `{ current: number`
-
-**File:** `components/design-system/organisms/DraggableUploadWidget.tsx`
-
----
-
 #### `GlobalCommandPalette`
 
 **File:** `components/design-system/organisms/GlobalCommandPalette.tsx`
@@ -405,19 +391,6 @@ DocumentTrace Organism - Atomic Design System v1.0
 - `columns`: `Column<any>[]`
 
 **File:** `components/design-system/organisms/InspectionManifest.tsx`
-
----
-
-#### `POBatchUpload`
-
-**Props:**
-
-- `fileInputRef`: `React.RefObject<HTMLInputElement | null>`
-- `selectedFiles`: `File[]`
-- `uploading`: `boolean`
-- `uploadProgress`: `{ current: number`
-
-**File:** `components/design-system/organisms/POBatchUpload.tsx`
 
 ---
 
