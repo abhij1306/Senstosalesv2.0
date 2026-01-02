@@ -132,7 +132,7 @@ export default function SettingsPage() {
       if (editingBuyerId) {
         await api.updateBuyer(editingBuyerId, { ...buyerForm });
       } else {
-        await api.createBuyer({ ...buyerForm, is_active: true });
+        await api.createBuyer({ ...buyerForm });
       }
       await loadData();
       handleCancelBuyerForm();
@@ -194,15 +194,7 @@ export default function SettingsPage() {
 
   const topActions = (
     <div className="flex gap-3">
-      <Button variant="outline" size="sm" onClick={loadData}>
-        {/* RefreshCw was removed, so use a text label or re-import if needed. Assuming text for now or verify if RefreshCw is imported. 
-            Looking at line 12, it is NOT imported in the updated file view. 
-            Wait, in the original file view (lines 1-60), RefreshCw WAS imported. but I removed it in previous step?
-            In step 7237, I removed imports from lucide-react.
-            So RefreshCw is missing.
-            I should replace usages of RefreshCw with just text or re-import it. 
-            Let's re-add the import for RefreshCw since it's used.
-        */}
+      <Button variant="secondary" onClick={loadData}>
         Sync
       </Button>
     </div>
@@ -253,7 +245,7 @@ export default function SettingsPage() {
               <TabsContent value="supplier" className="mt-0">
                 <Grid cols="1" className="lg:grid-cols-12" gap={6}>
                   <div className="lg:col-span-8">
-                    <div className="bg-app-surface rounded-2xl border border-app-border p-6 shadow-sm relative overflow-hidden group">
+                    <div className="bg-app-surface rounded-2xl border-none p-6 elevation-2 relative overflow-hidden group">
                       {/* Ambient Blobs */}
                       <Box className="absolute top-0 right-0 w-64 h-64 bg-app-accent/5 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-app-accent/10 transition-all duration-700" />
 
@@ -264,7 +256,6 @@ export default function SettingsPage() {
                               <H3>Business Profile</H3>
                               <Button
                                 variant="primary"
-                                size="sm"
                                 onClick={() =>
                                   handleSaveSettings([
                                     "supplier_name",
@@ -277,11 +268,12 @@ export default function SettingsPage() {
                                   ])
                                 }
                                 disabled={saving}
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors border-none"
                               >
                                 {saving ? (
-                                  <Loader2 className="animate-spin mr-2" size={14} />
+                                  <Loader2 className="animate-spin" size={14} />
                                 ) : (
-                                  <Save className="mr-2" size={14} />
+                                  <Save size={14} />
                                 )}
                                 Confirm Profile
                               </Button>
@@ -358,39 +350,39 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="lg:col-span-4 space-y-6">
-                    <div className="rounded-3xl p-6 bg-app-accent text-white border-none shadow-premium relative overflow-hidden group">
+                    <div className="rounded-3xl p-6 bg-surface-secondary border border-app-border elevation-3 relative overflow-hidden group">
                       <motion.div
-                        className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform duration-500"
+                        className="absolute top-0 right-0 p-4 opacity-5 group-hover:rotate-12 transition-transform duration-500"
                         whileHover={{ scale: 1.2 }}
                       >
-                        <Building2 size={120} />
+                        <Building2 size={120} className="text-text-primary" />
                       </motion.div>
-                      <Label className="text-white/60 mb-6 tracking-[0.2em]">
+                      <Label className="text-text-tertiary mb-6 tracking-[0.2em]">
                         IDENTITY PREVIEW
                       </Label>
-                      <H2 className="mb-2 text-white line-clamp-2">
+                      <H2 className="mb-2 text-text-primary line-clamp-2">
                         {settings.supplier_name || "Enterprise Identity"}
                       </H2>
-                      <Accounting className="text-white/80 text-sm mb-8 block">
+                      <Accounting className="text-text-secondary text-sm mb-8 block">
                         {settings.supplier_gstin || "GSTIN NOT SET"}
                       </Accounting>
 
                       <Stack gap={4} className="pt-6 shadow-none">
                         <Flex align="start" gap={3}>
-                          <MapPin size={14} className="mt-0.5 text-white/60" />
-                          <Body className="text-xs text-white/80 leading-relaxed font-normal">
+                          <MapPin size={14} className="mt-0.5 text-text-tertiary" />
+                          <Body className="text-xs text-text-secondary leading-relaxed font-normal">
                             {settings.supplier_address || "Awaiting address..."}
                           </Body>
                         </Flex>
                         <Flex align="center" gap={3}>
-                          <Phone size={14} className="text-white/60" />
-                          <Body className="text-xs text-white/80 font-normal">
+                          <Phone size={14} className="text-text-tertiary" />
+                          <Body className="text-xs text-text-secondary font-normal">
                             {settings.supplier_contact || "Awaiting contact..."}
                           </Body>
                         </Flex>
                         <Flex align="center" gap={3}>
-                          <Mail size={14} className="text-white/60" />
-                          <Body className="text-xs text-white/80 font-normal">
+                          <Mail size={14} className="text-text-tertiary" />
+                          <Body className="text-xs text-text-secondary font-normal">
                             {settings.supplier_email || "Awaiting communication..."}
                           </Body>
                         </Flex>
@@ -417,13 +409,14 @@ export default function SettingsPage() {
                     <SmallText>Management of external entities for transaction mapping.</SmallText>
                   </Stack>
                   <Button
+                    variant="primary"
                     onClick={() => {
                       handleCancelBuyerForm();
                       setIsAddingBuyer(true);
                     }}
                     disabled={isAddingBuyer || !!editingBuyerId}
                   >
-                    <Plus size={16} className="mr-2" /> Registered Entity
+                    <Plus size={16} /> Registered Entity
                   </Button>
                 </Flex>
 
@@ -435,7 +428,7 @@ export default function SettingsPage() {
                       exit={{ opacity: 0, y: -10 }}
                       className="mb-8"
                     >
-                      <Card className="p-8 border-none bg-app-surface shadow-app-spotlight ring-1 ring-app-accent/10">
+                      <Card className="p-8 border-none bg-app-surface elevation-3">
                         <Flex
                           align="center"
                           justify="between"
@@ -520,11 +513,11 @@ export default function SettingsPage() {
                                     state: e.target.value,
                                   })
                                 }
-                                className="flex-1 bg-app-surface-hover/30"
+                                className="flex-1 bg-app-overlay/5 border-none"
                               />
                               <Input
                                 placeholder="29"
-                                className="w-16 font-mono text-center bg-app-surface-hover/30"
+                                className="w-16 font-mono text-center bg-app-overlay/5 border-none"
                                 value={buyerForm.state_code}
                                 onChange={(e) =>
                                   setBuyerForm({
@@ -542,14 +535,19 @@ export default function SettingsPage() {
                           gap={3}
                           className="mt-10 pt-6 shadow-none"
                         >
-                          <Button variant="ghost" onClick={handleCancelBuyerForm}>
+                          <Button variant="secondary" onClick={handleCancelBuyerForm}>
                             Cancel
                           </Button>
-                          <Button onClick={handleSaveBuyer} disabled={saving} className="px-10">
+                          <Button
+                            variant="primary"
+                            onClick={handleSaveBuyer}
+                            disabled={saving}
+                            className="px-10 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors border-none"
+                          >
                             {saving ? (
-                              <Loader2 className="animate-spin mr-2" size={14} />
+                              <Loader2 className="animate-spin" size={14} />
                             ) : (
-                              <Check className="mr-2" size={14} />
+                              <Check size={14} />
                             )}
                             Commit Record
                           </Button>
@@ -563,7 +561,7 @@ export default function SettingsPage() {
                   {buyers.map((buyer) => (
                     <SpotlightCard
                       key={buyer.id}
-                      className="p-6 h-full flex flex-col group border-none shadow-sm hover:shadow-md"
+                      className="p-6 h-full flex flex-col group border-none elevation-1 hover:elevation-2"
                     >
                       <Flex justify="between" align="start" className="mb-6">
                         <Stack gap={1} className="flex-1 min-w-0">
@@ -647,7 +645,7 @@ export default function SettingsPage() {
               <TabsContent value="system" className="mt-0">
                 <Grid cols="1" className="lg:grid-cols-12" gap={6}>
                   <div className="lg:col-span-8">
-                    <div className="bg-app-surface rounded-3xl border border-app-border p-8 shadow-sm relative overflow-hidden">
+                    <div className="bg-app-surface rounded-3xl border-none p-8 elevation-2 relative overflow-hidden">
                       <Box className="absolute bottom-0 left-0 w-40 h-40 bg-app-status-error/5 rounded-full -ml-10 -mb-10 blur-2xl transition-all duration-700" />
                       <div className="relative z-10">
                         <Box className="mt-4">
@@ -655,7 +653,7 @@ export default function SettingsPage() {
                           <Flex
                             align="center"
                             gap={4}
-                            className="p-5 bg-app-accent/5 rounded-2xl border border-app-accent/10"
+                            className="p-5 bg-app-accent/5 rounded-2xl border-none elevation-1"
                           >
                             <div className="h-10 w-10 rounded-full bg-app-accent/10 flex items-center justify-center text-app-accent">
                               <ShieldAlert size={20} />
@@ -687,7 +685,7 @@ export default function SettingsPage() {
                         </Label>
                       </Flex>
 
-                      <Card className="p-8 border-none bg-app-status-error/5 ring-1 ring-app-status-error/10 backdrop-blur-sm">
+                      <Card className="p-8 border-none bg-app-status-error/5 elevation-1 backdrop-blur-sm">
                         <Stack gap={6}>
                           <Stack gap={2}>
                             <H3 className="text-app-status-error">
@@ -710,7 +708,7 @@ export default function SettingsPage() {
                                 <Button
                                   variant="primary"
                                   onClick={() => setShowResetConfirm(true)}
-                                  className="w-full bg-app-status-error hover:bg-app-status-error/90 text-white rounded-full uppercase"
+                                  className="w-full bg-red-600 hover:bg-red-700 text-white font-medium rounded-full uppercase transition-colors"
                                 >
                                   Initiate Purge
                                 </Button>
@@ -723,19 +721,20 @@ export default function SettingsPage() {
                                 className="flex gap-2"
                               >
                                 <Button
+                                  variant="primary"
                                   onClick={handleSystemReset}
                                   disabled={isResetting}
-                                  className="flex-1 bg-app-status-error hover:bg-app-status-error/90 text-white rounded-full"
+                                  className="flex-1 bg-app-status-error hover:bg-app-status-error/90 text-white"
                                 >
                                   {isResetting && (
-                                    <Loader2 className="animate-spin mr-2" size={12} />
+                                    <Loader2 className="animate-spin" size={12} />
                                   )}
                                   EXECUTE
                                 </Button>
                                 <Button
-                                  variant="outline"
+                                  variant="secondary"
                                   onClick={() => setShowResetConfirm(false)}
-                                  className="flex-1 rounded-full"
+                                  className="flex-1"
                                 >
                                   ABORT
                                 </Button>

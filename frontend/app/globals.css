@@ -11,33 +11,82 @@
      TYPOGRAPHY SYSTEM
      ========================================== */
   /* Font Families - System Stack */
-  --font-display: 'SF Pro Rounded', 'SF Pro Display', 'Inter', -apple-system, system-ui, sans-serif;
-  --font-text: 'SF Pro Text', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', monospace;
+  /* Font Families - Strict macOS 3-Font System with Inter Fallback for Windows */
+  --font-display: 'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-text: 'SF Pro Text', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
 
-  /* Type Scale */
+  /* Type Scale - PREMIUM ERP (Compact but legible) */
   --text-caption-2: 0.6875rem;
   /* 11px */
   --text-caption-1: 0.75rem;
   /* 12px */
   --text-footnote: 0.8125rem;
   /* 13px */
-  --text-subhead: 0.9375rem;
+  --text-subhead: 0.875rem;
+  /* 14px */
+  --text-callout: 0.9375rem;
   /* 15px */
-  --text-callout: 1rem;
+  --text-body: 0.9375rem;
+  /* 15px - COMPACT */
+  --text-headline: 1rem;
   /* 16px */
-  --text-body: 1.0625rem;
-  /* 17px */
-  --text-headline: 1.0625rem;
-  /* 17px */
-  --text-title-3: 1.25rem;
-  /* 20px */
+  --text-title-3: 1.125rem;
+  /* 18px */
   --text-title-2: 1.375rem;
   /* 22px */
   --text-title-1: 1.75rem;
   /* 28px */
   --text-large-title: 2.125rem;
   /* 34px */
+
+  /* Font Weights - STRICTLY REGULAR for ERP Density */
+  --font-ultralight: 400;
+  --font-thin: 400;
+  --font-light: 400;
+  --font-regular: 400;
+  --font-medium: 400;
+  --font-semibold: 400;
+  --font-bold: 400;
+
+  /* Spacing Scale - STANDARD (Don't break layouts, just use smaller vals in components) */
+  --spacing-0: 0;
+  --spacing-1: 0.25rem;
+  /* 4px */
+  --spacing-2: 0.5rem;
+  /* 8px */
+  --spacing-3: 0.75rem;
+  /* 12px */
+  --spacing-4: 1rem;
+  /* 16px */
+  --spacing-5: 1.25rem;
+  /* 20px */
+  --spacing-6: 1.5rem;
+  /* 24px */
+  --spacing-8: 2rem;
+  /* 32px */
+  --spacing-10: 2.5rem;
+  /* 40px */
+  --spacing-12: 3rem;
+  /* 48px */
+  --spacing-16: 4rem;
+  /* 64px */
+  --spacing-3: 0.5rem;
+  /* 8px (was 12px) */
+  --spacing-4: 0.75rem;
+  /* 12px (was 16px) */
+  --spacing-5: 1rem;
+  /* 16px (was 20px) */
+  --spacing-6: 1.25rem;
+  /* 20px (was 24px) */
+  --spacing-8: 1.5rem;
+  /* 24px (was 32px) */
+  --spacing-10: 2rem;
+  /* 32px (was 40px) */
+  --spacing-12: 2.5rem;
+  /* 40px (was 48px) */
+  --spacing-16: 3rem;
+  /* 48px (was 64px) */
 
   /* ==========================================
      COLOR SYSTEM - Semantic Tokens
@@ -60,14 +109,18 @@
 
   /* Surface Colors (RGB for Tailwind alpha support) */
   --surface-primary: 255 255 255;
-  --surface-secondary: 242 242 247;
-  /* System Gray 6 */
+  --surface-secondary: 235 242 255;
+  /* Blue-tinted light gray */
 
   /* Text Colors */
-  --text-primary: 0 0 0;
-  --text-secondary: 60 60 67;
-  --text-tertiary: 142 142 147;
-  --text-quaternary: 199 199 204;
+  --text-primary: 15 23 42;
+  /* Slate 900 */
+  --text-secondary: 71 85 105;
+  /* Slate 600 - subtle blue tint */
+  --text-tertiary: 100 116 139;
+  /* Slate 500 */
+  --text-quaternary: 148 163 184;
+  /* Slate 400 */
 
   /* Semantic Colors */
   --system-red: 255 59 48;
@@ -81,10 +134,20 @@
   --glass-surface: var(--glass-surface-dark);
   --glass-border: var(--glass-border-dark);
 
-  --text-primary: 255 255 255;
-  --text-secondary: 235 235 245;
-  --text-tertiary: 152 152 157;
-  --text-quaternary: 142 142 147;
+  /* Surfaces - Dark Application */
+  --surface-primary: 15 23 42;
+  /* Deep Navy */
+  --surface-secondary: 30 41 59;
+  /* Slate 800 */
+
+  --text-primary: 248 250 252;
+  /* Slate 50 */
+  --text-secondary: 203 213 225;
+  /* Slate 300 */
+  --text-tertiary: 148 163 184;
+  /* Slate 400 */
+  --text-quaternary: 100 116 139;
+  /* Slate 500 */
 }
 
 /* ============================================
@@ -92,83 +155,98 @@
    Rich glassmorphic effects with depth
    ============================================ */
 
-/* Base Glass Material */
+/* Base Glass Material - NO BORDERS, ELEVATION ONLY */
 .tahoe-glass {
   background: var(--glass-surface);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border: 1px solid var(--glass-border);
-  box-shadow:
-    0 10px 40px -10px rgba(0, 0, 0, 0.1),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  /* Subtle elevation */
 }
 
-/* Glass Panel - For containers like sidebar */
+/* Glass Panel - macOS Tahoe Style */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(60px) saturate(200%);
+  -webkit-backdrop-filter: blur(60px) saturate(200%);
+  border: none;
+  border-radius: 20px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 2px 4px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .dark .glass-panel {
-  background: rgba(30, 30, 30, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  background: rgba(25, 25, 30, 0.7);
+  border: none;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* Glass Card - For content cards */
+/* Glass Card - macOS Tahoe Style */
 .glass-card {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(30px) saturate(160%);
-  -webkit-backdrop-filter: blur(30px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(45px) saturate(180%);
+  -webkit-backdrop-filter: blur(45px) saturate(180%);
+  border: none !important;
+  border-radius: 18px;
+  box-shadow:
+    0 3px 12px rgba(0, 0, 0, 0.05),
+    0 1px 3px rgba(0, 0, 0, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .dark .glass-card {
-  background: rgba(50, 50, 50, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  background: rgba(35, 35, 40, 0.55);
+  border: none !important;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    0 2px 6px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Glass Card Variants */
+/* Glass Card Variants - macOS Tahoe Style */
 .tahoe-glass-card {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(30px) saturate(160%);
-  -webkit-backdrop-filter: blur(30px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(50px) saturate(200%);
+  -webkit-backdrop-filter: blur(50px) saturate(200%);
+  border: none;
+  border-radius: 20px;
   box-shadow:
-    0 8px 32px 0 rgba(31, 38, 135, 0.07),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .dark .tahoe-glass-card {
-  background: rgba(50, 50, 50, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(30, 30, 35, 0.6);
+  border: none;
   box-shadow:
-    0 8px 32px 0 rgba(0, 0, 0, 0.3),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    0 4px 12px rgba(0, 0, 0, 0.25),
+    0 2px 4px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .tahoe-glass-pill {
   border-radius: 9999px;
 }
 
-/* Glass Input - Recessed styling */
+/* Glass Input - NO BORDERS */
 .glass-input {
   background: rgba(255, 255, 255, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: none;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .dark .glass-input {
   background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
@@ -180,14 +258,15 @@
     font-family: var(--font-text);
     color: rgb(var(--text-primary));
     min-height: 100vh;
-    background-color: #f0f2f5;
+    background-color: #f4f7fb;
 
-    /* Mesh Gradient Background - Pastel 4-Point (From User Snippet) */
+    /* macOS Tahoe Style - Blue-Dominant Mesh Gradient */
     background-image:
-      radial-gradient(at 0% 0%, rgba(188, 206, 251, 0.4) 0px, transparent 50%),
-      radial-gradient(at 80% 0%, rgba(230, 200, 250, 0.3) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, rgba(200, 230, 255, 0.3) 0px, transparent 50%),
-      radial-gradient(at 80% 100%, rgba(250, 220, 220, 0.3) 0px, transparent 50%);
+      radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.25) 0px, transparent 60%),
+      radial-gradient(at 80% 0%, rgba(96, 165, 250, 0.20) 0px, transparent 60%),
+      radial-gradient(at 0% 100%, rgba(34, 211, 238, 0.20) 0px, transparent 60%),
+      radial-gradient(at 80% 100%, rgba(147, 197, 253, 0.18) 0px, transparent 60%),
+      radial-gradient(at 40% 50%, rgba(125, 211, 252, 0.15) 0px, transparent 70%);
 
     background-attachment: fixed;
     background-size: cover;
@@ -215,26 +294,27 @@
 /* Recessed Glass Input */
 .input-glass {
   background: rgba(255, 255, 255, 0.45);
-  /* Lighter recess */
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  /* More compact */
+  border: none;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .dark .input-glass {
   background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Status Pills */
 .status-pill-pending {
   background: rgba(255, 204, 0, 0.2);
-  border: 1px solid rgba(255, 204, 0, 0.3);
+  border: none;
+  /* NO BORDERS */
   color: #B38F00;
-  /* Darker yellow for text contrast */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .dark .status-pill-pending {
@@ -269,6 +349,7 @@
   border: 2px solid transparent;
   background-clip: content-box;
 }
+
 /* ============================================
    PREMIUM SHADOW UTILITIES
    ============================================ */
@@ -281,7 +362,7 @@
 }
 
 .shadow-macos-soft {
-  box-shadow: 
+  box-shadow:
     0 10px 40px -10px rgba(0, 0, 0, 0.1),
     0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
@@ -296,7 +377,8 @@
 .sidebar-item-active {
   background-color: rgba(0, 122, 255, 0.15);
   color: #007AFF;
-  font-weight: 600;
+  font-weight: 400;
+  /* REGULAR WEIGHT */
 }
 
 .dark .sidebar-item-active {
@@ -311,6 +393,7 @@
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -321,6 +404,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -332,6 +416,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -341,7 +426,12 @@
 /* ============================================
    TYPOGRAPHY REFINEMENTS
    ============================================ */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   letter-spacing: -0.02em;
 }
 
@@ -367,4 +457,200 @@ h1, h2, h3, h4, h5, h6 {
 .focus-ring {
   outline: none;
   box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
+}
+
+/* ============================================
+   COMPACT ERP UTILITIES
+   ============================================ */
+/* Elevation System - macOS Tahoe Style (Ultra Subtle) */
+.elevation-0 {
+  box-shadow: none;
+}
+
+.elevation-1 {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.03),
+    0 1px 1px rgba(0, 0, 0, 0.01),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.elevation-2 {
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.elevation-3 {
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    0 2px 4px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.elevation-4 {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10), 0 4px 8px rgba(0, 0, 0, 0.04);
+}
+
+.elevation-5 {
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Compact Table (ERP Dense) */
+.table-standard {
+  width: 100%;
+  border-spacing: 0;
+  border-collapse: separate;
+  background: transparent;
+}
+
+.table-standard th {
+  padding: 6px 12px;
+  border: none;
+  background: rgba(59, 130, 246, 0.08);
+  font-size: var(--text-caption-1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(var(--text-secondary), 0.8);
+  font-weight: 400;
+  text-align: left;
+}
+
+.table-standard td {
+  padding: 6px 12px;
+  border: none;
+  font-size: var(--text-caption-1);
+  color: rgb(var(--text-primary));
+  font-weight: 400;
+}
+
+.table-standard tbody tr {
+  background: white;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+  transition: background 0.15s ease;
+}
+
+.dark .table-standard tbody tr {
+  background: rgba(20, 20, 20, 0.4);
+}
+
+.table-standard tbody tr:hover {
+  background: rgba(0, 122, 255, 0.05);
+}
+
+/* Table Footer - Match Header Style */
+.table-standard tfoot td {
+  padding: 6px 12px;
+  border: none;
+  background: rgba(59, 130, 246, 0.08);
+  font-size: var(--text-caption-1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(var(--text-secondary), 0.8);
+  font-weight: 400;
+  text-align: left;
+}
+
+/* Standard Action Button Classes */
+.btn-standard {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  height: 36px;
+  border-radius: 8px;
+  border: none !important;
+  font-family: var(--font-text);
+  font-size: var(--text-footnote);
+  font-weight: 400;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-standard:active {
+  transform: scale(0.98);
+}
+
+.btn-standard:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.btn-standard-primary {
+  background: rgb(var(--system-blue));
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 122, 255, 0.3);
+}
+
+.btn-standard-secondary {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  color: rgb(var(--text-primary));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.btn-standard-ghost {
+  background: transparent;
+  color: rgb(var(--text-primary));
+}
+
+.btn-standard-ghost:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.btn-standard-destructive {
+  background: rgb(var(--system-red));
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(255, 59, 48, 0.3);
+}
+
+/* Logical UI Input Standards */
+.input-standard {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  border: none !important;
+  font-family: var(--font-text);
+  font-size: var(--text-footnote);
+  font-weight: 400;
+  color: rgb(var(--text-primary));
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.input-standard:focus {
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+}
+
+.dark .input-standard {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.dark .input-standard:focus {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(12px);
+  border: none !important;
+}
+
+.header-glass {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none !important;
+  box-shadow: none;
+}
+
+.dark .header-glass {
+  background: transparent;
+  box-shadow: none;
 }

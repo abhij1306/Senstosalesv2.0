@@ -11,7 +11,7 @@ import uvicorn
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
 
-from app.db import validate_database_path  # noqa: E402
+from backend.db.session import validate_database_path  # noqa: E402
 
 
 # Graceful shutdown handler
@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     print("Starting server...")
     try:
-        uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True, log_level="info")
+        uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True, log_level="info")
     except Exception as e:
         error_msg = f"Failed to start server: {e}\n\nFull traceback:\n{traceback.format_exc()}"
         print(error_msg)

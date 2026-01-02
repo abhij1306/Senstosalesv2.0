@@ -8,6 +8,7 @@ import {
     X,
     FileText,
     FileDown,
+    ShoppingCart,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { formatDate, cn } from "@/lib/utils";
@@ -18,7 +19,7 @@ import {
     Flex,
     Box,
 } from "@/components/design-system";
-import { PODetailCard } from "@/components/po/organisms/PODetailCard";
+import { PODetailCard } from "./PODetailCard";
 import { usePOStore } from "@/store/poStore";
 
 interface PODetailClientProps {
@@ -70,12 +71,12 @@ export default function PODetailClient({
                 description="The requested purchase order could not be found or has been deleted."
                 onBack={() => router.back()}
                 layoutId="po-not-found"
-                icon={<FileText size={20} className="text-app-fg-muted" />}
+                icon={<ShoppingCart size={22} className="text-system-blue" />}
                 iconLayoutId="po-icon-not-found"
             >
                 <div className="flex flex-col items-center justify-center p-12 text-center h-[50vh]">
-                    <div className="w-16 h-16 rounded-full bg-app-surface-hover flex items-center justify-center mb-4">
-                        <FileText size={32} className="text-app-fg-muted" />
+                    <div className="w-16 h-16 rounded-full bg-blue-500/5 flex items-center justify-center mb-4">
+                        <ShoppingCart size={32} className="text-text-tertiary" />
                     </div>
                     <h3 className="text-lg font-medium text-app-fg-primary mb-2">
                         PO Not Found
@@ -124,69 +125,56 @@ export default function PODetailClient({
             return (
                 <Flex align="center" gap={3}>
                     <Button
-                        variant="ghost"
-                        size="sm"
+                        variant="secondary"
                         onClick={() => setEditMode(false)}
-                        className="text-app-fg-muted hover:bg-app-surface-hover text-xs"
                     >
-                        <X className="w-4 h-4 mr-2" /> DISCARD
+                        Discard
                     </Button>
                     <Button
                         variant="primary"
-                        size="sm"
                         onClick={handleSave}
-                        className="bg-app-accent hover:brightness-110 text-white shadow-sm text-xs"
                         disabled={loading}
                     >
-                        {loading ? "SAVING..." : (
-                            <><Save className="w-4 h-4 mr-2" /> SAVE CHANGES</>
-                        )}
+                        {loading ? <Save className="animate-spin" size={16} /> : <Save size={16} />}
+                        Save Changes
                     </Button>
                 </Flex>
             );
         }
         return (
             <Flex align="center" gap={3}>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    asChild
-                    className="text-app-fg-muted hover:bg-app-surface-hover text-xs"
-                >
-                    <a
-                        href={`/api/po/${header.po_number}/download`}
-                        target="_blank"
-                        rel="noreferrer"
+                <Flex align="center" gap={3}>
+                    <Button
+                        variant="excel"
+                        asChild
                     >
-                        <FileDown className="w-4 h-4 mr-2 text-app-accent" />
-                        EXCEL
-                    </a>
-                </Button>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                        hasDC && dcId
-                            ? router.push(`/dc/${dcId}`)
-                            : router.push(`/dc/create?po=${header.po_number}`)
-                    }
-                    className={cn(
-                        "text-app-fg-muted hover:bg-app-surface-hover text-xs",
-                        hasDC && "text-app-accent",
-                    )}
-                >
-                    <FileText className="w-4 h-4 mr-2" />
-                    {hasDC ? "VIEW DC" : "GENERATE DC"}
-                </Button>
-                <Box className="w-[1px] h-6 bg-app-border/10 mx-1" />
-                <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => setEditMode(true)}
-                    className="bg-app-accent text-white hover:brightness-110 shadow-lg text-xs"
-                >
-                    <Edit2 className="w-4 h-4 mr-2 text-white" /> MODIFY RECORD
-                </Button>
+                        <a
+                            href={`/api/po/${header.po_number}/download`}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            <FileDown size={16} /> Excel
+                        </a>
+                    </Button>
+                    <Button
+                        variant="secondary"
+                        onClick={() =>
+                            hasDC && dcId
+                                ? router.push(`/dc/${dcId}`)
+                                : router.push(`/dc/create?po=${header.po_number}`)
+                        }
+                    >
+                        <FileText size={16} />
+                        {hasDC ? "View DC" : "Generate DC"}
+                    </Button>
+                    <div className="w-[1px] h-4 bg-app-border/20 mx-1" />
+                    <Button
+                        variant="secondary"
+                        onClick={() => setEditMode(true)}
+                    >
+                        <Edit2 size={16} /> Modify Record
+                    </Button>
+                </Flex>
             </Flex>
         );
     };
@@ -198,7 +186,7 @@ export default function PODetailClient({
             actions={renderActions()}
             onBack={() => router.back()}
             layoutId={`po-title-${header.po_number}`}
-            icon={<FileText size={20} className="text-app-accent" />}
+            icon={<ShoppingCart size={22} className="text-system-blue" />}
             iconLayoutId={`po-icon-${header.po_number}`}
         >
             <PODetailCard

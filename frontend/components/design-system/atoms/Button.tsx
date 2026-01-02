@@ -11,27 +11,27 @@ import { Loader2 } from "lucide-react";
  * Follows Apple Human Interface Guidelines for controls.
  */
 const buttonVariants = cva(
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-callout font-medium transition-smooth disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] focus-ring ring-offset-2",
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-footnote font-medium transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] select-none",
     {
         variants: {
             variant: {
-                primary: "bg-system-blue text-white hover:bg-system-blue/90 shadow-sm active:shadow-inner",
-                secondary: "bg-app-surface text-app-fg border border-app-border/20 shadow-sm hover:bg-app-surface-hover active:bg-app-surface-active",
-                ghost: "text-text-primary hover:bg-surface-secondary active:bg-surface-tertiary",
-                destructive: "bg-system-red text-white hover:bg-system-red/90 shadow-sm active:shadow-inner",
-                outline: "bg-transparent border border-system-blue text-system-blue hover:bg-system-blue/10",
-                link: "text-system-blue underline-offset-4 hover:underline p-0 h-auto",
-                // Legacy variants mapped to new system
-                glass: "bg-surface-primary/60 backdrop-blur-md border border-white/20 text-text-primary shadow-sm hover:bg-surface-primary/80",
-                excel: "bg-system-green text-white hover:bg-system-green/90 shadow-sm",
-                default: "bg-system-blue text-white hover:bg-system-blue/90 shadow-sm", // Fallback for 'default' variant
+                primary: "bg-system-blue text-white shadow-lg elevation-2 hover:elevation-3 hover:brightness-110 active:brightness-95 active:shadow-inner font-semibold",
+                secondary: "bg-blue-50 text-blue-900 border border-blue-100 shadow-sm hover:bg-blue-100 active:bg-blue-200 font-medium",
+                ghost: "text-blue-700 hover:bg-blue-50 active:bg-blue-100",
+                glass: "bg-white/20 dark:bg-white/10 backdrop-blur-xl text-app-fg border-none shadow-lg elevation-1 hover:bg-white/30 dark:hover:bg-white/20 font-medium",
+                destructive: "bg-system-red text-white shadow-lg elevation-2 hover:brightness-110 active:brightness-95 font-semibold",
+                outline: "bg-transparent border-2 border-app-fg/30 text-app-fg hover:bg-app-fg/10 hover:border-app-fg/50 font-medium",
+                link: "text-system-blue underline-offset-4 hover:underline p-0 h-auto font-medium",
+                excel: "bg-[#1D6F42] text-white shadow-lg elevation-2 hover:brightness-110 active:brightness-95 font-semibold",
+                default: "bg-system-blue text-white shadow-lg elevation-2 font-semibold",
             },
             size: {
-                default: "h-10 px-4 py-2",
-                sm: "h-8 px-3 text-caption-1",
-                lg: "h-12 px-8 text-body",
-                icon: "h-10 w-10",
-                compact: "h-7 px-2 text-caption-2",
+                default: "h-9 px-4 py-2",  /* Compact ERP Standard */
+                sm: "h-7.5 px-3 text-[11px] tracking-tight", /* Row actions */
+                lg: "h-11 px-7 text-subhead tracking-tight", /* Hero actions */
+                xl: "h-13 px-8 text-body font-semibold tracking-tight", /* Onboarding */
+                icon: "h-9 w-9",
+                compact: "h-6 px-2 text-[10px] uppercase font-bold tracking-widest",
             },
         },
         defaultVariants: {

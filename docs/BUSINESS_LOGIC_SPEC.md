@@ -21,10 +21,7 @@ The lifecycle represents the "Order-to-Cash" process from the Supplier's perspec
 4.  **Confirm Receipt (SRV)**: Buyer acknowledges receipt via a **Store Receipt Voucher (SRV)**.
 
 ### 1.3 Completion Criteria
-A Purchase Order is considered **CLOSED** (Complete) only when:
-> `Total Received Quantity (SRV) >= Total Ordered Quantity (PO) - 0.001`
-
-**High-Water Mark (DLV)**: The system enforces that the high-water mark of fulfillment is at least the maximum of shipments (DC) or receipts (SRV).
+**De-coupled Delivered Status**: The system de-couples fulfillment (DC) from receipt (SRV). "Delivered" status is achieved when goods are physically shipped (DC), and "Closed" status is achieved when goods are officially received (SRV).
 
 ---
 
@@ -36,8 +33,8 @@ A Purchase Order is considered **CLOSED** (Complete) only when:
 | **Ordered Qty (ORD)** | Total quantity (supports 3 decimal places). | `purchase_order_items.ord_qty` |
 | **Dispatched Qty (DSP)** | Quantity shipped via DCs (3 decimals). | `SUM(dispatch_qty)` |
 | **Received Qty (RECD)** | Quantity acknowledged by customer (3 decimals). | `SUM(received_qty)` |
-| **Delivered Qty (DLV)** | High Water Mark. `MAX(DSP, RECD) + Tolerance`. | `purchase_order_items.delivered_qty` |
-| **Balance (BAL)** | Remaining quantity. `ORD - DLV`. | Calculated (Decimal) |
+| **Delivered Qty (DLV)** | Physical Dispatch Status. `SUM(dispatch_qty)`. | `purchase_order_items.delivered_qty` |
+| **Balance (BAL)** | Remaining quantity. `ORD - DSP`. | Calculated (Decimal) |
 
 ---
 
@@ -63,7 +60,7 @@ The system is architected to handle multiple distinct Buyers (Units) simultaneou
     - **Soft Cancellation**: Items missing in the latest amendment file are marked `status = 'Cancelled'`.
     - **Pending Protection**: Cancelled items have their `pending_qty` forced to `0` regardless of previous fulfillment.
     - **Item Preservation**: Existing delivery/receipt history for matching items is preserved and reconciled during refresh.
-- **TOT-2 (Reconciliation)**: `delivered_qty` is calculated as `MAX(total_dispatched_via_dc, total_received_via_srv)`.
+- **TOT-2 (Reconciliation)**: `delivered_qty` is calculated solely from `total_dispatched_via_dc`.
 - **TOT-5 (Reconciliation Sync)**: `ReconciliationService.sync_po()` is the atomic authority on quantity state.
 - **Precision (P-01)**: All quantities processed with 15,3 decimal precision and 0.001 tolerance.
 
@@ -79,13 +76,12 @@ The system is architected to handle multiple distinct Buyers (Units) simultaneou
     - If reconciliation fails, the upload **continues** (non-blocking) since RCD QTY is already updated in items table.
     - Debug log: `"🔄 Running TOT Sync for updated PO {po_number} (syncing RCD QTY)"`
 
-- **PO-UPLOAD-3 (High Water Mark Auto-Update)**:
-    - When a PO is re-uploaded with updated `RCD QTY`, the system automatically recalculates:
-        - `delivered_qty = MAX(dispatched_qty, received_qty)`
-    - **Example**: PO with `ORD=10`, `DSP=5`, `RECD=0` is re-uploaded with `RECD=9` →
-        - System updates: `delivered_qty = MAX(5, 9) = 9`
-        - Frontend displays: Ordered=10, Dispatched=5, Received=9, Delivered=9, Pending=1
-    - This ensures delivered quantity never falls below received quantity (reality check).
+- **PO-UPLOAD-3 (De-coupled Status Update)**:
+    - `delivered_qty` depends ONLY on `dispatched_qty`.
+    - `rcd_qty` depends ONLY on `received_qty` from SRV.
+    - Status is updated according to the de-coupled algorithm:
+        - Dispatch complete -> **Delivered**
+        - Receipt complete -> **Closed**
 
 - **PO-UPLOAD-4 (Transaction Safety)**:
     - All PO ingestion happens within a **database transaction** (`db_transaction` context).
@@ -141,8 +137,8 @@ The system extracts and stores the following fields from every Purchase Order:
 - **DC-2 (Single Invoice)**: A DC can be linked to **max ONE Invoice**.
 
 ### 5.3 Store Receipt Voucher (SRV)
-- **SRV-1 (PO Link)**: Must reference a valid PO.
-- **SRV-2 (High Water Mark)**: `Delivered Qty = MAX(Total Dispatched, Total Received)`.
+- **SRV-1 (PO Link)**: **STRICTLY ENFORCED**. SRV uploads fail if PO number is not found in database.
+- **SRV-2 (De-coupled)**: `received_qty` does NOT affect `delivered_qty`.
 
 ### 5.4 Invoice (INV)
 - **INV-1 (Uniqueness)**: Unique primary key is `(invoice_number, financial_year)`.
@@ -161,9 +157,9 @@ All quantity updates MUST go through the **Reconciliation Service**. Ad-hoc `UPD
 
 ### 6.2 Sync Logic
 1.  **Delivery Sync (TOT-2)**:
-    `purchase_order_items.delivered_qty` refers to the fulfillment status.
-    It is automatically updated whenever a DC is Created/Deleted OR an SRV is Ingested.
-    Formula: `MAX(Sum(DC Dispatch), Sum(SRV Received))`
+    `purchase_order_items.delivered_qty` refers to the physical fulfillment status.
+    It is automatically updated whenever a DC is Created/Deleted.
+    Formula: `Sum(DC Dispatch)`
 
 2.  **Receipt Sync (TOT-3)**:
     `purchase_order_items.rcd_qty` refers to customer acceptance.
@@ -184,7 +180,7 @@ All quantity updates MUST go through the **Reconciliation Service**. Ad-hoc `UPD
 ### 7.2 Status Calculation (Algorithm)
 | Condition | Status | Color |
 | :--- | :--- | :--- |
-| `A_DLV == 0` | **Draft** | Slate |
-| `A_DLV > 0` AND `A_DLV < A_ORD` | **Pending** | Amber |
-| `A_DLV >= A_ORD` AND `A_RECD < A_ORD` | **Delivered** | Blue |
+| `A_DSP == 0` | **Draft** | Slate |
+| `A_DSP > 0` AND `A_DSP < A_ORD` | **Pending** | Amber |
+| `A_DSP >= A_ORD` AND `A_RECD < A_ORD` | **Delivered** | Blue |
 | `A_RECD >= A_ORD` | **Closed** | Green |

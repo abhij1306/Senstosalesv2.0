@@ -3,7 +3,6 @@
 import React from "react";
 import { H1, Body, SmallText } from "../atoms/Typography";
 import { SummaryCards, SummaryCardProps } from "../organisms/SummaryCards";
-import { ReportsToolbar, ReportsToolbarProps } from "@/components/reports/organisms/ReportsToolbar";
 import { DataTable, Column } from "../organisms/DataTable";
 import { cn } from "@/lib/utils";
 
@@ -16,8 +15,6 @@ export interface ReportsPageTemplateProps<T = any> {
     // Page header
     title: string;
     subtitle?: string;
-    // Toolbar (Optional as it might be in header)
-    toolbar?: Partial<Omit<ReportsToolbarProps, "className">>;
     // KPI Summary cards
     kpiCards?: SummaryCardProps[];
     // Charts section

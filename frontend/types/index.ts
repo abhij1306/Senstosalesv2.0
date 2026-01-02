@@ -31,13 +31,14 @@ export interface ActivityItem {
 }
 
 export interface SearchResult {
-    type: "PO" | "DC" | "Invoice";
+    type: "PO" | "DC" | "Invoice" | "SRV";
+    id: string; // Added ID field for consistent access
     number: string;
     date: string;
     party: string;
     amount: number | null;
     status: string;
-    created_at: string;
+    type_label?: string;
 }
 
 export interface Alert {
@@ -270,6 +271,7 @@ export interface DCStats {
     pending_delivery: number;
     completed_delivery: number;
     completed_change: number;
+    total_value: number;
 }
 
 export interface DCCreate {

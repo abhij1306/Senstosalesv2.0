@@ -1,6 +1,5 @@
-import React, { Suspense } from "react";
+import React from "react";
 import { api } from "@/lib/api";
-import { DetailSkeleton } from "@/components/design-system/molecules/skeletons/DetailSkeleton";
 import SRVDetailClient from "./SRVDetailClient";
 import { notFound } from "next/navigation";
 
@@ -25,8 +24,6 @@ export default async function SRVDetailPage({ params }: { params: { id: string }
     }
 
     return (
-        <Suspense fallback={<DetailSkeleton />}>
-            <SRVDetailClient initialSRV={srvData} />
-        </Suspense>
+        <SRVDetailClient initialSRV={srvData} />
     );
 }

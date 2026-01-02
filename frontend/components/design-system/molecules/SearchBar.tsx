@@ -66,8 +66,8 @@ const SearchBarInternal = React.forwardRef<HTMLInputElement, SearchBarProps>(
                     placeholder={placeholder}
                     icon={<Search size={18} className="text-app-fg/40 group-focus-within:text-app-accent transition-colors" />}
                     className={cn(
-                        "pr-20 h-[44px] rounded-full transition-all duration-300 pl-12",
-                        variant === "default" && "bg-app-surface/50 border border-app-border/30 shadow-sm focus:shadow-xl focus:shadow-app-accent/5 focus:bg-app-surface"
+                        "pr-20 h-[44px] rounded-full transition-all duration-300 pl-14 border-none",
+                        variant === "default" && "bg-blue-500/5 focus:shadow-xl focus:shadow-app-accent/5 focus:bg-blue-500/10 shadow-none"
                     )}
                 />
                 {/* Actions Group */}
@@ -82,7 +82,7 @@ const SearchBarInternal = React.forwardRef<HTMLInputElement, SearchBarProps>(
                         </button>
                     )}
                     {shortcut && !localValue && (
-                        <kbd className="hidden sm:flex px-2 py-0.5 text-[9px] font-black text-app-fg/40 bg-app-fg/5 rounded-md border border-app-border/20 pointer-events-none tracking-widest uppercase">
+                        <kbd className="hidden sm:flex px-2 py-0.5 text-[9px] font-black text-app-fg/40 bg-blue-500/5 rounded-md border border-app-border/20 pointer-events-none tracking-widest uppercase">
                             {shortcut}
                         </kbd>
                     )}

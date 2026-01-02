@@ -15,4 +15,4 @@ export * from "./StatusTag";
 export * from "./TableCells";
 export * from "./Tabs";
 export * from "./Toast";
-export * from "./WarningModal";
+

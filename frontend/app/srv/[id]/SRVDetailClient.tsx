@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ClipboardCheck, ChevronDown, ChevronUp } from "lucide-react";
+import { Box, ChevronDown, ChevronUp } from "lucide-react";
 
 import {
     Button,
@@ -63,96 +63,62 @@ export default function SRVDetailClient({ initialSRV }: SRVDetailClientProps) {
             title={`Store Receipt Voucher - ${header.srv_number}`}
             description="Official material receipt and inspection document"
             actions={actions}
-            icon={<ClipboardCheck size={20} className="text-app-status-success" />}
+            icon={<Box size={22} className="text-system-blue" />}
             iconLayoutId="srv-detail-icon"
         >
             <Stack gap={6}>
                 <div className="flex items-center justify-between px-1">
-                    <Label className="m-0 text-app-fg-muted uppercase tracking-widest text-[11px]">
+                    <Label className="m-0 text-app-fg-muted uppercase tracking-wide text-xs">
                         Inspection Manifest ({rawItems.length} Entries)
                     </Label>
                     <SmallText className="text-app-fg-muted opacity-50 uppercase tracking-tighter">
-                        PO: {header.po_number}
+                        PO: <a href={`/po/${header.po_number}`} className="hover:text-app-accent hover:underline transition-colors">{header.po_number}</a>
                     </SmallText>
                 </div>
 
-                <div className="table-container shadow-premium-hover bg-app-surface/30 border-none">
-                    <table className="w-full text-left">
+                <div className="table-container border rounded-md">
+                    <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="border-b border-app-border/10 bg-app-overlay/10">
-                                <th className="py-3 px-4 w-[60px]"><Label># ITM</Label></th>
-                                <th className="py-3 px-4"><Label>Details</Label></th>
-                                <th className="py-3 px-4 w-[110px]"><Label>SRV No</Label></th>
-                                <th className="py-3 px-4 w-[100px]"><Label>Tax Inv</Label></th>
-                                <th className="py-3 px-4 text-right w-[90px]"><Label>Order</Label></th>
-                                <th className="py-3 px-4 text-right w-[90px]"><Label>Challan</Label></th>
-                                <th className="py-3 px-4 text-right w-[90px] bg-blue-50/10 dark:bg-blue-900/10"><Label className="text-blue-600 dark:text-blue-400">Recvd</Label></th>
-                                <th className="py-3 px-4 text-right w-[90px] bg-green-50/10 dark:bg-green-900/10"><Label className="text-green-600 dark:text-green-400">Accepted</Label></th>
-                                <th className="py-3 px-4 text-right w-[70px] bg-red-50/10 dark:bg-red-900/10"><Label className="text-red-500">Rej</Label></th>
-                                <th className="py-3 px-4 w-[50px]"></th>
+                            <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                {["Div", "PO No", "PO Itm", "Sub Itm", "PMTR No", "SRV No", "SRV Itm", "Rev No", "SRV Date", "Challan No", "Challan Dt", "Tax Inv", "Tax Inv Dt", "Finance Dt", "CNote No", "CNote Dt", "Unit", "Order Qty", "Challan Qty", "Recvd Qty", "Accepted Qty", "Rej Qty"].map((head, i) => (
+                                    <th key={i} className={cn(
+                                        "h-10 px-1 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 border-none",
+                                        "text-[9px] uppercase tracking-tight whitespace-nowrap",
+                                        ["PO Itm", "Sub Itm", "SRV Itm", "Rev No", "Unit"].includes(head) && "text-center",
+                                        ["Order Qty", "Challan Qty", "Recvd Qty", "Accepted Qty", "Rej Qty"].includes(head) && "text-right"
+                                    )}>
+                                        {head}
+                                    </th>
+                                ))}
                             </tr>
                         </thead>
                         <tbody>
-                            {groupedItems.map((group, groupIdx) => {
-                                const parent = group[0];
-                                const isExpanded = expandedParents.has(parent.po_item_no);
-                                const tOrd = group.reduce((sum, i) => sum + (i.order_qty || 0), 0);
-                                const tCha = group.reduce((sum, i) => sum + (i.challan_qty || 0), 0);
-                                const tRec = group.reduce((sum, i) => sum + (i.received_qty || 0), 0);
-                                const tAcc = group.reduce((sum, i) => sum + (i.accepted_qty || 0), 0);
-                                const tRej = group.reduce((sum, i) => sum + (i.rejected_qty || 0), 0);
-
-                                return (
-                                    <React.Fragment key={parent.po_item_no}>
-                                        <tr className={cn("transition-colors border-b border-app-border/10", isExpanded ? "bg-app-overlay/10" : "bg-app-overlay/5")}>
-                                            <td className="py-3 px-4"><MonoCode className="text-app-accent leading-none">#{parent.po_item_no}</MonoCode></td>
-                                            <td className="py-3 px-4">
-                                                <Body className="text-[13px] text-app-fg-muted/80">{parent.material_description || "Material"}</Body>
-                                                <div className="flex gap-3 mt-0.5">
-                                                    <SmallText className="text-[10px] text-app-fg-muted/40 uppercase tracking-tighter">Code: {parent.material_code || "-"}</SmallText>
-                                                    <SmallText className="text-[10px] text-app-accent/40 uppercase tracking-tighter">Unit: {parent.unit}</SmallText>
-                                                </div>
-                                            </td>
-                                            <td className="py-3 px-4"><Accounting className="text-[12px] text-app-accent/60">{parent.srv_number || header.srv_number}</Accounting></td>
-                                            <td className="py-3 px-4"><SmallText className="text-app-fg-muted/40 text-[10px] uppercase truncate max-w-[80px]">{parent.invoice_no || "-"}</SmallText></td>
-                                            <td className="py-3 px-4 text-right"><Accounting className="text-[12px] text-app-fg-muted/60">{tOrd}</Accounting></td>
-                                            <td className="py-3 px-4 text-right"><Accounting className="text-[12px] text-app-fg-muted/60">{tCha}</Accounting></td>
-                                            <td className="py-3 px-4 text-right bg-blue-50/5 dark:bg-blue-900/5"><Accounting className="text-[12px] text-blue-600/60 dark:text-blue-400/60">{tRec}</Accounting></td>
-                                            <td className="py-3 px-4 text-right bg-green-50/5 dark:bg-green-900/5"><Accounting className="text-[12px] text-green-600/60 dark:text-green-400/60">{tAcc}</Accounting></td>
-                                            <td className="py-3 px-4 text-right bg-red-50/5 dark:bg-red-900/5"><Accounting className={cn("text-[12px]", tRej > 0 ? "text-red-500/60" : "text-app-fg-muted/20")}>{tRej}</Accounting></td>
-                                            <td className="py-3 px-4 text-center">
-                                                <button onClick={() => toggleParent(parent.po_item_no)} className="p-1.5 rounded-md hover:bg-app-accent/10 hover:text-app-accent transition-all text-app-fg-muted/30">
-                                                    {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        {isExpanded && group.map((item, idx) => (
-                                            <tr key={idx} className="bg-app-surface border-b border-app-border/5">
-                                                <td className="py-2 px-0 relative">
-                                                    <div className="absolute left-[30px] top-0 bottom-0 w-[2px] bg-app-accent/20" />
-                                                    <div className="flex items-center gap-2 pl-[38px]">
-                                                        <span className="text-[10px] text-app-accent/30">L</span>
-                                                        <MonoCode className="text-[11px] text-app-fg-muted">L-{item.lot_no || 0}</MonoCode>
-                                                    </div>
-                                                </td>
-                                                <td className="py-2 px-4">
-                                                    <div className="flex gap-4">
-                                                        <SmallText className="text-[10px] text-app-fg-muted/60 uppercase">Challan: {item.challan_no || "-"}</SmallText>
-                                                        <SmallText className="text-[10px] text-app-fg-muted/40 uppercase">PMIR: {item.pmir_no || "-"}</SmallText>
-                                                    </div>
-                                                </td>
-                                                <td colSpan={2} />
-                                                <td className="py-2 px-4 text-right"><Accounting className="text-[11px] text-app-fg-muted/40">{item.order_qty}</Accounting></td>
-                                                <td className="py-2 px-4 text-right"><Accounting className="text-[11px] text-app-fg-muted/40">{item.challan_qty}</Accounting></td>
-                                                <td className="py-2 px-4 text-right bg-blue-50/5 dark:bg-blue-900/5"><Accounting className="text-[11px] text-blue-600 dark:text-blue-400">{item.received_qty}</Accounting></td>
-                                                <td className="py-2 px-4 text-right bg-green-50/5 dark:bg-green-900/5"><Accounting className="text-[11px] text-green-600 dark:text-green-400">{item.accepted_qty}</Accounting></td>
-                                                <td className="py-2 px-4 text-right bg-red-50/5 dark:bg-red-900/5"><Accounting className={cn("text-[11px]", (item.rejected_qty || 0) > 0 ? "text-red-500" : "text-app-fg-muted/10")}>{item.rejected_qty || 0}</Accounting></td>
-                                                <td />
-                                            </tr>
-                                        ))}
-                                    </React.Fragment>
-                                );
-                            })}
+                            {rawItems.map((item: any, idx: number) => (
+                                <tr key={idx} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted border-app-border/10">
+                                    <td className="p-1 text-[10px] whitespace-nowrap font-medium text-app-fg">{header.div || "PLM"}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap font-medium text-app-fg">{header.po_number}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-center font-medium text-app-fg">{item.po_item_no}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-center text-muted-foreground">0</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-muted-foreground">{item.pmir_no || "-"}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap font-medium text-app-fg">{item.srv_number || header.srv_number}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-center font-medium text-app-fg">1</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-center text-muted-foreground">0</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-muted-foreground">{formatDate(header.srv_date)}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-muted-foreground">{item.challan_no || "-"}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-muted-foreground">{item.challan_date ? formatDate(item.challan_date) : "-"}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-muted-foreground">{item.invoice_no || "-"}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-muted-foreground">{item.invoice_date ? formatDate(item.invoice_date) : "-"}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-muted-foreground">{item.finance_date ? formatDate(item.finance_date) : "-"}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-muted-foreground">{item.cnote_no || "-"}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-muted-foreground">{item.cnote_date ? formatDate(item.cnote_date) : "-"}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-center text-muted-foreground">{item.unit || "NOS"}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-right font-mono text-muted-foreground">{item.order_qty}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-right font-mono text-muted-foreground">{item.challan_qty}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-right font-mono font-medium text-app-fg">{item.received_qty}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-right font-mono text-emerald-600 font-medium">{item.accepted_qty}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-right font-mono text-red-500 font-medium">{item.rejected_qty || 0}</td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>

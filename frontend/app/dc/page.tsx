@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { DCListClient } from "@/components/dc/DCListClient";
+import { DCListClient } from "./DCListClient";
 
 async function getDCsData() {
   try {

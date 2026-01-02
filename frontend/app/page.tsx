@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { DashboardShell } from "./DashboardShell";
 
 // Force dynamic rendering for the dashboard to get fresh data
 export const dynamic = 'force-dynamic';

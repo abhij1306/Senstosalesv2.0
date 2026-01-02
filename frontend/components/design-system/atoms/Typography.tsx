@@ -23,7 +23,7 @@ export function LargeTitle({ children, className, ...props }: TypographyProps) {
     return (
         <h1
             className={cn(
-                'font-display text-large-title font-semibold tracking-tight text-text-primary text-vibrancy',
+                'font-display text-large-title font-regular tracking-tight text-text-primary text-vibrancy',
                 className
             )}
             {...props}
@@ -41,7 +41,7 @@ export function Title1({ children, className, ...props }: TypographyProps) {
     return (
         <h1
             className={cn(
-                'font-display text-title-1 font-semibold tracking-tight text-text-primary text-vibrancy',
+                'font-display text-[32px] font-regular tracking-tight text-text-primary text-vibrancy leading-tight',
                 className
             )}
             {...props}
@@ -59,7 +59,7 @@ export function Title2({ children, className, ...props }: TypographyProps) {
     return (
         <h2
             className={cn(
-                'font-display text-title-2 font-medium text-text-primary text-vibrancy',
+                'font-display text-title-2 font-regular text-text-primary text-vibrancy',
                 className
             )}
             {...props}
@@ -77,7 +77,7 @@ export function Title3({ children, className, ...props }: TypographyProps) {
     return (
         <h3
             className={cn(
-                'font-text text-title-3 font-medium text-text-primary text-vibrancy',
+                'font-text text-title-3 font-regular text-text-primary text-vibrancy',
                 className
             )}
             {...props}
@@ -95,7 +95,7 @@ export function Headline({ children, className, ...props }: TypographyProps) {
     return (
         <p
             className={cn(
-                'font-text text-headline font-medium text-text-primary text-vibrancy',
+                'font-text text-headline font-regular text-text-primary text-vibrancy',
                 className
             )}
             {...props}
@@ -194,7 +194,7 @@ export function Caption1({ children, className, ...props }: TypographyProps) {
     return (
         <p
             className={cn(
-                'font-text text-caption-1 font-medium text-text-tertiary text-vibrancy tracking-loose',
+                'font-text text-caption-1 font-regular text-text-tertiary text-vibrancy tracking-loose',
                 className
             )}
             {...props}
@@ -212,7 +212,7 @@ export function Caption2({ children, className, ...props }: TypographyProps) {
     return (
         <p
             className={cn(
-                'font-text text-caption-2 font-medium text-text-tertiary text-vibrancy tracking-looser',
+                'font-text text-caption-2 font-regular text-text-tertiary text-vibrancy tracking-looser',
                 className
             )}
             {...props}
@@ -239,7 +239,7 @@ export function Monospaced({ children, className, size = 'body', ...props }: Mon
     return (
         <span
             className={cn(
-                'font-mono tabular-nums text-text-primary text-vibrancy',
+                'font-text tabular-nums text-text-primary text-vibrancy',
                 size === 'small' && 'text-footnote',
                 size === 'body' && 'text-callout',
                 size === 'large' && 'text-title-3',
@@ -259,7 +259,7 @@ export function Monospaced({ children, className, size = 'body', ...props }: Mon
 export const Label = ({ className, children, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) => (
     <label
         className={cn(
-            'font-text text-subhead font-medium text-text-secondary text-vibrancy',
+            'font-text text-subhead font-regular text-text-secondary text-vibrancy',
             className
         )}
         {...props}
@@ -272,7 +272,7 @@ export const H1 = Title1;
 export const H2 = Title2;
 export const H3 = Title3;
 export const H4 = ({ className, children, ...props }: TypographyProps) => (
-    <Caption2 className={cn("uppercase tracking-widest font-bold", className)} {...props}>
+    <Caption2 className={cn("uppercase tracking-widest font-medium", className)} {...props}>
         {children}
     </Caption2>
 );
@@ -282,7 +282,7 @@ export const Mono = Monospaced;
 export const MonoCode = ({ className, children, ...props }: TypographyProps) => (
     <code
         className={cn(
-            "text-xs font-mono font-bold bg-surface-secondary border border-border-tertiary px-1.5 py-0.5 rounded text-text-primary",
+            "text-[11px] font-mono font-regular bg-white/5 border-none px-1 rounded text-text-primary opacity-80",
             className
         )}
         {...props}
@@ -317,7 +317,7 @@ export const Accounting = ({ className, children, value, isCurrency, short, prec
 
     const variantStyles = {
         default: "text-text-primary",
-        highlight: "text-text-link font-bold",
+        highlight: "text-text-link",
         success: "text-app-success",
         warning: "text-app-warning",
         error: "text-app-error",

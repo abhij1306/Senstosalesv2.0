@@ -56,8 +56,7 @@ export type {
     ActionButtonGroupProps,
     Action,
 } from "./molecules/ActionButtonGroup";
-export { WarningModal } from "./molecules/WarningModal";
-export type { WarningModalProps } from "./molecules/WarningModal";
+export { ActionConfirmationModal } from "./molecules/ActionConfirmationModal";
 export { DocumentJourney } from "./molecules/DocumentJourney";
 export type { DocumentStage } from "./molecules/DocumentJourney";
 

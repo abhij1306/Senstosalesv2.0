@@ -1,7 +1,5 @@
-
-import React, { Suspense } from "react";
+import React from "react";
 import { api } from "@/lib/api";
-import { DetailSkeleton } from "@/components/design-system/molecules/skeletons/DetailSkeleton";
 import DCDetailClient from "./DCDetailClient";
 import { normalizeId } from "@/lib/routes";
 import { notFound } from "next/navigation";
@@ -35,13 +33,10 @@ export default async function DCDetailPage({ params }: { params: Promise<{ id: s
         return notFound();
     }
 
-
     return (
-        <Suspense fallback={<DetailSkeleton />}>
-            <DCDetailClient
-                initialData={dcData}
-                initialInvoiceData={invoiceCheck}
-            />
-        </Suspense>
+        <DCDetailClient
+            initialData={dcData}
+            initialInvoiceData={invoiceCheck}
+        />
     );
 }

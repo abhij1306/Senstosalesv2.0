@@ -23,6 +23,7 @@ import {
   TabsContent,
   DocumentJourney,
   MonoCode,
+  ActionConfirmationModal
 } from "@/components/design-system";
 import { useInvoiceStore } from "@/store/invoiceStore";
 
@@ -110,12 +111,16 @@ function CreateInvoicePageContent() {
   };
 
   const applyBuyerToStore = (buyer: Buyer) => {
-    updateHeader("buyer_name", buyer.name);
-    updateHeader("buyer_gstin", buyer.gstin);
-    updateHeader("buyer_address", buyer.billing_address);
-    updateHeader("buyer_state", buyer.state || "");
-    updateHeader("buyer_state_code", buyer.state_code || "");
-    updateHeader("place_of_supply", buyer.place_of_supply);
+    const updatedHeader = {
+      ...header,
+      buyer_name: buyer.name,
+      buyer_gstin: buyer.gstin,
+      buyer_address: buyer.billing_address,
+      buyer_state: buyer.state || "",
+      buyer_state_code: buyer.state_code || "",
+      place_of_supply: buyer.place_of_supply,
+    };
+    setHeader(updatedHeader);
   };
 
   const handleBuyerChange = (id: string) => {
@@ -150,8 +155,11 @@ function CreateInvoicePageContent() {
 
       setDCData(dcDetail.header);
 
+      // Fetch latest header from store to avoid stale closure (e.g. buyer info just set)
+      const currentHeader = useInvoiceStore.getState().data?.header || header;
+
       const newHeader = {
-        ...header,
+        ...currentHeader,
         dc_number: dcDetail.header.dc_number || "",
         dc_date: dcDetail.header.dc_date || "",
         buyers_order_no: dcDetail.header.po_number?.toString() || "",
@@ -211,9 +219,9 @@ function CreateInvoicePageContent() {
   };
 
   const handleSave = async () => {
-    setShowWarning(false);
     setIsSaving(true);
     setError(null);
+    setShowWarning(false);
     try {
       const payload = {
         invoice_number: header.invoice_number,
@@ -254,17 +262,17 @@ function CreateInvoicePageContent() {
 
   const topActions = (
     <div className="flex items-center gap-2">
-      <Button variant="outline" size="sm" onClick={() => router.back()} disabled={isSaving}>
+      <Button variant="secondary" onClick={() => router.back()} disabled={isSaving}>
         Cancel
       </Button>
       <Button
-        color="primary"
-        size="sm"
+        variant="primary"
         onClick={() => setShowWarning(true)}
         disabled={isSaving || items.length === 0 || isDuplicateNumber || !header.invoice_number}
+        className="rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-600/25 border-none"
       >
-        {isSaving ? <Loader2 size={16} className="animate-spin mr-2" /> : <Save size={16} className="mr-2" />}
-        {isSaving ? "Saving..." : "Generate Invoice"}
+        {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+        {isSaving ? "Saving..." : "Save Invoice"}
       </Button>
     </div>
   );
@@ -313,7 +321,7 @@ function CreateInvoicePageContent() {
 
         {/* Info Tabs */}
         <Tabs defaultValue="buyer" className="w-full">
-          <TabsList className="mb-4 bg-app-overlay/5 p-1 rounded-xl inline-flex border border-app-border/10">
+          <TabsList className="mb-4 bg-app-overlay/5 p-1 rounded-xl inline-flex border-none shadow-none">
             <TabsTrigger value="buyer">Buyer Info</TabsTrigger>
             <TabsTrigger value="references">References</TabsTrigger>
             <TabsTrigger value="logistics">Logistics</TabsTrigger>
@@ -326,7 +334,7 @@ function CreateInvoicePageContent() {
               exit={{ opacity: 0, y: -5 }}
               transition={{ duration: 0.15 }}
             >
-              <Card className="p-6 mt-0 border-none shadow-sm bg-app-surface/50 backdrop-blur-md">
+              <Card className="p-6 mt-0 border-none elevation-2 bg-app-surface/50 backdrop-blur-md">
                 <TabsContent value="buyer" className="mt-0">
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 border-r border-app-border/10 pr-6">
@@ -351,14 +359,14 @@ function CreateInvoicePageContent() {
                     </div>
 
                     <div className="lg:col-span-1">
-                      <Label className="text-app-accent mb-3 block uppercase tracking-widest">Billed To</Label>
+                      <Label className="text-app-accent mb-3 block uppercase tracking-wide">Billed To</Label>
                       <Select.Root value={selectedBuyerId} onValueChange={handleBuyerChange}>
-                        <Select.Trigger className="flex items-center justify-between w-full px-4 py-2 bg-app-surface border border-app-border/20 rounded-xl text-sm shadow-sm mb-4">
+                        <Select.Trigger className="flex items-center justify-between w-full px-4 py-2 bg-app-surface border-none rounded-xl text-sm shadow-none mb-4 elevation-1 focus:elevation-2">
                           <Select.Value placeholder="Select Buyer" />
                           <Select.Icon><ChevronDown size={14} /></Select.Icon>
                         </Select.Trigger>
                         <Select.Portal>
-                          <Select.Content className="overflow-hidden bg-app-surface rounded-2xl shadow-premium border border-app-border/10 z-50">
+                          <Select.Content className="overflow-hidden bg-app-surface rounded-2xl elevation-3 z-50">
                             <Select.Viewport className="p-1">
                               {buyers.map((b) => (
                                 <Select.Item key={b.id} value={b.id.toString()} className="flex items-center px-8 py-3 text-sm text-app-fg-muted rounded-xl outline-none hover:bg-app-accent/10 hover:text-app-accent cursor-pointer">
@@ -369,7 +377,7 @@ function CreateInvoicePageContent() {
                           </Select.Content>
                         </Select.Portal>
                       </Select.Root>
-                      <div className="p-4 rounded-xl bg-app-overlay/5 border border-app-border/10">
+                      <div className="p-4 rounded-xl bg-app-overlay/5 border-none">
                         <H3 className="text-app-fg text-sm mb-1">{header.buyer_name || "---"}</H3>
                         <Body className="text-app-fg-muted leading-relaxed">{header.buyer_address || "---"}</Body>
                       </div>
@@ -402,13 +410,13 @@ function CreateInvoicePageContent() {
         {/* Items Table */}
         {items.length > 0 && (
           <div className="space-y-4">
-            <Label className="m-0 text-app-fg-muted uppercase tracking-widest">
+            <Label className="m-0 text-app-fg-muted uppercase tracking-wide">
               Billing Structure ({items.length} Items)
             </Label>
-            <div className="table-container shadow-premium-hover bg-app-surface/30">
+            <div className="table-container border-none shadow-none bg-app-surface/30">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-app-border/10 bg-app-overlay/10">
+                  <tr className="border-none bg-app-overlay/10">
                     <th className="py-3 px-4 text-left w-[60px]"><Label>Lot</Label></th>
                     <th className="py-3 px-4 text-left"><Label>Description</Label></th>
                     <th className="py-3 px-4 text-left w-[120px]"><Label>HSN/SAC</Label></th>
@@ -428,26 +436,27 @@ function CreateInvoicePageContent() {
                     return (
                       <React.Fragment key={(parent.description || "") + groupIdx}>
                         {/* Summary Header */}
-                        <tr className="bg-app-overlay/10 border-b border-app-border/5">
-                          <td className="py-3 px-4"><MonoCode className="text-app-accent/60">#S</MonoCode></td>
-                          <td className="py-3 px-4"><Body className="text-[13px] text-app-fg-muted/80">{parent.description}</Body></td>
-                          <td className="py-3 px-4"><SmallText className="text-app-fg-muted/40 uppercase tracking-widest">{parent.hsn_sac || "-"}</SmallText></td>
-                          <td className="py-3 px-4 text-right"><Accounting className="text-[13px] text-app-fg-muted/60">{tQty}</Accounting></td>
-                          <td className="py-3 px-4 text-right"><Accounting className="text-[13px] text-app-fg-muted/40">{parent.rate}</Accounting></td>
-                          <td className="py-3 px-4 text-right bg-blue-50/5 dark:bg-blue-900/5"><Accounting className="text-[13px] text-blue-600/60 dark:text-blue-400/60">{tVal}</Accounting></td>
-                          <td className="py-3 px-4 text-right"><Accounting className="text-[13px] text-app-fg-muted/60">{tRec}</Accounting></td>
+                        <tr className="bg-app-overlay/10 border-none">
+                          <td className="py-3 px-4"><MonoCode className="text-app-accent/60">#{groupIdx + 1}</MonoCode></td>
+                          <td className="py-3 px-4"><Body className="text-xs text-app-fg-muted/80">{parent.description}</Body></td>
+                          <td className="py-3 px-4"><SmallText className="text-app-fg-muted/40 uppercase tracking-wide">{parent.hsn_sac || "-"}</SmallText></td>
+                          <td className="py-3 px-4 text-right"><Accounting className="text-xs text-app-fg-muted/60">{tQty}</Accounting></td>
+                          <td className="py-3 px-4 text-right"><Accounting className="text-xs text-app-fg-muted/40">{parent.rate}</Accounting></td>
+                          <td className="py-3 px-4 text-right bg-blue-50/5 dark:bg-blue-900/5"><Accounting className="text-xs text-blue-600/60 dark:text-blue-400/60">{tVal}</Accounting></td>
+                          <td className="py-3 px-4 text-right"><Accounting className="text-xs text-app-fg-muted/60">{tRec}</Accounting></td>
                         </tr>
                         {/* Lot Rows */}
                         {group.map((item, idx) => (
-                          <tr key={idx} className="bg-app-surface border-b border-app-border/5 transition-colors">
+                          <tr key={idx} className="bg-app-surface border-none transition-colors">
                             <td className="py-2 px-0 relative">
                               <div className="absolute left-[30px] top-0 bottom-0 w-[2px] bg-app-accent/20" />
-                              <div className="flex items-center gap-2 pl-[38px]">
-                                <span className="text-app-accent/30" style={{ fontSize: '10px' }}>L</span>
+                            </td>
+                            <td className="py-2 px-4">
+                              <div className="flex items-center gap-2">
                                 <MonoCode className="text-app-fg-muted">L-{item.po_sl_no}</MonoCode>
                               </div>
                             </td>
-                            <td colSpan={2} />
+                            <td />
                             <td className="py-2 px-4 text-right"><Accounting className="text-app-fg-muted">{item.quantity}</Accounting></td>
                             <td className="py-2 px-4 text-right" />
                             <td className="py-2 px-4 text-right bg-blue-50/5 dark:bg-blue-900/5">
@@ -468,17 +477,17 @@ function CreateInvoicePageContent() {
               <div className="lg:col-start-2">
                 <Card className="p-8 bg-app-surface/50 border-none shadow-premium-hover backdrop-blur-xl">
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center pb-2 border-b border-app-border/10">
-                      <Label className="uppercase tracking-widest text-app-fg-muted">Net Taxable Value</Label>
+                    <div className="flex justify-between items-center pb-2 border-none">
+                      <Label className="uppercase tracking-wide text-app-fg-muted">Net Taxable Value</Label>
                       <Accounting className="text-xl text-app-fg">{header.total_taxable_value}</Accounting>
                     </div>
                     <div className="flex justify-between items-center text-app-fg-muted">
-                      <Label className="uppercase tracking-widest">CGST (9%) + SGST (9%)</Label>
+                      <Label className="uppercase tracking-wide">CGST (9%) + SGST (9%)</Label>
                       <Accounting className="text-sm">{(header.cgst_total + header.sgst_total).toFixed(2)}</Accounting>
                     </div>
-                    <div className="pt-6 mt-4 border-t border-app-border/20 flex justify-between items-end">
+                    <div className="pt-6 mt-4 border-none flex justify-between items-end">
                       <div className="space-y-2">
-                        <Label className="uppercase text-app-accent tracking-widest">Total Invoice Value</Label>
+                        <Label className="uppercase text-app-accent tracking-wide">Total Invoice Value</Label>
                         <SmallText className="text-app-fg-muted block max-w-[280px] leading-snug italic lowercase first-letter:uppercase">
                           {amountInWords(header.total_invoice_value)} Only
                         </SmallText>
@@ -495,49 +504,16 @@ function CreateInvoicePageContent() {
         )}
       </div>
 
-      {/* Verification Modal */}
-      <AnimatePresence>
-        {showWarning && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-app-overlay/40 backdrop-blur-sm"
-            onClick={() => setShowWarning(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-md"
-            >
-              <Card className="p-0 overflow-hidden border-none shadow-2xl bg-app-surface">
-                <div className="p-8 pb-6 bg-gradient-to-br from-app-status-error/5 to-app-status-warning/5 border-b border-app-border/10 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-app-status-error flex items-center justify-center shadow-lg shadow-app-status-error/20">
-                    <AlertCircle className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <H3 className="text-app-fg leading-none">Generate Invoice?</H3>
-                    <SmallText className="text-app-fg-muted mt-1 uppercase tracking-widest">Permanent Financial Action</SmallText>
-                  </div>
-                </div>
-                <div className="p-8">
-                  <div className="p-4 rounded-2xl bg-app-status-error/5 border border-app-status-error/10 mb-6">
-                    <Body className="text-sm text-app-status-error italic">
-                      Warning: Generating this invoice will lock the associated DC and cannot be undone.
-                    </Body>
-                  </div>
-                  <div className="flex gap-3">
-                    <Button variant="outline" className="flex-1 font-medium" onClick={() => setShowWarning(false)}>Cancel</Button>
-                    <Button color="primary" className="flex-1 shadow-lg shadow-app-accent/20" onClick={handleSave}>Confirm</Button>
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ActionConfirmationModal
+        isOpen={showWarning}
+        onClose={() => setShowWarning(false)}
+        onConfirm={handleSave}
+        title="Generate Invoice?"
+        subtitle="Permanent Financial Action"
+        warningText="Warning: Generating this invoice will lock the associated DC and cannot be undone."
+        confirmLabel="Confirm"
+        cancelLabel="Cancel"
+      />
     </DocumentTemplate>
   );
 }

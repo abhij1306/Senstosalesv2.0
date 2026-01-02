@@ -1,7 +1,5 @@
-import { Suspense } from "react";
 import { api } from "@/lib/api";
-import { PONoteListClient } from "@/components/po-notes/PONoteListClient";
-import { PONotesSkeleton } from "@/components/po-notes/organisms/PONotesSkeleton";
+import { PONoteListClient } from "./PONoteListClient";
 
 async function getTemplates() {
     try {
@@ -17,8 +15,6 @@ export default async function PONotesPage() {
     const templates = await getTemplates();
 
     return (
-        <Suspense fallback={<PONotesSkeleton />}>
-            <PONoteListClient initialTemplates={templates} />
-        </Suspense>
+        <PONoteListClient initialTemplates={templates} />
     );
 }

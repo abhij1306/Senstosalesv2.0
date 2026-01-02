@@ -13,11 +13,11 @@ const cardVariants = cva(
     {
         variants: {
             variant: {
-                default: "bg-surface-primary/80 backdrop-blur-xl border border-border-quaternary shadow-sm",
-                glass: "bg-surface-primary/40 backdrop-blur-2xl border border-white/20 shadow-lg ring-1 ring-white/10",
-                elevated: "bg-surface-elevated/90 backdrop-blur-xl border border-border-tertiary shadow-xl hover:shadow-2xl hover:bg-surface-elevated",
-                flat: "bg-surface-secondary border border-transparent",
-                outline: "bg-transparent border border-border-tertiary",
+                default: "bg-white/70 dark:bg-surface-primary/60 backdrop-blur-[50px] backdrop-saturate-[200%] elevation-1",
+                glass: "bg-white/65 dark:bg-[rgba(35,35,40,0.55)] backdrop-blur-[45px] backdrop-saturate-[180%] elevation-2",
+                elevated: "bg-white/75 dark:bg-surface-elevated/70 backdrop-blur-[60px] backdrop-saturate-[200%] elevation-3 hover:elevation-3 hover:bg-white/80 dark:hover:bg-surface-elevated/75",
+                flat: "bg-surface-secondary/50",
+                outline: "bg-transparent border border-white/10 dark:border-white/5",
             },
             padding: {
                 none: "",

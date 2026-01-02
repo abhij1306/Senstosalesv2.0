@@ -1,0 +1,39 @@
+{
+  "timestamp": "2026-01-03T01:44:07.406423",
+  "overall": {
+    "overall_score": 34.7,
+    "overall_grade": "F",
+    "category_scores": {
+      "backend": 98,
+      "security": 100
+    },
+    "timestamp": "2026-01-03T01:44:07.406361"
+  },
+  "audits": {
+    "dark_theme": {
+      "name": "Dark Theme Readiness",
+      "score": 0,
+      "grade": "F",
+      "issues": 0
+    },
+    "eslint": {
+      "name": "Code Quality (ESLint)",
+      "score": 0,
+      "errors": 0,
+      "warnings": 0
+    },
+    "typescript": {
+      "name": "Type Safety",
+      "score": 0,
+      "errors": 0
+    },
+    "backend": {
+      "name": "Backend Quality",
+      "score": 98,
+      "issues": 1
+    }
+  },
+  "recommendations": [
+    "\ud83c\udf19 Run 'python mcp-servers/performance/dark-theme-fixer.py' to auto-fix color issues"
+  ]
+}

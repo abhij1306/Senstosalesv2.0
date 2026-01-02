@@ -4,114 +4,69 @@
 
 export const API_BASE_URL =
   typeof window !== "undefined"
-    ? ""
-    : process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    ? process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+    : process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
+import {
+  SRVListItem,
+  SRVStats,
+  PODetail,
+  POListItem,
+  POStats,
+  SearchResult,
+  DCListItem,
+  DCStats,
+  InvoiceListItem,
+  InvoiceStats,
+  DCItemRow,
+  InvoiceDetail,
+  ActivityItem,
+} from "@/types";
+
+export type {
+  SRVListItem,
+  SRVStats,
+  PODetail,
+  POListItem,
+  POStats,
+  SearchResult,
+  DCListItem,
+  DCStats,
+  InvoiceListItem,
+  InvoiceStats,
+  DCItemRow,
+  InvoiceDetail,
+  ActivityItem,
+};
 
 export interface Buyer {
   id: number;
   name: string;
+  address: string;
+  billing_address: string; // Alias for UI consistency
   gstin: string;
-  billing_address: string;
-  shipping_address?: string;
-  designation?: string;
-  place_of_supply: string;
   state?: string;
   state_code?: string;
-  is_default: boolean;
-  is_active: boolean;
-  created_at: string;
+  place_of_supply?: string;
+  is_default?: boolean;
 }
 
-export interface POHeader {
-  po_number: string;
-  po_date: string;
-  supplier_name: string;
-  supplier_code: string;
-  supplier_email: string;
-  department_no: string;
-  po_value: number;
-  net_po_value: number;
-  tin_no: string;
-  ecc_no: string;
-  remarks: string;
-  project_name?: string;
-  status?: string;
-}
-export interface POListItem {
-  po_number: number;
-  po_date: string;
-  vendor_name: string;
-  project_name: string;
-  items: any[];
-  total_amount?: number;
-  po_value?: number;
-  total_ordered_quantity?: number;
-  total_dispatched_quantity?: number;
-  total_received_quantity?: number;
-  total_rejected_quantity?: number;
-  total_pending_quantity?: number;
-  total_items_count?: number; // Added
-  status: string;
-  [key: string]: any;
+export type FetchOptions = RequestInit & {
+  retries?: number;
+  timeout?: number;
+};
+
+export class APIError extends Error {
+  constructor(
+    public status: number,
+    public message: string,
+    public data?: any,
+  ) {
+    super(message);
+    this.name = "APIError";
+  }
 }
 
-export interface POStats {
-  total_pos: number;
-  active_count: number; // Added for UI consumption
-  total_value: number;
-  pending_pos: number;
-  completed_pos: number;
-  open_orders_count: number;
-  pending_approval_count: number;
-  total_value_ytd: number;
-  total_value_change: number;
-  rejection_rate?: number; // Added
-}
-
-export interface DCListItem {
-  dc_number: string;
-  dc_date: string;
-  po_number: number;
-  consignee_name: string;
-  total_value: number;
-  status: string;
-}
-
-export interface DCStats {
-  total_challans: number;
-  pending_delivery: number;
-  completed_delivery: number;
-  total_value: number;
-}
-
-export interface DCDetailResponse {
-  header: any; // Using any for flexibility during refactor, strictly typed in refactor
-  items: any[];
-}
-
-export interface InvoiceDetailResponse {
-  header: any;
-  items: any[];
-}
-
-export interface InvoiceListItem {
-  invoice_number: string;
-  invoice_date: string;
-  linked_dc_numbers: string; // Comma separated
-  customer_gstin: string;
-  total_invoice_value: number;
-  status?: string; // Optional if not always present
-  [key: string]: any;
-}
-
-export interface InvoiceStats {
-  total_invoiced: number;
-  total_invoiced_change: number;
-  gst_collected: number;
-  gst_collected_change: number;
-  pending_payments: number;
-  pending_payments_count: number;
-}
 
 export interface Settings {
   supplier_name: string;
@@ -155,46 +110,6 @@ export interface DashboardSummary {
   total_ordered?: number;
   total_delivered?: number;
   total_received?: number;
-}
-
-// Removed conflicting re-exports
-
-import { SRVListItem, SRVStats } from "@/types";
-export type { SRVListItem, SRVStats };
-
-export interface ActivityItem {
-  type: "PO" | "DC" | "Invoice";
-  status: string;
-  number: string;
-  amount?: number;
-  date: string;
-}
-
-export interface SearchResult {
-  id: string | number;
-  type: "PO" | "DC" | "Invoice" | "SRV";
-  number: string;
-  date: string;
-  party: string;
-  amount?: number;
-  type_label: string;
-  status?: string;
-}
-
-type FetchOptions = RequestInit & {
-  retries?: number;
-  timeout?: number;
-};
-
-class APIError extends Error {
-  constructor(
-    public status: number,
-    public message: string,
-    public data?: any,
-  ) {
-    super(message);
-    this.name = "APIError";
-  }
 }
 
 // --- SIMPLE CACHE SYSTEM ---
@@ -394,7 +309,7 @@ export const api = {
   getPOStats: () => apiFetch<POStats>("/api/po/stats"),
   getPO: (poNumber: string | number) => apiFetch<any>(`/api/po/${poNumber}`), // Alias for internal use
   getPODetail: (poNumber: string | number) =>
-    apiFetch<any>(`/api/po/${poNumber}`), // Explicitly called by UI
+    apiFetch<PODetail>(`/api/po/${poNumber}`), // Explicitly called by UI
   checkPOHasDC: (poNumber: string | number) =>
     apiFetch<any>(`/api/po/${poNumber}/dc`),
   updatePO: (poNumber: string | number, data: any, items: any[]) =>
@@ -449,10 +364,10 @@ export const api = {
     apiFetch<any>(`/api/dc/${dcNumber}`, { method: "DELETE" }),
 
   // INVOICES
-  listInvoices: () => apiFetch<InvoiceListItem[]>("/api/invoice/"),
+  listInvoices: () => apiFetch<InvoiceListItem[]>("/api/invoice"),
   getInvoiceStats: () => apiFetch<InvoiceStats>("/api/invoice/stats"),
   createInvoice: (data: any) =>
-    apiFetch("/api/invoice/", { method: "POST", body: JSON.stringify(data) }),
+    apiFetch("/api/invoice", { method: "POST", body: JSON.stringify(data) }),
   getInvoiceDetail: (invoiceNumber: string) =>
     apiFetch<any>(`/api/invoice/${encodeURIComponent(invoiceNumber)}`),
 

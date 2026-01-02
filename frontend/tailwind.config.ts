@@ -118,6 +118,26 @@ const config: Config = {
                 error: 'rgb(var(--color-error) / <alpha-value>)',
                 info: 'rgb(var(--color-info) / <alpha-value>)',
             },
+            // Legacy/App aliases to map to Atomic/System tokens
+            app: {
+                fg: {
+                    DEFAULT: 'rgb(var(--text-primary) / <alpha-value>)',
+                    muted: 'rgb(var(--text-secondary) / <alpha-value>)',
+                },
+                bg: 'rgb(var(--bg-primary) / <alpha-value>)',
+                surface: {
+                    DEFAULT: 'rgb(var(--surface-primary) / <alpha-value>)',
+                    hover: 'rgb(var(--surface-secondary) / <alpha-value>)',
+                },
+                border: 'rgb(var(--border-primary) / <alpha-value>)',
+                accent: 'rgb(var(--system-blue) / <alpha-value>)',
+                overlay: 'rgba(255, 255, 255, 0.5)', // Fallback for glass calls
+                status: {
+                    error: 'rgb(var(--system-red) / <alpha-value>)',
+                    success: 'rgb(var(--system-green) / <alpha-value>)',
+                    warning: 'rgb(var(--system-yellow) / <alpha-value>)',
+                }
+            },
 
             /* ==========================================
                SPACING

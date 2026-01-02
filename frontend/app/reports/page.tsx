@@ -10,14 +10,13 @@ import {
   Calendar,
   AlertTriangle,
   Activity,
+  BarChart3,
+  FileDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 
-const ReportsCharts = dynamic(() => import("@/components/reports/organisms/ReportsCharts"), {
-  loading: () => (
-    <div className="h-[400px] w-full bg-app-surface-hover/20 animate-pulse rounded-2xl" />
-  ),
+const ReportsCharts = dynamic(() => import("./organisms/ReportsCharts"), {
   ssr: false,
 });
 import { api } from "@/lib/api";
@@ -33,9 +32,10 @@ import {
   DataTable,
   Badge,
   DocumentTemplate,
+  Button,
 } from "@/components/design-system";
-import { ReportNavGrid } from "@/components/reports/organisms/ReportNavGrid";
-import { ReportsDataCard } from "@/components/reports/organisms/ReportsDataCard";
+import { ReportNavGrid } from "./organisms/ReportNavGrid";
+import { ReportsDataCard } from "./organisms/ReportsDataCard";
 
 type ReportType = "sales" | "dc_register" | "invoice_register" | "pending" | "reconciliation";
 
@@ -305,6 +305,11 @@ export default function ReportsPage() {
       }));
     }
 
+    // Skip chart generation for non-chart tabs
+    if (["dc_register", "invoice_register", "pending"].includes(activeTab)) {
+      return [];
+    }
+
     if (activeTab === "reconciliation") {
       return [
         {
@@ -342,6 +347,7 @@ export default function ReportsPage() {
     setData([]);
     try {
       const dateParams = `start_date=${startDate}&end_date=${endDate}`;
+
       // Use centralized API for type-safe fetch
       const result = await api.getReports(activeTab, dateParams);
 
@@ -412,7 +418,7 @@ export default function ReportsPage() {
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="outline-none bg-transparent text-app-fg-muted text-xs font-bold uppercase"
+            className="outline-none bg-transparent text-app-fg-muted text-xs font-regular uppercase"
           />
         </Flex>
         <Box className="w-[1px] h-6 bg-app-fg-muted/10 mx-1" />
@@ -425,23 +431,23 @@ export default function ReportsPage() {
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="outline-none bg-transparent text-app-fg-muted text-xs font-bold uppercase"
+            className="outline-none bg-transparent text-app-fg-muted text-xs font-regular uppercase"
           />
         </Flex>
       </Flex>
-      <button
+      <Button
+        variant="excel"
         onClick={handleExport}
-        className="group flex items-center gap-3 px-6 py-3 bg-app-accent text-white rounded-2xl hover:brightness-110 shadow-lg transition-all active:scale-95 uppercase tracking-[0.1em]"
       >
-        <Download size={16} className="group-hover:translate-y-0.5 transition-transform" />
-        Export
-      </button>
+        <FileDown size={16} /> Export
+      </Button>
     </Flex>
   );
 
   return (
     <DocumentTemplate
-      title="Analytics"
+      icon={<BarChart3 />}
+      title="Reports"
       description="Multi-dimensional trend analysis and reconciliation"
       actions={toolbarContent}
     >

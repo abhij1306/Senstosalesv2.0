@@ -46,7 +46,7 @@ export default function BatchUploadCard() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -20, scale: 0.9 }}
                 className={cn(
-                    "fixed top-24 right-8 z-[100] cursor-grab active:cursor-grabbing",
+                    "fixed bottom-12 right-8 z-[100] cursor-grab active:cursor-grabbing",
                     minimized ? "w-auto" : "w-[400px]"
                 )}
             >
@@ -59,7 +59,7 @@ export default function BatchUploadCard() {
                 >
                     {minimized ? (
                         <Flex align="center" gap={3.5}>
-                            <Box className="relative w-12 h-12 flex items-center justify-center bg-gray-100/50 dark:bg-white/10 rounded-full shadow-inner border border-white/20 dark:border-white/5">
+                            <Box className="relative w-12 h-12 flex items-center justify-center bg-blue-50/50 dark:bg-blue-900/20 rounded-full shadow-inner border border-blue-100/20 dark:border-white/5">
                                 <svg className="w-full h-full transform -rotate-90 p-2">
                                     <circle
                                         cx="16"
@@ -68,7 +68,7 @@ export default function BatchUploadCard() {
                                         stroke="currentColor"
                                         strokeWidth="3"
                                         fill="transparent"
-                                        className="text-gray-400/20"
+                                        className="text-blue-400/20"
                                         viewBox="0 0 32 32"
                                     />
                                     <circle
@@ -92,7 +92,7 @@ export default function BatchUploadCard() {
                             </Box>
                             <Stack gap={0}>
                                 <div className="text-[12px] font-semibold text-app-fg leading-tight">Processing</div>
-                                <div className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight">
+                                <div className="text-[10px] font-bold text-text-secondary uppercase tracking-tight">
                                     {progress.current}/{progress.total} Ingested
                                 </div>
                             </Stack>
@@ -102,7 +102,7 @@ export default function BatchUploadCard() {
                                 className="h-8 w-8 ml-3 hover:bg-white/40 dark:hover:bg-white/10 rounded-full"
                                 onClick={() => setMinimized(false)}
                             >
-                                <Maximize2 size={15} className="text-gray-500" />
+                                <Maximize2 size={15} className="text-text-secondary" />
                             </Button>
                         </Flex>
                     ) : (
@@ -121,7 +121,7 @@ export default function BatchUploadCard() {
                                         <div className="text-[22px] font-semibold text-app-fg tracking-tight leading-tight">
                                             {isComplete ? "Finalized" : `Matrix Ingestion`}
                                         </div>
-                                        <div className="text-[11px] font-bold uppercase tracking-[0.1em] text-gray-500 dark:text-gray-400 opacity-70">
+                                        <div className="text-[11px] font-bold uppercase tracking-[0.1em] text-text-tertiary opacity-70">
                                             {files.length} Document{files.length !== 1 ? 's' : ''} Streamed
                                         </div>
                                     </Stack>
@@ -130,7 +130,7 @@ export default function BatchUploadCard() {
                                     <Button
                                         variant="ghost"
                                         size="compact"
-                                        className="h-9 w-9 rounded-full bg-gray-100/50 dark:bg-white/10 hover:bg-white/70 dark:hover:bg-white/20 text-gray-500 transition-all"
+                                        className="h-9 w-9 rounded-full bg-blue-50/50 dark:bg-white/10 hover:bg-white/70 dark:hover:bg-white/20 text-text-secondary transition-all"
                                         onClick={() => setMinimized(true)}
                                     >
                                         <Minimize2 size={16} />
@@ -152,14 +152,14 @@ export default function BatchUploadCard() {
                                 {/* Progress Bar */}
                                 <Box className="w-full">
                                     <Flex justify="between" align="end" className="mb-3 w-full px-1">
-                                        <div className="text-[11px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 opacity-60">
+                                        <div className="text-[11px] font-bold uppercase tracking-widest text-text-secondary opacity-60">
                                             Parser Velocity
                                         </div>
                                         <div className="text-[26px] font-bold text-primary tracking-tighter tabular-nums">
                                             {Math.round((progress.current / (progress.total || 1)) * 100)}%
                                         </div>
                                     </Flex>
-                                    <div className="h-4 w-full bg-gray-200/50 dark:bg-white/5 rounded-full overflow-hidden border border-white/20 dark:border-white/5 p-1">
+                                    <div className="h-4 w-full bg-blue-100/30 dark:bg-white/5 rounded-full overflow-hidden border border-blue-200/20 dark:border-white/5 p-1">
                                         <motion.div
                                             className={cn(
                                                 "h-full rounded-full shadow-[0_0_12px_rgba(0,122,255,0.4)] relative overflow-hidden transition-all duration-300",
@@ -193,10 +193,10 @@ export default function BatchUploadCard() {
                                             : "bg-gray-50/50 dark:bg-white/5 border-gray-200/40 dark:border-white/10"
                                     )}>
                                         <Flex align="center" gap={2} className="mb-2">
-                                            <AlertCircle size={14} className={rejectedCount > 0 ? "text-red-500" : "text-gray-400"} />
-                                            <div className={cn("text-[11px] font-bold uppercase tracking-widest opacity-80", rejectedCount > 0 ? "text-red-600 dark:text-red-400" : "text-gray-500 dark:text-gray-400")}>Rejected</div>
+                                            <AlertCircle size={14} className={rejectedCount > 0 ? "text-red-500" : "text-text-tertiary"} />
+                                            <div className={cn("text-[11px] font-bold uppercase tracking-widest opacity-80", rejectedCount > 0 ? "text-red-600 dark:text-red-400" : "text-text-secondary")}>Rejected</div>
                                         </Flex>
-                                        <div className={cn("text-3xl font-bold tracking-tighter tabular-nums", rejectedCount > 0 ? "text-red-600 dark:text-red-400" : "text-gray-300 dark:text-gray-600")}>{rejectedCount}</div>
+                                        <div className={cn("text-3xl font-bold tracking-tighter tabular-nums", rejectedCount > 0 ? "text-red-600 dark:text-red-400" : "text-blue-200 dark:text-blue-900/40")}>{rejectedCount}</div>
                                     </Box>
                                 </div>
 

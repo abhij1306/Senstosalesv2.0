@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { SRVListClient } from "@/components/srv/SRVListClient";
+import { SRVListClient } from "./SRVListClient";
 
 async function getSRVsData() {
   try {

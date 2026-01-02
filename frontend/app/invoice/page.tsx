@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { InvoiceListClient } from "@/components/invoice/InvoiceListClient";
+import { InvoiceListClient } from "./InvoiceListClient";
 
 async function getInvoicesData() {
   try {

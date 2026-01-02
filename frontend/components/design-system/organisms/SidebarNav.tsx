@@ -47,25 +47,25 @@ export function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-72 flex-shrink-0 flex flex-col tahoe-glass !bg-white/20 dark:!bg-black/20 z-20 m-4 ml-4 rounded-[24px] overflow-hidden border-white/20">
+    <aside className="w-64 flex-shrink-0 flex flex-col tahoe-glass z-20 m-4 ml-4 rounded-[24px] overflow-hidden">
       {/* Brand Header */}
-      <div className="h-24 flex items-center px-6 border-b border-white/10">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 bg-gradient-to-br from-system-blue to-system-cyan rounded-[12px] shadow-lg flex items-center justify-center text-white ring-1 ring-white/20">
-            <Package className="w-6 h-6" />
+      <div className="h-16 flex items-center px-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-system-blue to-system-cyan rounded-xl elevation-1 flex items-center justify-center text-white">
+            <Package className="w-5 h-5" />
           </div>
           <div className="flex flex-col justify-center">
-            <Headline className="leading-tight text-vibrancy font-semibold">Sensto Sales</Headline>
-            <Caption1 className="text-text-secondary opacity-90 leading-tight mt-0.5 font-medium">Pro Enterprise</Caption1>
+            <Body className="leading-tight text-text-primary">Sensto Sales</Body>
+            <Caption2 className="text-text-secondary opacity-90 leading-tight">Pro Enterprise</Caption2>
           </div>
         </div>
       </div>
 
       {/* Navigation Groups */}
-      <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-9 no-scrollbar">
+      <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-6 no-scrollbar">
         {navGroups.map((group) => (
           <div key={group.label}>
-            <Caption1 className="px-3 mb-3 pl-4 text-text-tertiary font-medium tracking-wide uppercase opacity-80">
+            <Caption1 className="px-3 mb-2 pl-4 text-text-tertiary tracking-wide uppercase opacity-80">
               {group.label}
             </Caption1>
             <ul className="space-y-1">
@@ -75,23 +75,39 @@ export function SidebarNav() {
                   (item.href !== "/" && pathname.startsWith(item.href + "/"));
 
                 return (
-                  <li key={item.href}>
+                  <li key={item.href} className="relative">
                     <Link
                       href={item.href}
                       className={cn(
-                        "flex items-center px-3.5 py-2.5 rounded-xl transition-all duration-200 group relative active:scale-[0.98] shadow-sm backdrop-blur-sm",
+                        "flex items-center px-3.5 py-2 rounded-xl transition-all duration-200 group relative active:scale-[0.98] z-10",
                         isActive
-                          ? "bg-system-blue/15 text-system-blue font-semibold"
-                          : "text-text-secondary hover:bg-white/40 dark:hover:bg-white/10 hover:text-text-primary hover:shadow-sm"
+                          ? "text-system-blue"
+                          : "text-text-secondary hover:text-text-primary"
                       )}
                     >
+                      {isActive && (
+                        <motion.div
+                          layoutId="sidebar-selection-capsule"
+                          className="absolute inset-0 bg-gradient-to-r from-system-blue/15 via-system-blue/10 to-system-blue/5 backdrop-blur-xl rounded-xl shadow-lg shadow-system-blue/20"
+                          style={{
+                            background: "linear-gradient(135deg, hsl(var(--system-blue) / 0.18), hsl(var(--system-blue) / 0.08))"
+                          }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 35,
+                            mass: 0.8
+                          }}
+                        />
+                      )}
                       <item.icon
+                        size={18}
                         className={cn(
-                          "w-[20px] h-[20px] mr-3 transition-colors",
+                          "mr-3 transition-colors relative z-10",
                           isActive ? "text-system-blue" : "text-text-tertiary group-hover:text-text-primary"
                         )}
                       />
-                      <Body className={cn("text-[15px] transition-colors", isActive ? "text-system-blue font-semibold" : "text-inherit font-medium")}>
+                      <Body className={cn("text-[14px] transition-colors relative z-10", isActive ? "text-system-blue font-medium" : "text-inherit")}>
                         {item.name}
                       </Body>
                     </Link>
@@ -104,19 +120,19 @@ export function SidebarNav() {
       </nav>
 
       {/* Premium Profile Footer */}
-      <div className="p-4 border-t border-white/10">
-        <div className="flex items-center p-3 bg-white/10 dark:bg-black/10 backdrop-blur-md rounded-[16px] shadow-sm border border-white/10 cursor-pointer hover:bg-white/20 transition-smooth active:scale-[0.98] group">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-system-gray to-slate-400 text-white flex items-center justify-center font-semibold text-sm shadow-inner ring-2 ring-white/10">
+      <div className="p-4">
+        <div className="flex items-center p-3 bg-white/5 dark:bg-black/5 rounded-xl transition-smooth active:scale-[0.98] group cursor-pointer hover:bg-white/10">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-blue-300 text-white flex items-center justify-center text-xs shadow-md elevation-1">
             <span>AS</span>
           </div>
-          <div className="ml-3.5 flex-1 overflow-hidden">
-            <Footnote className="font-semibold text-text-primary truncate">Abhijit S.</Footnote>
+          <div className="ml-3 flex-1 overflow-hidden">
+            <Footnote className="text-text-primary truncate">Abhijit S.</Footnote>
             <div className="flex items-center mt-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-system-green mr-1.5 shadow-[0_0_6px_rgba(var(--system-green-rgb),0.8)]"></span>
-              <Caption2 className="text-text-secondary truncate font-medium">Administrator</Caption2>
+              <span className="w-1.5 h-1.5 rounded-full bg-system-green mr-1.5 opacity-80"></span>
+              <Caption2 className="text-text-secondary truncate">Administrator</Caption2>
             </div>
           </div>
-          <Settings className="w-5 h-5 text-text-tertiary group-hover:text-text-primary transition-colors" />
+          <Settings size={18} className="text-text-tertiary group-hover:text-text-primary transition-colors" />
         </div>
       </div>
     </aside>

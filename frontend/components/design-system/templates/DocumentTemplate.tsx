@@ -30,9 +30,14 @@ export const DocumentTemplate = ({
     iconLayoutId,
 }: DocumentTemplateProps) => {
     return (
-        <div className={cn("w-full will-change-[transform,opacity]", className)}>
+        <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className={cn("w-full will-change-[transform,opacity]", className)}
+        >
             {/* Header Area - Glassmorphic if sticky needed, otherwise transparent */}
-            <div className="flex items-center justify-between mb-8 mt-2">
+            <div className="flex items-center justify-between mb-4 mt-1">
                 <div className="flex items-center gap-5">
                     {onBack && (
                         <Button
@@ -47,14 +52,14 @@ export const DocumentTemplate = ({
                     {icon && (
                         <motion.div
                             layoutId={iconLayoutId}
-                            className="w-12 h-12 rounded-[14px] bg-white/40 dark:bg-white/5 border border-white/60 dark:border-white/10 shadow-sm flex items-center justify-center text-system-blue backdrop-blur-md"
+                            className="w-12 h-12 rounded-2xl bg-white/70 dark:bg-surface-primary/50 elevation-2 flex items-center justify-center text-system-blue backdrop-blur-[50px] backdrop-saturate-[200%] transition-all duration-300"
                         >
                             {icon}
                         </motion.div>
                     )}
                     <div className="space-y-0.5">
                         <motion.div layoutId={layoutId}>
-                            <Title1 className="text-text-primary">
+                            <Title1 className="text-text-primary font-semibold tracking-tight">
                                 {title}
                             </Title1>
                         </motion.div>
@@ -72,6 +77,6 @@ export const DocumentTemplate = ({
             <div className="w-full">
                 {children}
             </div>
-        </div>
+        </motion.div>
     );
 };

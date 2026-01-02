@@ -4,28 +4,22 @@ import React from "react";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
-    Edit2,
-    Save,
-    X,
     FileText,
     Plus,
-    Trash2,
     Truck,
-    AlertCircle,
     FileDown,
 } from "lucide-react";
 import { api, API_BASE_URL } from "@/lib/api";
 import { formatDate, cn } from "@/lib/utils";
 import { DCDetail } from "@/types";
 import {
-    H3,
     Body,
-    SmallText,
-    Label,
+    Footnote,
+    Caption1,
+    Caption2,
     Accounting,
     Button,
-    Input,
-    Card,
+
     DocumentTemplate,
     Tabs,
     TabsList,
@@ -35,7 +29,6 @@ import {
 } from "@/components/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import { DetailSkeleton } from "@/components/design-system/molecules/skeletons/DetailSkeleton";
 import { useDCStore } from "@/store/dcStore";
 
 const DocumentJourney = dynamic(
@@ -58,28 +51,22 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
     const router = useRouter();
     const dcId = initialData.header.dc_number;
 
-    const { data, isEditing, setDC, updateHeader, updateItem, setEditing, reset } = useDCStore();
+    const { data, setDC } = useDCStore();
 
     useEffect(() => {
         if (initialData) setDC(initialData);
     }, [initialData, setDC]);
 
     // UI Local State
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [activeTab, setActiveTab] = useState("basic");
 
     const hasInvoice = initialInvoiceData?.has_invoice || false;
     const invoiceNumber = initialInvoiceData?.invoice_number || null;
 
-    if (!data) return <DetailSkeleton />;
+    // Derived state - safe access for hooks
+    const items = data?.items || [];
 
-    const header = data.header;
-    const items = data.items || [];
-    const notes = header.remarks ? header.remarks.split("\n\n") : [];
-
-    // Memoized grouping for Parent-Lot hierarchy
+    // Memoized grouping for Parent-Lot hierarchy (Must be called before any return)
     const groupedItems = useMemo(() => {
         return Object.values(items.reduce((acc, item) => {
             const key = item.po_item_id;
@@ -89,89 +76,42 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
         }, {} as Record<string, typeof items>));
     }, [items]);
 
-    const handleSave = async () => {
-        setLoading(true);
-        try {
-            await api.updateDC(dcId, header, items);
-            setEditing(false);
-            setError(null);
-        } catch (err: any) {
-            setError(err.message || "Failed to save");
-        } finally {
-            setLoading(false);
-        }
-    };
+    if (!data) return null;
 
-    const handleDelete = useCallback(async () => {
-        setLoading(true);
-        try {
-            await api.deleteDC(dcId);
-            router.push("/dc");
-        } catch (err: any) {
-            setError(err.message || "Failed to delete DC");
-            setShowDeleteConfirm(false);
-        } finally {
-            setLoading(false);
-        }
-    }, [dcId, router]);
+    const header = data.header;
+    const notes = header.remarks ? header.remarks.split("\n\n") : [];
+
+    // Edit and Delete logic removed for Read-Only View
 
     const topActions = (
         <div className="flex gap-3">
-            {!isEditing ? (
-                <>
-                    <Button
-                        variant="secondary"
-                        size="sm"
-                        asChild
-                        className="bg-app-status-success/10 text-app-status-success hover:bg-app-status-success/20"
-                    >
-                        <a href={`${API_BASE_URL}/api/dc/${dcId}/download`} target="_blank" rel="noreferrer">
-                            <FileDown size={16} className="mr-2" />
-                            Excel
-                        </a>
-                    </Button>
-                    {hasInvoice && (
-                        <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => router.push(`/invoice/${encodeURIComponent(invoiceNumber!)}`)}
-                        >
-                            <FileText size={16} className="mr-2" />
-                            View Invoice
-                        </Button>
-                    )}
-                    {!hasInvoice && (
-                        <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => router.push(`/invoice/create?dc=${dcId}`)}
-                        >
-                            <Plus size={16} className="mr-2" />
-                            Create Invoice
-                        </Button>
-                    )}
-                    <Button variant="primary" size="sm" onClick={() => setEditing(true)}>
-                        <Edit2 size={16} className="mr-2" />
-                        Edit
-                    </Button>
-                    {!hasInvoice && (
-                        <Button variant="destructive" size="sm" onClick={() => setShowDeleteConfirm(true)}>
-                            <Trash2 size={16} className="mr-2" />
-                            Delete
-                        </Button>
-                    )}
-                </>
-            ) : (
-                <>
-                    <Button variant="ghost" size="sm" onClick={reset}>
-                        <X size={16} className="mr-2" />
-                        Cancel
-                    </Button>
-                    <Button variant="primary" size="sm" onClick={handleSave} disabled={loading}>
-                        {loading ? <span className="animate-spin mr-2">◌</span> : <Save size={16} className="mr-2" />}
-                        Save Changes
-                    </Button>
-                </>
+            <Button
+                variant="excel"
+                asChild
+            >
+                <a href={`${API_BASE_URL}/api/dc/${dcId}/download`} target="_blank" rel="noreferrer">
+                    <FileDown size={14} />
+                    Excel
+                </a>
+            </Button>
+            {hasInvoice && (
+                <Button
+                    variant="secondary"
+                    onClick={() => router.push(`/invoice/${encodeURIComponent(invoiceNumber!)}`)}
+                >
+                    <FileText size={16} />
+                    View Invoice
+                </Button>
+            )}
+            {!hasInvoice && (
+                <Button
+                    variant="default"
+                    className="bg-blue-600 text-white hover:bg-blue-700 hover:text-white border-transparent"
+                    onClick={() => router.push(`/invoice/create?dc=${dcId}`)}
+                >
+                    <Plus size={16} />
+                    Create Invoice
+                </Button>
             )}
         </div>
     );
@@ -181,53 +121,20 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
             title={`DC #${header.dc_number}`}
             description={`${header.consignee_name} • ${formatDate(header.dc_date)}`}
             actions={topActions}
-            onBack={() => router.back()}
+            onBack={() => router.push("/dc")}
             layoutId={`dc-title-${header.dc_number}`}
-            icon={<Truck size={20} className="text-app-status-success" />}
+            icon={<Truck size={22} className="text-system-blue" />}
             iconLayoutId={`dc-icon-${header.dc_number}`}
         >
             <div className="space-y-6">
                 <DocumentJourney currentStage="DC" className="mb-2" />
 
-                {error && (
-                    <Card className="p-4 bg-app-status-error/10 border-none shadow-sm">
-                        <div className="flex items-center gap-2 text-app-status-error">
-                            <AlertCircle size={16} />
-                            <SmallText className="text-app-status-error">{error}</SmallText>
-                        </div>
-                    </Card>
-                )}
 
-                {/* Delete Confirmation */}
-                {showDeleteConfirm && (
-                    <Card className="p-6 bg-app-status-error/5 border-none shadow-premium-hover">
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-app-status-error/10 rounded-full">
-                                    <Trash2 size={20} className="text-app-status-error" />
-                                </div>
-                                <div className="space-y-1">
-                                    <H3 className="text-app-fg">Delete Delivery Challan?</H3>
-                                    <Body className="text-app-fg-muted mt-1">
-                                        This action cannot be undone. The DC and all its items will be permanently deleted.
-                                    </Body>
-                                </div>
-                            </div>
-                            <div className="flex gap-3 justify-end">
-                                <Button variant="outline" size="sm" onClick={() => setShowDeleteConfirm(false)}>
-                                    Cancel
-                                </Button>
-                                <Button variant="destructive" size="sm" onClick={handleDelete}>
-                                    <Trash2 size={16} className="mr-2" />
-                                    Delete DC
-                                </Button>
-                            </div>
-                        </div>
-                    </Card>
-                )}
+
+
 
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="mb-4 bg-transparent p-0 border-none shadow-none">
+                    <TabsList className="mb-4 bg-blue-500/5 p-1 rounded-xl w-fit border-none backdrop-blur-sm">
                         <TabsTrigger value="basic">Basic Info</TabsTrigger>
                         <TabsTrigger value="supplier">Supplier</TabsTrigger>
                         <TabsTrigger value="consignee">Consignee</TabsTrigger>
@@ -241,191 +148,157 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                             exit={{ opacity: 0, y: -5 }}
                             transition={{ duration: 0.15 }}
                         >
-                            <Card className="p-6 mt-0 border-none shadow-sm bg-app-surface/50 backdrop-blur-sm relative top-[-1px]">
+                            <div className="bg-app-surface rounded-xl elevation-2 p-6 mt-0">
                                 <TabsContent value="basic" className="mt-0">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div className="space-y-1.5">
-                                            <Label>DC Number</Label>
-                                            <Input value={header.dc_number} readOnly className="bg-app-overlay/5" />
+                                        <div className="space-y-1">
+                                            <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">DC Number</Caption2>
+                                            <div className="text-text-primary px-3 py-1.5 bg-blue-500/5 rounded-lg border-none text-[12px] font-medium transition-all">{header.dc_number}</div>
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <Label>DC Date</Label>
-                                            <Input
-                                                type="date"
-                                                value={header.dc_date}
-                                                onChange={(e) => updateHeader("dc_date", e.target.value)}
-                                                readOnly={!isEditing}
-                                                className={!isEditing ? "bg-transparent border-transparent" : ""}
-                                            />
+                                        <div className="space-y-1">
+                                            <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">DC Date</Caption2>
+                                            <div className="text-text-primary px-3 py-1.5 bg-blue-500/5 rounded-lg border-none text-[12px] transition-all">{header.dc_date}</div>
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <Label>PO Reference</Label>
-                                            <Input
-                                                value={header.po_number}
-                                                readOnly
-                                                className="bg-app-surface-hover cursor-pointer text-app-accent"
+                                        <div className="space-y-1">
+                                            <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">PO Reference</Caption2>
+                                            <button
+                                                className="w-full text-left px-3 py-1.5 bg-blue-500/5 hover:bg-app-accent/10 rounded-lg border-none text-app-accent font-medium transition-all text-[12px]"
                                                 onClick={() => router.push(`/po/${header.po_number}`)}
-                                            />
+                                            >
+                                                #{header.po_number}
+                                            </button>
                                         </div>
                                     </div>
                                 </TabsContent>
                                 <TabsContent value="supplier" className="mt-0">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-1.5">
-                                            <Label>Supplier Phone</Label>
-                                            <Input
-                                                value={header.supplier_phone}
-                                                onChange={(e) => updateHeader("supplier_phone", e.target.value)}
-                                                readOnly={!isEditing}
-                                                className={!isEditing ? "bg-transparent border-transparent" : ""}
-                                            />
+                                        <div className="space-y-1">
+                                            <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">Supplier Phone</Caption2>
+                                            <div className="text-text-primary px-3 py-1.5 bg-blue-500/5 rounded-lg border-none text-[12px] transition-all">{header.supplier_phone}</div>
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <Label>Supplier GSTIN</Label>
-                                            <Input
-                                                value={header.supplier_gstin}
-                                                onChange={(e) => updateHeader("supplier_gstin", e.target.value)}
-                                                readOnly={!isEditing}
-                                                className={!isEditing ? "bg-transparent border-transparent" : ""}
-                                            />
+                                        <div className="space-y-1">
+                                            <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">Supplier GSTIN</Caption2>
+                                            <div className="text-text-primary px-3 py-1.5 bg-blue-500/5 rounded-lg border-none text-[12px] transition-all">{header.supplier_gstin}</div>
                                         </div>
                                     </div>
                                 </TabsContent>
                                 <TabsContent value="consignee" className="mt-0">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-1.5">
-                                            <Label>Consignee Name</Label>
-                                            <Input
-                                                value={header.consignee_name}
-                                                onChange={(e) => updateHeader("consignee_name", e.target.value)}
-                                                readOnly={!isEditing}
-                                                className={!isEditing ? "bg-transparent border-transparent" : ""}
-                                            />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label>Consignee Address</Label>
-                                            <Input
-                                                value={header.consignee_address}
-                                                onChange={(e) => updateHeader("consignee_address", e.target.value)}
-                                                readOnly={!isEditing}
-                                                className={cn("min-h-[60px]", !isEditing ? "bg-transparent border-transparent" : "")}
-                                            />
-                                        </div>
+                                    <div className="space-y-1">
+                                        <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">Consignee Name</Caption2>
+                                        <div className="text-text-primary px-3 py-2 bg-blue-500/5 rounded-lg border-none">{header.consignee_name}</div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">Consignee Address</Caption2>
+                                        <div className="text-text-primary px-3 py-1.5 bg-blue-500/5 rounded-lg border-none min-h-[50px] text-[12px] leading-snug transition-all">{header.consignee_address}</div>
                                     </div>
                                 </TabsContent>
-                            </Card>
+                            </div>
                         </motion.div>
                     </AnimatePresence>
                 </Tabs>
 
                 {/* Items Table with Parent-Lot Hierarchy */}
-                <div className="space-y-3">
-                    <Label className="m-0 mb-1">Dispatched Items ({items.length})</Label>
-                    <div className="table-container shadow-premium-hover">
-                        <table className="w-full">
+                <div className="space-y-2">
+                    <div className="tahoe-glass-card elevation-1 overflow-hidden">
+                        <table className="table-standard w-full table-fixed">
                             <thead>
-                                <tr className="border-b border-app-border/10 bg-app-overlay/5">
-                                    <th className="py-3 px-2 text-left w-[60px]"><Label>Lot</Label></th>
-                                    <th className="py-3 px-2 text-left w-[120px]"><Label>Code</Label></th>
-                                    <th className="py-3 px-2 text-left w-[120px]"><Label>Drawing</Label></th>
-                                    <th className="py-3 px-2 text-left w-[200px]"><Label>Description</Label></th>
-                                    <th className="py-3 px-2 text-center w-[60px]"><Label>Unit</Label></th>
-                                    <th className="py-3 px-2 text-right w-[80px]"><Label>Ord</Label></th>
-                                    <th className="py-3 px-2 text-right w-[80px]"><Label>Dlv</Label></th>
-                                    <th className="py-3 px-2 text-right w-[100px] bg-blue-50/10 dark:bg-blue-900/10">
-                                        <Label className="text-blue-600 dark:text-blue-400">Disp</Label>
-                                    </th>
-                                    <th className="py-3 px-2 text-right w-[100px] bg-blue-50/10 dark:bg-blue-900/10">
-                                        <Label className="text-blue-600 dark:text-blue-400">Bal</Label>
-                                    </th>
-                                    <th className="py-3 px-2 text-right w-[80px]"><Label>Recd</Label></th>
+                                <tr className="header-glass">
+                                    <th className="py-2.5 px-3 text-center w-[50px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80">#</Caption1></th>
+                                    <th className="py-2.5 px-3 text-left w-[110px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80">Code</Caption1></th>
+                                    <th className="py-2.5 px-3 text-left w-[110px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80">Drawing</Caption1></th>
+                                    <th className="py-2.5 px-3 text-left border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80">Description</Caption1></th>
+                                    <th className="py-2.5 px-3 text-left w-[60px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80">Unit</Caption1></th>
+                                    <th className="py-2.5 px-3 text-right w-[90px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80 block text-right">Rate</Caption1></th>
+                                    <th className="py-2.5 px-3 text-right w-[80px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80 block text-right">Ord</Caption1></th>
+                                    <th className="py-2.5 px-3 text-right w-[80px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80 block text-right">Dlv</Caption1></th>
+                                    <th className="py-2.5 px-3 text-right w-[90px] bg-blue-600/5 dark:bg-blue-400/5 border-none"><Caption1 className="text-app-accent uppercase tracking-widest text-[11px] opacity-80 block text-right">Qty</Caption1></th>
+                                    <th className="py-2.5 px-3 text-right w-[90px] bg-blue-600/5 dark:bg-blue-400/5 border-none"><Caption1 className="text-app-warning uppercase tracking-widest text-[11px] opacity-80 block text-right">Bal</Caption1></th>
+                                    <th className="py-2.5 px-3 text-right w-[80px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80 block text-right">Recd</Caption1></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {groupedItems.map((group, groupIdx) => {
                                     const parentItem = group[0];
-                                    const totalOrd = group.reduce((sum, i) => sum + (i.ordered_quantity || 0), 0);
-                                    const totalDlv = group.reduce((sum, i) => sum + (i.delivered_quantity || 0), 0);
-                                    const totalRec = group.reduce((sum, i) => sum + (i.received_quantity || 0), 0);
+                                    const totalOrd = group.reduce((sum, i) => sum + (i.ordered_quantity || (group.length === 1 ? parentItem.ordered_quantity : 0) || 0), 0);
+                                    const totalDlv = group.reduce((sum, i) => sum + (i.delivered_quantity || (group.length === 1 ? parentItem.delivered_quantity : 0) || 0), 0);
+                                    const totalRec = group.reduce((sum, i) => sum + (i.received_quantity || (group.length === 1 ? parentItem.received_quantity : 0) || 0), 0);
                                     const totalBal = group.reduce((sum, i) => sum + (i.remaining_post_dc || 0), 0);
-                                    const totalDisp = group.reduce((sum, i) => sum + (i.dispatch_quantity || 0), 0);
+                                    const totalDisp = group.reduce((sum, i) => sum + (i.dispatch_quantity || (group.length === 1 ? parentItem.dispatch_quantity : 0) || 0), 0);
 
                                     return (
                                         <React.Fragment key={parentItem.po_item_id || groupIdx}>
-                                            <tr className="bg-app-overlay/5 border-b border-app-border/5">
-                                                <td className="py-3 px-2 align-top">
-                                                    <MonoCode className="text-app-fg-muted/60">
+                                            <tr className="bg-blue-500/5 border-none opacity-100">
+                                                <td className="py-2.5 px-3 text-center w-[50px] border-none">
+                                                    <MonoCode className="border-none bg-transparent p-0 text-[11px] opacity-70 font-regular">
                                                         #{parentItem.po_item_no || groupIdx + 1}
                                                     </MonoCode>
                                                 </td>
-                                                <td className="py-3 px-2 align-top">
-                                                    <Accounting className="text-app-fg-muted/60">{parentItem.material_code || "-"}</Accounting>
+                                                <td className="py-2.5 px-3 w-[110px] text-left border-none">
+                                                    <Accounting className="text-base text-text-primary font-regular">{parentItem.material_code || "-"}</Accounting>
                                                 </td>
-                                                <td className="py-3 px-2 align-top">
-                                                    <SmallText className="text-app-fg-muted/50">{parentItem.drg_no || "-"}</SmallText>
+                                                <td className="py-2.5 px-3 w-[110px] text-left border-none">
+                                                    <Caption1 className="text-text-tertiary text-[12px] font-regular">{parentItem.drg_no || "-"}</Caption1>
                                                 </td>
-                                                <td className="py-3 px-2 align-top">
-                                                    <Body className="truncate max-w-[200px] text-app-fg-muted/70" title={parentItem.material_description || parentItem.description}>
+                                                <td className="py-2.5 px-3 text-left border-none">
+                                                    <Body className="truncate max-w-full text-text-primary font-regular text-base" title={parentItem.material_description || parentItem.description}>
                                                         {parentItem.material_description || parentItem.description}
                                                     </Body>
                                                 </td>
-                                                <td className="py-3 px-2 align-top text-center">
-                                                    <SmallText className="uppercase text-app-fg-muted/50">{parentItem.unit}</SmallText>
+                                                <td className="py-2.5 px-3 w-[60px] text-left border-none">
+                                                    <Caption1 className="uppercase text-text-tertiary text-[12px] font-regular">{parentItem.unit}</Caption1>
                                                 </td>
-                                                <td className="py-3 px-2 align-top text-right">
-                                                    <Accounting className="text-app-fg-muted/60">{totalOrd}</Accounting>
+                                                <td className="py-2.5 px-3 w-[90px] text-right border-none">
+                                                    <Accounting className="text-base text-text-primary font-regular pr-0">{parentItem.po_rate?.toFixed(2) || "-"}</Accounting>
                                                 </td>
-                                                <td className="py-3 px-2 align-top text-right">
-                                                    <Accounting className="text-app-fg-muted/60">{totalDlv}</Accounting>
+                                                <td className="py-2.5 px-3 w-[80px] text-right border-none">
+                                                    <Accounting className="text-base text-text-tertiary font-regular pr-0">{totalOrd}</Accounting>
                                                 </td>
-                                                <td className="py-3 px-2 align-top text-right bg-blue-50/5 dark:bg-blue-900/5">
-                                                    <Accounting className="text-blue-600/60 dark:text-blue-400/60">{totalDisp}</Accounting>
+                                                <td className="py-2.5 px-3 w-[80px] text-right border-none">
+                                                    <Accounting className="text-base text-text-tertiary font-regular pr-0">{totalDlv}</Accounting>
                                                 </td>
-                                                <td className="py-3 px-2 align-top text-right bg-blue-50/5 dark:bg-blue-900/5">
-                                                    <Accounting className="text-blue-600/60 dark:text-blue-400/60">{totalBal}</Accounting>
+                                                <td className="py-2.5 px-3 w-[90px] text-right bg-blue-600/5 dark:bg-blue-400/5 border-none">
+                                                    <Accounting className="text-base text-app-accent font-regular pr-0">{totalDisp}</Accounting>
                                                 </td>
-                                                <td className="py-3 px-2 align-top text-right">
-                                                    <Accounting className="text-app-fg-muted/60">{totalRec}</Accounting>
+                                                <td className="py-2.5 px-3 w-[90px] text-right bg-blue-600/5 dark:bg-blue-400/5 border-none">
+                                                    <Accounting className="text-base text-app-warning font-regular pr-0">{totalBal}</Accounting>
+                                                </td>
+                                                <td className="py-2.5 px-3 w-[80px] text-right border-none">
+                                                    <Accounting className="text-base text-text-tertiary font-regular pr-0">{totalRec}</Accounting>
                                                 </td>
                                             </tr>
 
                                             {group.map((item) => {
                                                 const originalIndex = items.findIndex(i => i.id === item.id);
                                                 return (
-                                                    <tr key={item.id} className="bg-app-surface transition-colors border-b border-app-border/5">
-                                                        <td className="py-2 px-0 relative">
-                                                            <div className="absolute left-[30px] top-0 bottom-0 w-[2px] bg-app-accent/20" />
-                                                            <div className="flex items-center gap-2 pl-[38px]">
-                                                                <span className="text-app-accent/30" style={{ fontSize: '10px' }}>L</span>
-                                                                <MonoCode className="text-app-fg-muted">L-{item.lot_no}</MonoCode>
+                                                    <tr key={item.id} className="bg-transparent border-none">
+                                                        <td className="py-2 px-3 text-center w-[50px] border-none">
+                                                            <div className="w-[1px] h-4 bg-app-accent/20 mx-auto" />
+                                                        </td>
+                                                        <td className="py-2 px-3 w-[110px] text-left border-none">
+                                                            <div className="flex items-center gap-2">
+                                                                <MonoCode className="bg-transparent border-none text-text-secondary text-[10px] font-regular">L-{item.lot_no}</MonoCode>
                                                             </div>
                                                         </td>
-                                                        <td colSpan={4} />
-                                                        <td className="py-2 px-2 text-right">
-                                                            <Accounting className="text-app-fg-muted">{item.ordered_quantity}</Accounting>
+                                                        <td className="py-2 px-3 w-[110px] border-none" />
+                                                        <td className="py-2 px-3 border-none" />
+                                                        <td className="py-2 px-3 w-[60px] border-none" />
+                                                        <td className="py-2 px-3 w-[90px] text-right border-none" />
+                                                        <td className="py-2 px-3 w-[80px] text-right border-none">
+                                                            <Accounting className="text-sm text-text-secondary font-regular pr-0">{item.ordered_quantity}</Accounting>
                                                         </td>
-                                                        <td className="py-2 px-2 text-right">
-                                                            <Accounting className="text-app-fg-muted">{item.delivered_quantity}</Accounting>
+                                                        <td className="py-2 px-3 w-[80px] text-right border-none">
+                                                            <Accounting className="text-sm text-text-secondary font-regular pr-0">{item.delivered_quantity}</Accounting>
                                                         </td>
-                                                        <td className="py-2 px-2 bg-blue-50/5 dark:bg-blue-900/5">
-                                                            {isEditing ? (
-                                                                <Input
-                                                                    type="number"
-                                                                    value={item.dispatch_quantity || ""}
-                                                                    onChange={(e) => updateItem(originalIndex, "dispatch_quantity", parseFloat(e.target.value) || 0)}
-                                                                    className="text-right w-full font-mono h-7 text-xs border-blue-200 dark:border-blue-800 focus:ring-blue-500/20"
-                                                                />
-                                                            ) : (
-                                                                <Accounting className="text-blue-600 dark:text-blue-400 block text-right">
-                                                                    {item.dispatch_quantity}
-                                                                </Accounting>
-                                                            )}
+                                                        <td className="py-2 px-3 w-[90px] text-right bg-blue-600/5 dark:bg-blue-400/5 border-none">
+                                                            <Accounting className="text-sm text-app-accent font-regular pr-0">
+                                                                {item.dispatch_quantity}
+                                                            </Accounting>
                                                         </td>
-                                                        <td className="py-2 px-2 text-right bg-blue-50/5 dark:bg-blue-900/5">
-                                                            <Accounting className="text-blue-600 dark:text-blue-400">{item.remaining_post_dc}</Accounting>
+                                                        <td className="py-2 px-3 w-[90px] text-right bg-blue-600/5 dark:bg-blue-400/5 border-none">
+                                                            <Accounting className="text-sm text-app-warning font-regular pr-0">{(item.ordered_quantity || 0) - (item.dispatch_quantity || 0)}</Accounting>
                                                         </td>
-                                                        <td className="py-2 px-2 text-right">
-                                                            <Accounting className="text-app-fg-muted">{item.received_quantity}</Accounting>
+                                                        <td className="py-2 px-3 w-[80px] text-right border-none">
+                                                            <Accounting className="text-sm text-text-secondary font-regular pr-0">{item.received_quantity}</Accounting>
                                                         </td>
                                                     </tr>
                                                 );
@@ -438,18 +311,17 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                     </div>
                 </div>
 
-                {/* Notes */}
                 {notes.length > 0 && (
-                    <Card className="p-6 border-none shadow-sm bg-app-surface/30 backdrop-blur-sm">
-                        <Label className="mb-4 block">Additional Notes</Label>
+                    <div className="p-6 bg-app-surface rounded-xl elevation-2 mt-6">
+                        <Caption1 className="mb-4 block uppercase tracking-wide text-text-tertiary">Additional Notes</Caption1>
                         <div className="space-y-2">
                             {notes.map((note, idx) => (
-                                <div key={`note-${idx}`} className="p-3 bg-app-overlay/5 rounded-lg border border-app-border/5">
-                                    <Body className="text-app-fg-muted italic">{note}</Body>
+                                <div key={`note-${idx}`} className="p-3 bg-blue-500/5 rounded-xl">
+                                    <Body className="text-text-secondary italic leading-relaxed">{note}</Body>
                                 </div>
                             ))}
                         </div>
-                    </Card>
+                    </div>
                 )}
             </div>
         </DocumentTemplate>

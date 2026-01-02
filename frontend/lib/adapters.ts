@@ -103,7 +103,7 @@ export function poItemFromAPI(apiItem: any): POItem {
         hsn_code: apiItem.hsn_code,
         delivered_quantity: apiItem.delivered_quantity || apiItem.delivered_qty,
         pending_quantity: apiItem.pending_quantity || apiItem.pending_qty,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         deliveries:
             apiItem.deliveries?.map((d: any) => ({
                 id: d.id,

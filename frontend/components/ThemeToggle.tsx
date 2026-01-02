@@ -24,7 +24,7 @@ export function ThemeToggle() {
   if (!mounted) return null;
 
   return (
-    <div className="inline-flex p-1 bg-app-surface/50 backdrop-blur-md rounded-xl border border-app-border/30 shadow-sm ring-1 ring-app-accent/5">
+    <div className="inline-flex p-1 bg-app-surface/50 backdrop-blur-md rounded-xl border-none shadow-sm">
       <div className="flex gap-1">
         {themes.map(({ value, icon: Icon, label }) => (
           <button

@@ -1,0 +1,7 @@
+[tool.ruff]
+line-length = 120
+ignore = ["E501", "B008"]
+select = ["E", "F", "B"]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]

@@ -1,6 +1,5 @@
 import { api } from "@/lib/api";
-import { POListClient } from "@/components/po/POListClient";
-// import { Suspense } from "react";
+import { POListClient } from "./POListClient";
 
 async function getPOsData() {
     try {
@@ -12,8 +11,8 @@ async function getPOsData() {
             pos: posData || [],
             stats: statsData,
         };
-    } catch {
-        // console.error("Error fetching POs in Server Component:", error);
+    } catch (error) {
+        console.error("Error fetching POs in Server Component:", error);
         return {
             pos: [],
             stats: {

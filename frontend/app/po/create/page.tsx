@@ -127,14 +127,14 @@ function CreatePOPageContent() {
 
   const topActions = (
     <div className="flex items-center gap-2">
-      <Button variant="outline" size="sm" onClick={() => router.back()} disabled={saving}>
+      <Button variant="secondary" onClick={() => router.back()} disabled={saving}>
         Cancel
       </Button>
-      <Button color="primary" size="sm" onClick={handleSave} disabled={saving}>
+      <Button variant="primary" onClick={handleSave} disabled={saving}>
         {saving ? (
-          <Loader2 size={16} className="animate-spin mr-2" />
+          <Loader2 size={16} className="animate-spin" />
         ) : (
-          <Save size={16} className="mr-2" />
+          <Save size={16} />
         )}
         {saving ? "Saving..." : "Save PO"}
       </Button>
@@ -155,13 +155,13 @@ function CreatePOPageContent() {
 
         {/* Info Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4 bg-app-surface/30 p-1 border border-app-border/10 rounded-xl inline-flex overflow-x-auto max-w-full">
-            <TabsTrigger value="basic" className="px-6 py-2 rounded-lg data-[state=active]:bg-app-surface data-[state=active]:shadow-premium transition-all whitespace-nowrap">Basic Info</TabsTrigger>
-            <TabsTrigger value="supplier" className="px-6 py-2 rounded-lg data-[state=active]:bg-app-surface data-[state=active]:shadow-premium transition-all whitespace-nowrap">Supplier</TabsTrigger>
-            <TabsTrigger value="references" className="px-6 py-2 rounded-lg data-[state=active]:bg-app-surface data-[state=active]:shadow-premium transition-all whitespace-nowrap">References</TabsTrigger>
-            <TabsTrigger value="financial" className="px-6 py-2 rounded-lg data-[state=active]:bg-app-surface data-[state=active]:shadow-premium transition-all whitespace-nowrap">Financial</TabsTrigger>
-            <TabsTrigger value="issuer" className="px-6 py-2 rounded-lg data-[state=active]:bg-app-surface data-[state=active]:shadow-premium transition-all whitespace-nowrap">Issuer</TabsTrigger>
-            <TabsTrigger value="consignee" className="px-6 py-2 rounded-lg data-[state=active]:bg-app-surface data-[state=active]:shadow-premium transition-all whitespace-nowrap">Consignee</TabsTrigger>
+          <TabsList className="mb-4 bg-app-overlay/5 p-1 rounded-xl inline-flex overflow-x-auto max-w-full border-none shadow-none">
+            <TabsTrigger value="basic" className="px-6 py-2 rounded-lg data-[state=active]:bg-app-surface data-[state=active]:elevation-1 transition-all whitespace-nowrap">Basic Info</TabsTrigger>
+            <TabsTrigger value="supplier" className="px-6 py-2 rounded-lg data-[state=active]:bg-app-surface data-[state=active]:elevation-1 transition-all whitespace-nowrap">Supplier</TabsTrigger>
+            <TabsTrigger value="references" className="px-6 py-2 rounded-lg data-[state=active]:bg-app-surface data-[state=active]:elevation-1 transition-all whitespace-nowrap">References</TabsTrigger>
+            <TabsTrigger value="financial" className="px-6 py-2 rounded-lg data-[state=active]:bg-app-surface data-[state=active]:elevation-1 transition-all whitespace-nowrap">Financial</TabsTrigger>
+            <TabsTrigger value="issuer" className="px-6 py-2 rounded-lg data-[state=active]:bg-app-surface data-[state=active]:elevation-1 transition-all whitespace-nowrap">Issuer</TabsTrigger>
+            <TabsTrigger value="consignee" className="px-6 py-2 rounded-lg data-[state=active]:bg-app-surface data-[state=active]:elevation-1 transition-all whitespace-nowrap">Consignee</TabsTrigger>
           </TabsList>
 
           <AnimatePresence mode="wait">
@@ -172,7 +172,7 @@ function CreatePOPageContent() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              <Card className="p-6 mt-0 border-none shadow-sm bg-app-surface/50 backdrop-blur-md">
+              <Card className="p-6 mt-0 border-none elevation-2 bg-app-surface/50 backdrop-blur-md">
                 <TabsContent value="basic" className="mt-0">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="space-y-2">
@@ -323,7 +323,7 @@ function CreatePOPageContent() {
                       <textarea
                         value={header.remarks}
                         onChange={(e) => updateHeader("remarks", e.target.value)}
-                        className="w-full px-4 py-3 text-app-fg bg-app-surface border border-app-border/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-app-accent/10 focus:border-app-accent/30 resize-none transition-all font-medium text-sm leading-relaxed"
+                        className="w-full px-4 py-3 text-app-fg bg-app-surface border-none rounded-2xl focus:outline-none focus:bg-app-surface-hover resize-none transition-all font-medium text-sm leading-relaxed"
                         rows={4}
                         placeholder="Additional project information..."
                       />
@@ -346,7 +346,7 @@ function CreatePOPageContent() {
                       <textarea
                         value={header.consignee_address}
                         onChange={(e) => updateHeader("consignee_address", e.target.value)}
-                        className="w-full px-4 py-3 text-app-fg bg-app-surface border border-app-border/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-app-accent/10 focus:border-app-accent/30 resize-none transition-all font-medium text-sm leading-relaxed"
+                        className="w-full px-4 py-3 text-app-fg bg-app-surface border-none rounded-2xl focus:outline-none focus:bg-app-surface-hover resize-none transition-all font-medium text-sm leading-relaxed"
                         rows={4}
                       />
                     </div>
@@ -360,20 +360,20 @@ function CreatePOPageContent() {
         {/* Items Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label className="m-0 text-app-fg uppercase tracking-widest">
+            <Label className="m-0 text-app-fg uppercase tracking-wide font-semibold text-xs">
               Material Items ({items.length})
             </Label>
-            <Button color="secondary" size="sm" onClick={addItem}>
-              <Plus size={16} className="mr-2" />
+            <Button variant="secondary" onClick={addItem}>
+              <Plus size={16} />
               Add Item
             </Button>
           </div>
 
-          <Suspense fallback={<div className="h-64 w-full bg-app-surface/50 rounded-xl animate-pulse border border-app-border/10" />}>
-            <div className="table-container shadow-premium-hover overflow-visible">
+          <Suspense fallback={<div className="h-64 w-full bg-app-surface/50 rounded-xl animate-pulse border-none" />}>
+            <div className="table-container border-none shadow-none overflow-visible">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-app-border/10 bg-app-overlay/5">
+                  <tr className="border-none bg-app-overlay/5">
                     <th className="py-3 px-6 text-left w-16 px-6"><Label>#</Label></th>
                     <th className="py-3 px-6 text-left"><Label>Material Details</Label></th>
                     <th className="py-3 px-6 text-right w-32"><Label>Ordered Qty</Label></th>
@@ -390,7 +390,7 @@ function CreatePOPageContent() {
                           initial={{ opacity: 0, scale: 0.98 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, x: -20 }}
-                          className="border-b border-app-border/5 hover:bg-app-surface-hover/30 transition-colors bg-app-surface"
+                          className="border-none hover:bg-app-surface-hover/30 transition-colors bg-app-surface"
                         >
                           <td className="py-6 px-6 align-top">
                             <Accounting className="text-app-accent text-center block">
@@ -399,7 +399,7 @@ function CreatePOPageContent() {
                           </td>
                           <td className="py-6 px-6 space-y-4">
                             <div className="space-y-1.5">
-                              <Label className="tracking-widest text-app-fg-muted">DESCRIPTION</Label>
+                              <Label className="tracking-wide text-xs font-semibold text-app-fg-muted">DESCRIPTION</Label>
                               <Input
                                 value={item.material_description}
                                 onChange={(e) => updateItem(idx, "material_description", e.target.value)}
@@ -409,7 +409,7 @@ function CreatePOPageContent() {
                             </div>
                             <div className="grid grid-cols-3 gap-4">
                               <div className="space-y-1.5">
-                                <Label className="tracking-widest text-app-fg-muted">CODE</Label>
+                                <Label className="tracking-wide text-xs font-semibold text-app-fg-muted">CODE</Label>
                                 <Input
                                   value={item.material_code}
                                   onChange={(e) => updateItem(idx, "material_code", e.target.value)}
@@ -418,7 +418,7 @@ function CreatePOPageContent() {
                                 />
                               </div>
                               <div className="space-y-1.5">
-                                <Label className="tracking-widest text-app-fg-muted">DRAWING</Label>
+                                <Label className="tracking-wide text-xs font-semibold text-app-fg-muted">DRAWING</Label>
                                 <Input
                                   value={item.drg_no}
                                   onChange={(e) => updateItem(idx, "drg_no", e.target.value)}
@@ -427,7 +427,7 @@ function CreatePOPageContent() {
                                 />
                               </div>
                               <div className="space-y-1.5">
-                                <Label className="tracking-widest text-app-fg-muted">UNIT</Label>
+                                <Label className="tracking-wide text-xs font-semibold text-app-fg-muted">UNIT</Label>
                                 <Input
                                   value={item.unit}
                                   onChange={(e) => updateItem(idx, "unit", e.target.value)}
@@ -439,7 +439,7 @@ function CreatePOPageContent() {
                           </td>
                           <td className="py-6 px-6 align-top text-right">
                             <div className="space-y-1.5">
-                              <Label className="tracking-widest text-app-fg-muted">QTY</Label>
+                              <Label className="tracking-wide text-xs font-semibold text-app-fg-muted">QTY</Label>
                               <Input
                                 type="number"
                                 value={item.ordered_quantity}
@@ -451,7 +451,7 @@ function CreatePOPageContent() {
                           <td className="py-6 px-6 align-top text-right">
                             <div className="space-y-4">
                               <div className="space-y-1.5">
-                                <Label className="tracking-widest text-app-fg-muted">UNIT RATE</Label>
+                                <Label className="tracking-wide text-xs font-semibold text-app-fg-muted">UNIT RATE</Label>
                                 <Input
                                   type="number"
                                   value={item.po_rate}
@@ -459,8 +459,8 @@ function CreatePOPageContent() {
                                   className="text-right tabular-nums"
                                 />
                               </div>
-                              <div className="pt-2 border-t border-app-border/10">
-                                <Label className="tracking-widest text-app-fg-muted block mb-1">ITEM VALUE</Label>
+                              <div className="pt-2 border-none">
+                                <Label className="tracking-wide text-xs font-semibold text-app-fg-muted block mb-1">ITEM VALUE</Label>
                                 <Accounting isCurrency className="text-app-accent text-right block text-base">
                                   {item.item_value}
                                 </Accounting>
@@ -472,7 +472,7 @@ function CreatePOPageContent() {
                               variant="ghost"
                               size="sm"
                               onClick={() => removeItem(idx)}
-                              className="text-app-fg-muted hover:text-app-status-error hover:bg-app-status-error/10 transition-all mt-6"
+                              className="text-app-fg-muted hover:text-app-status-error hover:bg-app-status-error/10 transition-all mt-6 rounded-full p-2"
                             >
                               <Trash2 size={16} />
                             </Button>
@@ -487,7 +487,7 @@ function CreatePOPageContent() {
                               <Package className="w-8 h-8 text-app-fg-muted mb-0 stroke-[1.5]" />
                             </div>
                             <div className="space-y-1">
-                              <Body className="text-app-fg-muted uppercase tracking-widest">No items defined</Body>
+                              <Body className="text-app-fg-muted uppercase tracking-wide font-medium">No items defined</Body>
                               <SmallText>Define material items for this purchase order</SmallText>
                             </div>
                             <Button variant="secondary" size="sm" onClick={addItem} className="mt-2">
@@ -510,7 +510,7 @@ function CreatePOPageContent() {
                   <div className="absolute top-0 right-0 w-32 h-32 bg-app-accent/5 rounded-bl-full -mr-16 -mt-16 pointer-events-none" />
                   <div className="flex justify-between items-end">
                     <div className="space-y-2">
-                      <Label className="uppercase tracking-[0.2em] text-app-fg-muted">Estimated Contract Value</Label>
+                      <Label className="uppercase tracking-wide font-semibold text-xs text-app-fg-muted">Estimated Contract Value</Label>
                       <Body className="text-app-fg-muted italic lowercase first-letter:uppercase max-w-[250px] leading-tight block">
                         Net value including all materials and quantities
                       </Body>
@@ -541,7 +541,7 @@ export default function CreatePOPage() {
         <div className="flex items-center justify-center min-h-screen bg-app-bg">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="animate-spin text-app-accent" size={48} />
-            <Body className="text-app-fg-muted animate-pulse uppercase tracking-[0.2em] text-xs">Preparing Workspace</Body>
+            <Body className="text-app-fg-muted animate-pulse uppercase tracking-wide text-xs font-medium">Preparing Workspace</Body>
           </div>
         </div>
       }

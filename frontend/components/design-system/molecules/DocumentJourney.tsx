@@ -13,7 +13,7 @@ import { Check, ChevronRight, Circle } from "lucide-react"; export type Document
 export const DocumentJourney = ({ currentStage, stages = ["PO", "DC", "Invoice"], className }: DocumentJourneyProps) => {
     const currentIndex = stages.indexOf(currentStage);
     return (
-        <div className={cn("flex items-center gap-2", className)}>
+        <div className={cn("flex items-center gap-1.5", className)}>
             {stages.map((stage, index) => {
                 const isCompleted = index < currentIndex;
                 const isActive = index === currentIndex;
@@ -21,29 +21,29 @@ export const DocumentJourney = ({ currentStage, stages = ["PO", "DC", "Invoice"]
                 return (
                     <React.Fragment key={stage}>
                         <div className={cn(
-                            "flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 border",
+                            "flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300",
                             isActive
-                                ? "bg-app-surface-raised border-app-fg-secondary shadow-md"
+                                ? "bg-app-surface elevation-1 text-text-primary"
                                 : isCompleted
-                                    ? "bg-app-status-success/10 border-app-status-success/20 text-app-status-success"
-                                    : "bg-transparent border-transparent text-app-fg-secondary",
-                        )} >
+                                    ? "bg-system-green/10 text-system-green"
+                                    : "bg-transparent text-text-tertiary",
+                        )}>
                             {isCompleted ? (
-                                <Check size={12} className="text-app-status-success" />
+                                <Check size={10} strokeWidth={3} className="text-system-green" />
                             ) : isActive ? (
-                                <div className="w-1.5 h-1.5 rounded-full bg-app-accent animate-pulse" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-app-accent" />
                             ) : (
-                                <Circle size={12} className="text-app-fg-secondary opacity-50" />
+                                <Circle size={10} className="text-text-tertiary opacity-50" />
                             )}
                             <span className={cn(
-                                "text-[10px] uppercase tracking-widest font-black",
-                                isActive ? "text-app-fg-primary" : isCompleted ? "text-app-status-success" : "text-app-fg-secondary",
-                            )} >
+                                "text-caption-2 uppercase tracking-wider font-regular",
+                                isActive ? "text-text-primary" : isCompleted ? "text-system-green" : "text-text-tertiary",
+                            )}>
                                 {stage}
                             </span>
                         </div>
                         {index < stages.length - 1 && (
-                            <div className="w-4 h-[1px] bg-app-border" />
+                            <div className="w-4 h-[1px] bg-transparent" />
                         )}
                     </React.Fragment>
                 );

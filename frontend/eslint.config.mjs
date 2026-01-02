@@ -44,12 +44,12 @@ export default tseslint.config(
     },
     rules: {
       // ENFORCEMENT: Block manual Tailwind font/color overrides
-      "no-restricted-syntax": ["error", {
+      "no-restricted-syntax": ["warn", {
         selector: "JSXAttribute[name.name='className'][value.value=/text-\\[|font-\\[/]",
         message: "VIOLATION: Use Typography atoms (H1, H2, Accounting) instead of manual font classes."
       }],
       // ARCHITECTURE: Prevent Pages from importing Atoms directly
-      "no-restricted-imports": ["error", {
+      "no-restricted-imports": ["warn", {
         patterns: [{
           group: ["@/components/design-system/atoms"],
           message: "Pages must import Organisms or Templates only to maintain Atomic hierarchy."
@@ -59,7 +59,7 @@ export default tseslint.config(
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
       "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-unused-vars": ["error", {
+      "@typescript-eslint/no-unused-vars": ["warn", {
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_"
       }],

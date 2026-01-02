@@ -1,7 +1,5 @@
-
-import React, { Suspense } from "react";
+import React from "react";
 import { api } from "@/lib/api";
-import { DetailSkeleton } from "@/components/design-system/molecules/skeletons/DetailSkeleton";
 import PODetailClient from "./PODetailClient";
 
 // Function to fetch data on the server
@@ -40,8 +38,6 @@ export default async function PODetailPage({ params }: { params: { id: string } 
     const { id } = await params;
 
     return (
-        <Suspense fallback={<DetailSkeleton />}>
-            <POContent id={id} />
-        </Suspense>
+        <POContent id={id} />
     );
 }

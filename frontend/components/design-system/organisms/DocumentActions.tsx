@@ -72,7 +72,7 @@ export function DocumentActions({
                 </Button>
             )}
             {onDelete && canDelete && (
-                <Button variant="destructive" size="sm" onClick={onDelete} disabled={isDeleting}>
+                <Button variant="destructive" size="sm" onClick={onDelete} disabled={isDeleting} className="rounded-full">
                     <Trash2 size={16} /> {isDeleting ? "Deleting..." : "Delete"}
                 </Button>
             )}

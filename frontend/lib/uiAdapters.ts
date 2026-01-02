@@ -21,7 +21,7 @@ import type {
     DCFormData,
     DCCreateRequest,
 } from "@/types/ui";
-import { InvoiceDetailResponse, DCDetailResponse } from "@/lib/api";
+import { InvoiceDetail, DCDetail } from "@/types";
 
 // ============================================================
 // INVOICE ADAPTERS
@@ -30,15 +30,15 @@ import { InvoiceDetailResponse, DCDetailResponse } from "@/lib/api";
 /**
  * Transform API invoice response to UI model
  */
-export function invoiceApiToUi(response: InvoiceDetailResponse): InvoiceUI {
+export function invoiceApiToUi(response: InvoiceDetail): InvoiceUI {
     const { header, items } = response;
     return {
         invoiceNumber: header.invoice_number,
         invoiceDate: header.invoice_date,
-        dcNumber: header.linked_dc_numbers,
-        poNumber: header.po_numbers,
+        dcNumber: header.linked_dc_numbers || "",
+        poNumber: header.po_numbers || "",
         buyer: {
-            name: header.buyer_name,
+            name: header.buyer_name || "",
             address: header.buyer_address || "",
             gstin: header.buyer_gstin || "",
             state: header.buyer_state || "",
@@ -46,36 +46,36 @@ export function invoiceApiToUi(response: InvoiceDetailResponse): InvoiceUI {
             placeOfSupply: header.place_of_supply || "",
         },
         order: {
-            orderNumber: header.buyers_order_no,
-            orderDate: header.buyers_order_date,
+            orderNumber: header.buyers_order_no || "",
+            orderDate: header.buyers_order_date || "",
         },
         transport: {
-            vehicleNumber: header.vehicle_no,
-            lrNumber: header.lr_no,
-            transporterName: header.transporter,
-            destination: header.destination,
-            termsOfDelivery: header.terms_of_delivery,
+            vehicleNumber: header.vehicle_no || "",
+            lrNumber: header.lr_no || "",
+            transporterName: header.transporter || "",
+            destination: header.destination || "",
+            termsOfDelivery: header.terms_of_delivery || "",
         },
         payment: {
-            gemcNumber: header.gemc_number,
-            modeOfPayment: header.mode_of_payment,
+            gemcNumber: header.gemc_number || "",
+            modeOfPayment: header.mode_of_payment || "",
             paymentTerms: header.payment_terms || "45 Days",
         },
         documents: {
-            despatchDocNumber: header.despatch_doc_no,
-            srvNumber: header.srv_no,
-            srvDate: header.srv_date,
+            despatchDocNumber: header.despatch_doc_no || "",
+            srvNumber: header.srv_no || "",
+            srvDate: header.srv_date || "",
         },
         items: items.map(invoiceItemApiToUi),
         totals: {
-            taxableValue: header.taxable_value,
-            cgst: header.cgst,
-            sgst: header.sgst,
-            igst: header.igst,
-            totalInvoiceValue: header.total_invoice_value,
+            taxableValue: header.taxable_value || 0,
+            cgst: header.cgst || 0,
+            sgst: header.sgst || 0,
+            igst: header.igst || 0,
+            totalInvoiceValue: header.total_invoice_value || 0,
         },
-        remarks: header.remarks,
-        createdAt: header.created_at,
+        remarks: header.remarks || "",
+        createdAt: header.created_at || "",
     };
 }
 
@@ -83,26 +83,26 @@ export function invoiceApiToUi(response: InvoiceDetailResponse): InvoiceUI {
  * Transform API invoice item to UI model
  */
 export function invoiceItemApiToUi(
-    item: InvoiceDetailResponse["items"][0]
+    item: InvoiceDetail["items"][0]
 ): InvoiceItemUI {
     return {
-        lotNumber: item.po_sl_no,
-        description: item.description,
-        hsnCode: item.hsn_sac,
+        lotNumber: item.po_sl_no || "",
+        description: item.description || "",
+        hsnCode: item.hsn_sac || "",
         quantity: item.quantity,
-        unit: item.unit,
+        unit: item.unit || "",
         rate: item.rate,
         taxableValue: item.taxable_value,
         tax: {
-            cgstRate: item.cgst_rate,
-            cgstAmount: item.cgst_amount,
-            sgstRate: item.sgst_rate,
-            sgstAmount: item.sgst_amount,
-            igstRate: item.igst_rate,
-            igstAmount: item.igst_amount,
+            cgstRate: item.cgst_rate || 0,
+            cgstAmount: item.cgst_amount || 0,
+            sgstRate: item.sgst_rate || 0,
+            sgstAmount: item.sgst_amount || 0,
+            igstRate: item.igst_rate || 0,
+            igstAmount: item.igst_amount || 0,
         },
         totalAmount: item.total_amount,
-        numberOfPackets: item.no_of_packets,
+        numberOfPackets: item.no_of_packets || 0,
     };
 }
 
@@ -182,33 +182,33 @@ export function createDefaultInvoiceForm(dcNumber?: string): InvoiceFormData {
 /**
  * Transform API DC response to UI model
  */
-export function dcApiToUi(response: DCDetailResponse): DCUI {
+export function dcApiToUi(response: DCDetail): DCUI {
     const { header, items } = response;
     return {
         dcNumber: header.dc_number,
         dcDate: header.dc_date,
-        poNumber: header.po_number,
+        poNumber: header.po_number ? parseInt(header.po_number) : 0,
         supplier: {
             phone: header.supplier_phone || "0755 – 4247748",
             gstin: header.supplier_gstin || "23AACFS6810L1Z7",
         },
         consignee: {
-            name: header.consignee_name,
-            address: header.consignee_address,
-            gstin: header.consignee_gstin,
+            name: header.consignee_name || "",
+            address: header.consignee_address || "",
+            gstin: header.consignee_gstin || "",
         },
-        departmentNumber: header.department_no,
+        departmentNumber: header.department_no || "",
         transport: {
-            modeOfTransport: header.mode_of_transport,
-            vehicleNumber: header.vehicle_no,
-            transporterName: header.transporter,
-            lrNumber: header.lr_no,
-            ewayBillNumber: header.eway_bill_no,
+            modeOfTransport: header.mode_of_transport || "",
+            vehicleNumber: header.vehicle_no || "",
+            transporterName: header.transporter || "",
+            lrNumber: header.lr_no || "",
+            ewayBillNumber: header.eway_bill_no || "",
         },
-        inspectionCompany: header.inspection_company,
+        inspectionCompany: header.inspection_company || "",
         items: items.map((item, idx) => dcItemApiToUi(item, idx)),
-        remarks: header.remarks,
-        createdAt: header.created_at,
+        remarks: header.remarks || "",
+        createdAt: header.created_at || "",
     };
 }
 
@@ -216,19 +216,19 @@ export function dcApiToUi(response: DCDetailResponse): DCUI {
  * Transform API DC item to UI model
  */
 export function dcItemApiToUi(
-    item: DCDetailResponse["items"][0],
+    item: DCDetail["items"][0],
     index: number
 ): DCItemUIRow {
     return {
         id: `item-${index}`,
         lotNumber: item.lot_no?.toString() || (index + 1).toString(),
         description: item.material_description || "",
-        orderedQuantity: item.lot_ordered_qty || 0,
+        orderedQuantity: item.lot_ordered_quantity || 0,
         remainingQuantity: item.remaining_post_dc || 0,
-        dispatchQuantity: item.dispatch_qty || 0,
-        poItemId: item.po_item_id,
-        hsnCode: item.hsn_code,
-        hsnRate: item.hsn_rate,
+        dispatchQuantity: item.dispatch_quantity || 0,
+        poItemId: parseInt(item.po_item_id),
+        hsnCode: item.hsn_code || "",
+        hsnRate: item.hsn_rate || 0,
     };
 }
 

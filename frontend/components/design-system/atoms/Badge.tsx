@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  * Subtle semantic indicators using system colors.
  */
 const badgeVariants = cva(
-    "inline-flex items-center px-2.5 py-0.5 rounded-full text-caption-1 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border border-transparent",
+    "inline-flex items-center px-2 py-0.5 rounded-full text-caption-2 font-regular transition-colors focus:outline-none border border-transparent",
     {
         variants: {
             variant: {

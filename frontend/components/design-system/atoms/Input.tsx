@@ -2,6 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
+import { Caption2 } from "./Typography";
 
 /**
  * Input Atom - Atomic Design System v1.0
@@ -27,14 +28,11 @@ const InputInternal = React.forwardRef<HTMLInputElement, InputProps>(
                     <input
                         type={type}
                         className={cn(
-                            "flex w-full transition-all duration-300 border-none outline-none",
-                            "text-[14px] font-medium text-app-fg placeholder:text-gray-500/80",
-                            // Variant mappings
-                            variant === "default" && "glass-input h-11 rounded-2xl px-4 focus:ring-2 focus:ring-primary/40 focus:bg-white/60 dark:focus:bg-gray-800/60 shadow-sm",
-                            variant === "glass" && "glass-input h-11 rounded-2xl px-4 focus:ring-2 focus:ring-primary/40",
-                            variant === "ghost" && "bg-transparent h-auto p-0",
-                            variant === "neumorphic" && "h-11 rounded-2xl neumorphic-inset px-4 focus:ring-2 focus:ring-primary/20",
-                            icon && variant !== "ghost" && "pl-11",
+                            "flex transition-all duration-300 outline-none",
+                            "input-standard",
+                            variant === "glass" && "glass-input",
+                            variant === "ghost" && "bg-transparent h-auto p-0 border-none",
+                            icon && variant !== "ghost" && "pl-10",
                             error && "ring-1 ring-app-status-error/50",
                             className
                         )}
@@ -44,7 +42,7 @@ const InputInternal = React.forwardRef<HTMLInputElement, InputProps>(
                         value={props.value ?? ""}
                     />
                 </div>
-                {error && <p className="mt-1 text-[11px] font-bold text-app-status-error uppercase tracking-wider">{error}</p>}
+                {error && <Caption2 className="mt-1 text-app-status-error uppercase tracking-wider">{error}</Caption2>}
             </div>
         );
     }

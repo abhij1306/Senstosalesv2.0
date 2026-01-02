@@ -46,6 +46,8 @@ export interface ListPageTemplateProps<T = any> {
     no_subrow_padding?: boolean;
     className?: string;
     children?: React.ReactNode;
+    icon?: React.ReactNode;
+    iconLayoutId?: string;
 }
 
 import { DocumentTemplate } from "./DocumentTemplate";
@@ -81,6 +83,8 @@ export function ListPageTemplate<T extends Record<string, any>>({
     renderSubRow,
     onRowExpand,
     no_subrow_padding,
+    icon,
+    iconLayoutId,
 }: ListPageTemplateProps<T>) {
     return (
         <DocumentTemplate
@@ -88,8 +92,10 @@ export function ListPageTemplate<T extends Record<string, any>>({
             description={subtitle}
             actions={toolbar}
             className={className}
+            icon={icon}
+            iconLayoutId={iconLayoutId}
         >
-            <div className="space-y-10">
+            <div className="space-y-8">
                 {/* Summary Cards */}
                 {summaryCards && summaryCards.length > 0 && (
                     <SummaryCards cards={summaryCards} loading={loading} />

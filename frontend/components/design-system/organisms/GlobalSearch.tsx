@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 import { api, SearchResult } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "../atoms/StatusBadge";
-import { H3, Body, SmallText, Label, MonoCode, Accounting } from "../atoms/Typography";
+import { H3, Body, SmallText, Label, MonoCode, Accounting, Caption1 } from "../atoms/Typography";
 
 // --- Types ---
 type NavItem = {
@@ -283,7 +283,7 @@ export default function GlobalSearch() {
   const portalContent = position ? (
     <div
       ref={portalRef}
-      className="fixed z-[9999] flex flex-col bg-app-overlay backdrop-blur-3xl shadow-xl border border-app-border rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+      className="fixed z-[9999] flex flex-col bg-app-surface/90 backdrop-blur-3xl elevation-4 border-none rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
       style={{
         top: position.top,
         left: position.left,
@@ -295,7 +295,7 @@ export default function GlobalSearch() {
       {/* 2-Pane Layout */}
       <div className="flex flex-1 overflow-hidden h-full">
         {/* Left Pane: List */}
-        <div className="w-[50%] flex flex-col bg-app-fg/5 border-r border-app-border">
+        <div className="w-[50%] flex flex-col bg-blue-50/30 dark:bg-blue-950/20 border-none">
           {/* Empty State */}
           {query && allItems.length === 0 && !loading && (
             <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
@@ -308,12 +308,12 @@ export default function GlobalSearch() {
           {!query && allItems.length === 0 && (
             <div className="flex-1 flex flex-col items-center justify-center text-app-fg-muted/40 p-8 text-center">
               <Search className="w-8 h-8 opacity-20 mb-4" />
-              <Body className="font-bold text-app-fg uppercase tracking-wider">
+              <Body className="text-text-primary uppercase tracking-wide">
                 Type to search...
               </Body>
-              <SmallText className="mt-1 text-app-fg-muted font-bold">
+              <Caption1 className="mt-1 text-text-tertiary">
                 Find POs, Invoices, or jump to pages
-              </SmallText>
+              </Caption1>
 
               {/* Show Recents if any within empty state */}
               {recentSearches.length > 0 && (
@@ -328,7 +328,7 @@ export default function GlobalSearch() {
                         setQuery(term);
                         inputRef.current?.focus();
                       }}
-                      className="block w-full text-left px-4 py-3 text-xs font-bold text-app-fg-muted hover:text-app-accent hover:bg-app-accent/5 rounded-xl transition-all"
+                      className="block w-full text-left px-4 py-2.5 text-footnote text-text-secondary hover:text-app-accent hover:bg-app-accent/5 rounded-xl transition-all"
                     >
                       {term}
                     </button>
@@ -346,8 +346,8 @@ export default function GlobalSearch() {
             >
               {/* Header for Nav if present */}
               {filteredNavItems.length > 0 && (
-                <div className="px-4 py-2 sticky top-0 bg-app-surface/80 backdrop-blur z-10 transition-colors">
-                  <Label className="text-[10px] font-black text-app-fg/40 uppercase tracking-[0.25em]">Commands</Label>
+                <div className="px-4 py-2 sticky top-0 bg-app-surface/80 backdrop-blur z-10">
+                  <Caption1 className="text-text-tertiary uppercase tracking-wider">Commands</Caption1>
                 </div>
               )}
 
@@ -375,7 +375,7 @@ export default function GlobalSearch() {
                     <div className="flex-1 min-w-0">
                       <Body
                         className={cn(
-                          "font-medium truncate",
+                          "truncate",
                           isSelected ? "text-white" : "text-app-fg",
                         )}
                       >
@@ -410,7 +410,7 @@ export default function GlobalSearch() {
                 {renderIcon(selectedItem, "w-7 h-7 text-app-fg")}
               </div>
 
-              <H3 className="text-app-fg mb-1 font-heading uppercase tracking-tight">
+              <H3 className="text-text-primary mb-1 uppercase tracking-tight">
                 {selectedItem.type === "NAV"
                   ? selectedItem.label
                   : selectedItem.number}
@@ -426,19 +426,19 @@ export default function GlobalSearch() {
                 {selectedItem.type !== "NAV" && (
                   <>
                     {/* Removed Party Row completely as requested */}
-                    <div className="flex justify-between py-2 border-b border-app-border/30">
-                      <span className="text-xs text-app-fg/40 font-medium uppercase tracking-wider">
+                    <div className="flex justify-between py-2 border-b border-app-border/10">
+                      <Caption1 className="text-text-tertiary uppercase tracking-wider">
                         Date
-                      </span>
-                      <span className="text-sm text-app-fg/80 font-semibold">
+                      </Caption1>
+                      <span className="text-footnote text-text-secondary font-regular">
                         {(selectedItem as SearchResult).date || "-"}
                       </span>
                     </div>
-                    <div className="flex justify-between py-2 border-b border-app-border/30">
-                      <span className="text-xs text-app-fg/40 font-medium uppercase tracking-wider">
+                    <div className="flex justify-between py-2 border-b border-app-border/10">
+                      <Caption1 className="text-text-tertiary uppercase tracking-wider">
                         Amount
-                      </span>
-                      <span className="text-sm text-app-fg font-mono font-bold">
+                      </Caption1>
+                      <span className="text-footnote text-text-primary font-mono">
                         {(selectedItem as SearchResult).amount
                           ? `₹${(selectedItem as SearchResult).amount?.toLocaleString()}`
                           : "-"}
@@ -486,7 +486,7 @@ export default function GlobalSearch() {
       </div>
 
       {/* Footer / Shortcuts Hint */}
-      <div className="bg-app-surface px-4 py-2.5 flex items-center justify-between text-[10px] text-app-fg/40 border-t border-app-border">
+      <div className="bg-app-surface px-4 py-2.5 flex items-center justify-between text-[10px] text-app-fg/40 border-none">
         <div className="flex gap-4">
           <span className="flex items-center gap-1.5">
             <kbd className="bg-app-surface shadow-sm rounded px-1.5 py-0.5 font-sans min-w-[20px] text-center">
@@ -501,9 +501,9 @@ export default function GlobalSearch() {
             Navigate
           </span>
         </div>
-        <div className="font-medium opacity-50">SenstoSales Raycast</div>
+        <div className="font-regular opacity-50">SenstoSales Raycast</div>
       </div>
-    </div>
+    </div >
   ) : null;
 
   return (
@@ -511,11 +511,9 @@ export default function GlobalSearch() {
       <div ref={searchRef} className="relative max-w-[700px] w-full group z-50">
         <div
           className={cn(
-            "flex items-center gap-4 px-6 py-2.5 transition-all duration-300 ease-out",
-            "input-glass",
-            isOpen
-              ? "shadow-sm ring-1 ring-system-blue/30 bg-white/20 dark:bg-white/10 scale-[1.01]"
-              : "hover:bg-black/5 dark:hover:bg-white/10 hover:scale-[1.005]",
+            "flex items-center gap-4 px-6 py-2 transition-all duration-300 ease-out",
+            "rounded-xl border-none shadow-lg shadow-black/10 dark:shadow-black/30",
+            isOpen && "shadow-xl shadow-black/15 dark:shadow-black/40",
           )}
         >
           {loading ? (
@@ -539,7 +537,7 @@ export default function GlobalSearch() {
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder="Search items, vendors, invoices..."
-            className="flex-1 bg-transparent border-none outline-none text-sm font-medium text-app-fg placeholder:text-app-fg/30"
+            className="flex-1 bg-transparent border-none outline-none text-footnote font-regular text-text-primary placeholder:text-text-tertiary"
           />
 
           {query && (
