@@ -4,6 +4,7 @@ Delivery Challan Router
 
 import logging
 import sqlite3
+import sys
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -86,7 +87,7 @@ def get_dc_stats(db: sqlite3.Connection = Depends(get_db)):
 def list_dcs(po: Optional[str] = None, db: sqlite3.Connection = Depends(get_db)):
     """List all Delivery Challans, optionally filtered by PO"""
 
-    # Optimized query with JOIN to eliminate N+1 problem + quantity aggregates
+    # Optimized query with lot-level aggregation for accurate quantity contexts
     query = """
         SELECT 
             dc.dc_number, 
@@ -96,16 +97,30 @@ def list_dcs(po: Optional[str] = None, db: sqlite3.Connection = Depends(get_db))
             dc.created_at,
             (SELECT COUNT(*) FROM gst_invoices WHERE dc_number = dc.dc_number) as is_linked,
             COALESCE(SUM(dci.dispatch_qty * poi.po_rate), 0) as total_value,
-            COALESCE(SUM(pod.dely_qty), 0) as total_ordered_quantity,
+            
+            -- Context: Ordered quantities for the specific lots contained in this DC
+            COALESCE(SUM(COALESCE(pod.dely_qty, poi.ord_qty)), 0) as total_ordered_quantity,
+            
+            -- Dispatch: This specific DC's total quantity
             COALESCE(SUM(dci.dispatch_qty), 0) as total_dispatched_quantity,
+            
+            -- Received: Quantity accepted against THIS specific DC only
             (
                 SELECT COALESCE(SUM(si.received_qty), 0)
                 FROM srv_items si
                 JOIN srvs s ON si.srv_number = s.srv_number
-                JOIN delivery_challan_items dci2 ON si.challan_no = dci2.dc_number
-                WHERE s.is_active = 1 
-                  AND dci2.dc_number = dc.dc_number
-            ) as total_received_quantity
+                WHERE s.is_active = 1 AND si.challan_no = dc.dc_number
+            ) as total_received_quantity,
+
+            -- Global Status: Current total quantity dispatched across ALL DCs for the items in THIS DC
+            (
+                SELECT COALESCE(SUM(all_dci.dispatch_qty), 0)
+                FROM delivery_challan_items all_dci
+                JOIN delivery_challan_items sub_dci ON all_dci.po_item_id = sub_dci.po_item_id 
+                   AND COALESCE(all_dci.lot_no, 1) = COALESCE(sub_dci.lot_no, 1)
+                WHERE sub_dci.dc_number = dc.dc_number
+            ) as global_dispatched_quantity
+
         FROM delivery_challans dc
         LEFT JOIN delivery_challan_items dci ON dc.dc_number = dci.dc_number
         LEFT JOIN purchase_order_items poi ON dci.po_item_id = poi.id
@@ -125,15 +140,15 @@ def list_dcs(po: Optional[str] = None, db: sqlite3.Connection = Depends(get_db))
     results = []
     for row in rows:
         total_ordered = row["total_ordered_quantity"] or 0
-        total_dispatched = row["total_dispatched_quantity"] or 0
-        total_received = row["total_received_quantity"] or 0
+        total_dispatched_this_dc = row["total_dispatched_quantity"] or 0
+        total_received_this_dc = row["total_received_quantity"] or 0
+        global_dispatched = row["global_dispatched_quantity"] or 0
         
-        # DLV is High Water Mark: MAX(DISP, RECD)
-        total_delivered_hwm = max(total_dispatched, total_received)
-        total_pending = calculate_pending_quantity(total_ordered, total_delivered_hwm)
+        # Balance = Total Ordered - Total Dispatched Globally
+        total_pending = max(0, total_ordered - global_dispatched)
 
-        # Determine Status using centralized service
-        status = calculate_entity_status(total_ordered, total_dispatched, total_received)
+        # Status logic: For a DC, 'Ordered' target for its own lifecycle is its dispatched qty
+        status = calculate_entity_status(total_dispatched_this_dc, total_dispatched_this_dc, total_received_this_dc)
 
         results.append(
             DCListItem(
@@ -145,9 +160,9 @@ def list_dcs(po: Optional[str] = None, db: sqlite3.Connection = Depends(get_db))
                 total_value=row["total_value"],
                 created_at=row["created_at"],
                 total_ordered_quantity=total_ordered,
-                total_dispatched_quantity=total_dispatched,
+                total_dispatched_quantity=total_dispatched_this_dc,
                 total_pending_quantity=total_pending,
-                total_received_quantity=total_received,
+                total_received_quantity=total_received_this_dc,
             )
         )
 
@@ -195,7 +210,7 @@ def get_dc_detail(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
     # Get DC header with PO Date
     dc_row = db.execute(
         """
-        SELECT dc.*, po.po_date
+        SELECT dc.*, po.po_date, po.department_no
         FROM delivery_challans dc
         LEFT JOIN purchase_orders po ON dc.po_number = po.po_number
         WHERE dc.dc_number = ?
@@ -207,6 +222,37 @@ def get_dc_detail(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
         raise not_found(f"Delivery Challan {dc_number} not found", "DC")
 
     header_dict = dict(dc_row)
+
+    # POPULATE DEFAULTS FROM SETTINGS IF EMPTY
+    # This ensures frontend doesn't need hardcoded fallbacks
+    # POPULATE DEFAULTS FROM SETTINGS IF EMPTY
+    # This ensures frontend doesn't need hardcoded fallbacks
+    try:
+        settings_rows = db.execute("SELECT key, value FROM settings").fetchall()
+        settings = {row["key"]: row["value"] for row in settings_rows}
+
+        if not header_dict.get("consignee_name"):
+             # Try Default Buyer first, then Settings
+            default_buyer = db.execute("SELECT name FROM buyers WHERE is_default = 1").fetchone()
+            header_dict["consignee_name"] = default_buyer["name"] if default_buyer else settings.get("buyer_name", "")
+        
+        if not header_dict.get("consignee_address"):
+             # Try Default Buyer first, then Settings
+            default_buyer_addr = db.execute("SELECT billing_address FROM buyers WHERE is_default = 1").fetchone()
+            header_dict["consignee_address"] = default_buyer_addr["billing_address"] if default_buyer_addr else settings.get("buyer_address", "")
+            
+        # Also populate Supplier details unconditionally (User's Company)
+        # These are not usually stored in the DC record but are needed for the UI
+        # Check if they exist in header_dict first (unlikely) or just overwrite/fill from settings
+        if not header_dict.get("supplier_name"):
+            header_dict["supplier_name"] = settings.get("supplier_name", "")
+        if not header_dict.get("supplier_phone"):
+            header_dict["supplier_phone"] = settings.get("supplier_contact", "")
+        if not header_dict.get("supplier_gstin"):
+            header_dict["supplier_gstin"] = settings.get("supplier_gstin", "")
+        
+    except Exception as e:
+        logger.warning(f"Failed to populate DC defaults from settings: {e}")
 
     # Calculate status per DC
     agg = db.execute("""
@@ -276,22 +322,15 @@ def get_dc_detail(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
         lot_ordered = item_dict["lot_ordered_qty"] or 0
         item_dict["received_quantity"] = item_dict.get("received_quantity", 0)
 
-        if lot_no:
-            total_dispatched = db.execute(
-                """
-                SELECT COALESCE(SUM(dispatch_qty), 0) FROM delivery_challan_items 
-                WHERE po_item_id = ? AND lot_no = ?
-             """,
-                (po_item_id, lot_no),
-            ).fetchone()[0]
-        else:
-            total_dispatched = db.execute(
-                """
-                SELECT COALESCE(SUM(dispatch_qty), 0) FROM delivery_challan_items 
-                WHERE po_item_id = ?
-             """,
-                (po_item_id,),
-            ).fetchone()[0]
+        # Calculate global dispatched for this lot
+        total_dispatched = db.execute(
+            """
+            SELECT COALESCE(SUM(dispatch_qty), 0) 
+            FROM delivery_challan_items 
+            WHERE po_item_id = ? AND COALESCE(lot_no, 1) = COALESCE(?, 1)
+            """,
+            (po_item_id, lot_no),
+        ).fetchone()[0]
 
         # DLV is High Water Mark: MAX(DISP, RECD for this item/lot)
         # Note: received_quantity here is per this DC. For a true balance, 
@@ -310,6 +349,8 @@ def get_dc_detail(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
 def create_dc(
     dc: DCCreate, items: List[dict], db: sqlite3.Connection = Depends(get_db)
 ):
+    print(f"DEBUG: Endpoint create_dc called with dc_number={dc.dc_number}")
+    sys.stdout.flush()
     """
     Create new Delivery Challan with items
     items format: [{
@@ -321,13 +362,11 @@ def create_dc(
     }]
     """
 
-    # Validate Uniqueness
-    from app.core.validation import get_financial_year, validate_unique_number
+    # Validate Uniqueness - Handled in Service Layer
+    # from app.core.validation import get_financial_year, validate_unique_number
+    # fy = get_financial_year(dc.dc_date)
+    # validate_unique_number(...)
 
-    fy = get_financial_year(dc.dc_date)
-    validate_unique_number(
-        db, "delivery_challans", "dc_number", "financial_year", dc.dc_number, fy
-    )
 
     # Use service layer with transaction protection
     try:

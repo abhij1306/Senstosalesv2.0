@@ -11,7 +11,7 @@ from typing import List
 from app.db import get_db
 from app.core.exceptions import ResourceNotFoundError
 from app.models import PODetail, POHeader, POItem, POListItem, POStats
-from app.services.status_service import calculate_entity_status, calculate_pending_quantity
+from app.services.status_service import calculate_entity_status, calculate_pending_quantity, translate_raw_status
 
 logger = logging.getLogger(__name__)
 
@@ -57,81 +57,73 @@ class POService:
     def list_pos(self, db: sqlite3.Connection) -> List[POListItem]:
         """
         List all Purchase Orders with aggregated quantity details.
-        Calculates ordered, dispatched, and pending quantities.
+        Optimized single-query version to eliminate N+1 latency.
         """
-        rows = db.execute("""
-            SELECT po_number, po_date, supplier_name, po_value, amend_no, po_status, financial_year, created_at
-            FROM purchase_orders
-            ORDER BY created_at DESC
-        """).fetchall()
+        # Single query with subqueries for aggregates to avoid N+1 problem
+        # BAL = ORD - DLV (where DLV is High Water Mark)
+        query = """
+            SELECT 
+                po.po_number, po.po_date, po.supplier_name, po.po_value, po.amend_no, po.po_status, po.financial_year, po.created_at,
+                COALESCE((SELECT SUM(ord_qty) FROM purchase_order_items WHERE po_number = po.po_number), 0) as total_ordered,
+                COALESCE((SELECT COUNT(*) FROM purchase_order_items WHERE po_number = po.po_number), 0) as total_items,
+                (SELECT drg_no FROM purchase_order_items WHERE po_number = po.po_number LIMIT 1) as sample_drg,
+                (SELECT GROUP_CONCAT(dc_number, ', ') FROM delivery_challans WHERE po_number = po.po_number) as linked_dcs,
+                COALESCE((SELECT SUM(rejected_qty) FROM srv_items WHERE po_number = po.po_number), 0) as total_rejected,
+                -- Received (Total for PO)
+                COALESCE((
+                    SELECT SUM(pod.received_qty) 
+                    FROM purchase_order_deliveries pod 
+                    JOIN purchase_order_items poi ON pod.po_item_id = poi.id 
+                    WHERE poi.po_number = po.po_number
+                ), 0) as total_received,
+                -- High Water Mark Delivered (Total for PO)
+                COALESCE((
+                    SELECT SUM(
+                        CASE 
+                            WHEN pod.dely_qty > pod.received_qty THEN MAX(COALESCE(pod.delivered_qty, 0), COALESCE(pod.received_qty, 0), COALESCE(pod.manual_override_qty, 0))
+                            ELSE MAX(COALESCE(pod.delivered_qty, 0), COALESCE(pod.received_qty, 0))
+                        END
+                    ) 
+                    FROM purchase_order_deliveries pod 
+                    JOIN purchase_order_items poi ON pod.po_item_id = poi.id 
+                    WHERE poi.po_number = po.po_number
+                ), 0) as total_delivered_hwm,
+                -- Basic Dispatch (From DC items directly)
+                COALESCE((
+                    SELECT SUM(dci.dispatch_qty) 
+                    FROM delivery_challan_items dci 
+                    JOIN purchase_order_items poi ON dci.po_item_id = poi.id 
+                    WHERE poi.po_number = po.po_number
+                ), 0) as total_dispatched_raw
+            FROM purchase_orders po
+            ORDER BY po.created_at DESC
+        """
+        
+        rows = db.execute(query).fetchall()
 
         results = []
         for row in rows:
-            po_num = row["po_number"]
-
-            # Calculate Total Ordered Quantity
-            ordered_row = db.execute(
-                """
-                SELECT SUM(ord_qty) FROM purchase_order_items WHERE po_number = ?
-            """,
-                (po_num,),
-            ).fetchone()
-            total_ordered = ordered_row[0] if ordered_row and ordered_row[0] else 0.0
-
-            # Calculate Total Dispatched Quantity
-            # Link via PO Items to get specific dispatches for this PO
-            dispatched_row = db.execute(
-                """
-                SELECT SUM(dci.dispatch_qty) 
-                FROM delivery_challan_items dci
-                JOIN purchase_order_items poi ON dci.po_item_id = poi.id
-                WHERE poi.po_number = ?
-            """,
-                (po_num,),
-            ).fetchone()
-            total_dispatched = (
-                dispatched_row[0] if dispatched_row and dispatched_row[0] else 0.0
-            )
-
+            t_ordered = row["total_ordered"]
+            t_delivered_hwm = row["total_delivered_hwm"]
+            t_dispatched_raw = row["total_dispatched_raw"]
+            t_received = row["total_received"]
+            
             # Pending calculated after Received (Global Invariant)
-            # Calculate Total Items Count
-            items_count_row = db.execute(
-                "SELECT COUNT(*) FROM purchase_order_items WHERE po_number = ?",
-                (po_num,),
-            ).fetchone()
-            total_items = items_count_row[0] if items_count_row else 0
-
-            # Fetch linked DC numbers for reference
-            dc_rows = db.execute(
-                "SELECT dc_number FROM delivery_challans WHERE po_number = ?", (po_num,)
-            ).fetchall()
-            dc_nums = [r["dc_number"] for r in dc_rows]
-            linked_dcs_str = ", ".join(dc_nums) if dc_nums else None
-
-            # Calculate Total Received & Rejected (from SRVs)
-            srv_agg_res = db.execute(
-                """
-                SELECT 
-                    COALESCE(SUM(received_qty), 0),
-                    COALESCE(SUM(rejected_qty), 0)
-                FROM srv_items
-                WHERE po_number = ?
-            """,
-                (po_num,),
-            ).fetchone()
-            total_received = srv_agg_res[0] if srv_agg_res else 0.0
-            total_rejected = srv_agg_res[1] if srv_agg_res else 0.0
-
-            # Calculate Total pending (Derived)
-            # Rule: BAL = ORD - DLV (Global Invariant BAL-1)
-            # DLV is High Water Mark: MAX(DISP, RECD)
-            total_delivered_hwm = max(total_dispatched, total_received)
-            total_pending = calculate_pending_quantity(total_ordered, total_delivered_hwm)
+            t_pending = calculate_pending_quantity(t_ordered, t_delivered_hwm)
 
             # Determine Status using centralized service
-            status = calculate_entity_status(total_ordered, total_dispatched, total_received)
-            if status == "Pending" and total_dispatched == 0 and total_ordered > 0:
-                status = row["po_status"] or "Draft" # Respect DB status for true draft POs
+            status = calculate_entity_status(t_ordered, t_dispatched_raw, t_received)
+            raw_db_status = translate_raw_status(row["po_status"])
+            
+            # ERP/Manual Override Logic
+            if t_pending > 0.1: 
+                status = "Pending"
+                if raw_db_status == "Draft":
+                    status = "Draft"
+            elif raw_db_status == "Closed":
+                 status = "Closed"
+            elif status == "Pending" and t_dispatched_raw == 0 and t_ordered > 0:
+                status = raw_db_status if raw_db_status != "Draft" else "Draft"
 
             results.append(
                 POListItem(
@@ -141,14 +133,14 @@ class POService:
                     po_value=row["po_value"],
                     amend_no=row["amend_no"],
                     po_status=status,
-                    linked_dc_numbers=linked_dcs_str,
-                    total_ordered_quantity=total_ordered,
-                    total_dispatched_quantity=total_dispatched,
-                    total_received_quantity=total_received,
-                    total_rejected_quantity=total_rejected,
-                    total_pending_quantity=total_pending,
-                    total_items_count=total_items,
-                    drg_no=db.execute("SELECT drg_no FROM purchase_order_items WHERE po_number = ? LIMIT 1", (po_num,)).fetchone()[0] if total_items > 0 else None,
+                    linked_dc_numbers=row["linked_dcs"],
+                    total_ordered_quantity=t_ordered,
+                    total_dispatched_quantity=t_delivered_hwm,
+                    total_received_quantity=t_received,
+                    total_rejected_quantity=row["total_rejected"],
+                    total_pending_quantity=t_pending,
+                    total_items_count=row["total_items"],
+                    drg_no=row["sample_drg"],
                     financial_year=row["financial_year"],
                     created_at=row["created_at"],
                 )
@@ -223,53 +215,69 @@ class POService:
         all_deliveries = []
         if item_ids:
             all_deliveries = db.execute(
-                f"SELECT id, po_item_id, lot_no, dely_qty as delivered_quantity, dely_date FROM purchase_order_deliveries WHERE po_item_id IN ({placeholders}) ORDER BY lot_no",
+                f"""
+                SELECT 
+                    id, po_item_id, lot_no, 
+                    dely_qty as scheduled_qty,
+                    delivered_qty as dispatched_qty,
+                    received_qty as rcd_qty, 
+                    manual_override_qty,
+                    dely_date, dest_code 
+                FROM purchase_order_deliveries 
+                WHERE po_item_id IN ({placeholders}) 
+                ORDER BY lot_no
+                """,
                 item_ids
             ).fetchall()
         
-        # 2. Batch fetch all dispatched quantities
-        all_dispatched = []
-        if item_ids:
-            all_dispatched = db.execute(
-                f"SELECT po_item_id, COALESCE(SUM(dispatch_qty), 0) FROM delivery_challan_items WHERE po_item_id IN ({placeholders}) GROUP BY po_item_id",
-                item_ids
-            ).fetchall()
-        dispatched_map = {r[0]: r[1] for r in all_dispatched}
-
-        # 3. Batch fetch all SRV data
-        all_srvs = db.execute(
-            "SELECT po_item_no, COALESCE(SUM(received_qty), 0), COALESCE(SUM(rejected_qty), 0) FROM srv_items WHERE po_number = ? GROUP BY po_item_no",
-            (po_number,)
-        ).fetchall()
-        srv_map = {r[0]: (r[1], r[2]) for r in all_srvs}
-
-        # For each item, map pre-fetched data
+        # 2. Process each item and its lots
         items_with_deliveries = []
         for item_row in item_rows:
             item_dict = dict(item_row)
             item_id = item_dict["id"]
             po_item_no = item_dict["po_item_no"]
 
-            # Map deliveries
-            item_deliveries = [dict(d) for d in all_deliveries if d["po_item_id"] == item_id]
+            # Map deliveries and compute High-Water Mark DLV
+            item_deliveries = []
+            total_lot_ord = 0.0
+            total_lot_dlv = 0.0
+            total_lot_recd = 0.0
+
+            for d in all_deliveries:
+                if d["po_item_id"] == item_id:
+                    d_dict = dict(d)
+                    
+                    # Logic: Lot DLV = MAX(DSP, RECD)
+                    # Rule: Manual overrides are only applicable in case ord > recd.
+                    dsp = d_dict["dispatched_qty"] or 0.0
+                    recd = d_dict["rcd_qty"] or 0.0
+                    lot_ord = d_dict["scheduled_qty"] or 0.0
+                    manual = d_dict.get("manual_override_qty") or 0.0
+                    
+                    base_dlv = max(dsp, recd)
+                    if lot_ord > recd:
+                        lot_dlv = max(base_dlv, manual)
+                    else:
+                        lot_dlv = base_dlv
+                    
+                    d_dict["delivered_quantity"] = lot_dlv # This maps to 'DLV' in UI
+                    d_dict["received_quantity"] = recd     # This maps to 'RECD' in UI
+                    d_dict["ordered_quantity"] = lot_ord    # This maps to 'ORD' in UI
+                    d_dict["manual_override_qty"] = manual
+                    
+                    item_deliveries.append(d_dict)
+                    
+                    total_lot_ord += lot_ord
+                    total_lot_dlv += lot_dlv
+                    total_lot_recd += recd
+
+            # Update item with aggregate lot quantities (Ensures consistency)
+            item_dict["ordered_quantity"] = total_lot_ord or item_dict.get("ordered_quantity", 0)
+            item_dict["delivered_quantity"] = total_lot_dlv
+            item_dict["received_quantity"] = total_lot_recd
             
-            # Map dispatched
-            item_dispatched = dispatched_map.get(item_id, 0.0)
-
-            # Map SRV
-            srv_received, srv_rejected = srv_map.get(po_item_no, (0.0, 0.0))
-
-            # Update item with SRV and Dispatch quantities
-            item_dict["received_quantity"] = srv_received
-            item_dict["rejected_quantity"] = srv_rejected
-            
-            # High Water Mark: Delivered is MAX(Dispatched, Received)
-            item_delivered = max(item_dispatched, srv_received)
-            item_dict["delivered_quantity"] = item_delivered
-
-            # Calculate pending: Ordered - Delivered (Global Invariant BAL-1)
-            item_ordered = item_dict.get("ordered_quantity", 0)
-            item_dict["pending_quantity"] = calculate_pending_quantity(item_ordered, item_delivered)
+            # Calculate pending: ORD - DLV
+            item_dict["pending_quantity"] = max(0.0, item_dict["ordered_quantity"] - item_dict["delivered_quantity"])
 
             item_with_deliveries = {**item_dict, "deliveries": item_deliveries}
             items_with_deliveries.append(POItem(**item_with_deliveries))

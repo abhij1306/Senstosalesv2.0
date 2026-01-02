@@ -5,14 +5,14 @@ import { Quote } from "lucide-react";
 import { api, PONote } from "@/lib/api";
 import {
     DocumentTemplate,
-    PONoteCard,
-    PONoteDialog,
-    PONoteDeleteDialog,
     EmptyState,
     Grid,
     Stack,
-    PONotePageActions
 } from "@/components/design-system";
+import { PONoteCard } from "@/components/po-notes/organisms/PONoteCard";
+import { PONoteDialog } from "@/components/po-notes/organisms/PONoteDialog";
+import { PONoteDeleteDialog } from "@/components/po-notes/organisms/PONoteDeleteDialog";
+import { PONotePageActions } from "@/components/po-notes/organisms/PONotePageActions";
 
 interface PONoteListClientProps {
     initialTemplates: PONote[];

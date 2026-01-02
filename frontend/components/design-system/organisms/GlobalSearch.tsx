@@ -10,20 +10,16 @@ import {
   Package,
   ArrowRight,
   X,
-  History,
-  Trash2,
   Settings,
   PlusCircle,
   LayoutDashboard,
-  Calendar,
-  CreditCard,
-  ChevronRight,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { api, SearchResult } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "./StatusBadge";
+import { H3, Body, SmallText, Label, MonoCode, Accounting } from "../atoms/Typography";
 
 // --- Types ---
 type NavItem = {
@@ -312,12 +308,12 @@ export default function GlobalSearch() {
           {!query && allItems.length === 0 && (
             <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8 text-center">
               <Search className="w-8 h-8 opacity-20 mb-4" />
-              <p className="text-sm font-medium text-[var(--color-sys-text-primary)]">
+              <Body className="font-medium text-app-fg">
                 Type to search...
-              </p>
-              <p className="text-xs mt-1 text-[var(--color-sys-text-tertiary)]">
+              </Body>
+              <SmallText className="mt-1 text-app-fg-muted">
                 Find POs, Invoices, or jump to pages
-              </p>
+              </SmallText>
 
               {/* Show Recents if any within empty state */}
               {recentSearches.length > 0 && (
@@ -350,8 +346,8 @@ export default function GlobalSearch() {
             >
               {/* Header for Nav if present */}
               {filteredNavItems.length > 0 && (
-                <div className="px-4 py-2 text-[10px] font-black text-app-fg/40 uppercase tracking-[0.25em] sticky top-0 bg-app-surface/80 backdrop-blur z-10 transition-colors">
-                  Commands
+                <div className="px-4 py-2 sticky top-0 bg-app-surface/80 backdrop-blur z-10 transition-colors">
+                  <Label className="text-[10px] font-black text-app-fg/40 uppercase tracking-[0.25em]">Commands</Label>
                 </div>
               )}
 
@@ -377,24 +373,24 @@ export default function GlobalSearch() {
                       ),
                     )}
                     <div className="flex-1 min-w-0">
-                      <div
+                      <Body
                         className={cn(
-                          "text-sm font-medium truncate",
+                          "font-medium truncate",
                           isSelected ? "text-white" : "text-app-fg",
                         )}
                       >
                         {item.type === "NAV" ? item.label : item.number}
-                      </div>
-                      <div
+                      </Body>
+                      <SmallText
                         className={cn(
-                          "text-[11px] truncate",
+                          "truncate text-[11px]",
                           isSelected ? "text-white/80" : "text-app-fg/60",
                         )}
                       >
                         {item.type === "NAV"
                           ? item.subLabel
                           : (item as SearchResult).party}
-                      </div>
+                      </SmallText>
                     </div>
                     {isSelected && (
                       <ArrowRight size={14} className="text-white opacity-80" />
@@ -414,16 +410,16 @@ export default function GlobalSearch() {
                 {renderIcon(selectedItem, "w-7 h-7 text-app-fg")}
               </div>
 
-              <h3 className="text-2xl font-black text-app-fg leading-tight mb-1 font-heading uppercase tracking-tight">
+              <H3 className="text-app-fg mb-1 font-heading uppercase tracking-tight">
                 {selectedItem.type === "NAV"
                   ? selectedItem.label
                   : selectedItem.number}
-              </h3>
-              <p className="text-sm text-[var(--color-sys-text-secondary)] mb-8">
+              </H3>
+              <Body className="text-app-fg-muted mb-8">
                 {selectedItem.type === "NAV"
                   ? "Navigation Command"
                   : selectedItem.type_label}
-              </p>
+              </Body>
 
               {/* Metadata Grid */}
               <div className="space-y-5">
@@ -482,8 +478,8 @@ export default function GlobalSearch() {
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-[var(--color-sys-text-tertiary)] text-sm">
-              Select an item to preview
+            <div className="flex-1 flex items-center justify-center">
+              <SmallText className="text-app-fg-muted">Select an item to preview</SmallText>
             </div>
           )}
         </div>

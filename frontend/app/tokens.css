@@ -3,10 +3,13 @@
     --apple-blue: #0071e3;
     --apple-blue-dark: #0a84ff;
 
-    /* --- TIER 1.5: FONTS --- */
-    --font-sans: var(--font-inter);
-    --font-heading: var(--font-heading);
-    --font-mono: var(--font-jetbrains-mono);
+    /* --- TIER 1.5: SYSTEM NATIVE FONTS --- */
+    --font-heading: var(--font-public-sans), sans-serif;
+    --font-body: var(--font-inter), sans-serif;
+    --font-mono: var(--font-roboto), monospace;
+
+    /* Tailwind Mappings */
+    --font-sans: var(--font-body);
 
     /* --- TIER 2: ELEVATION SCALE (SEMANTIC) --- */
     --bg-base: var(--background);
@@ -71,6 +74,11 @@
     --color-sys-status-error: #D93025;
     --color-sys-status-info: #1A73E8;
 
+    --status-success: #1E8E3E;
+    --status-warning: #E37400;
+    --status-error: #D93025;
+    --status-info: #1A73E8;
+
     --color-sys-surface-glass_border_light: rgba(0, 0, 0, 0.08);
 
     /* Shadows - Google Material Style */
@@ -132,6 +140,11 @@
     --color-sys-status-error: #F85149;
     --color-sys-status-info: #58A6FF;
 
+    --status-success: #3FB950;
+    --status-warning: #D29922;
+    --status-error: #F85149;
+    --status-info: #58A6FF;
+
     --color-sys-surface-glass_border_light: rgba(240, 246, 252, 0.1);
 
     /* Shadows - Dark Mode */
@@ -150,6 +163,12 @@
     --color-app-fg: var(--app-fg);
     --color-app-accent: var(--accent);
     --color-app-excel: var(--excel-green);
+
+    /* Semantic Status - Direct Tier 2 Mapping */
+    --color-app-status-success: var(--status-success);
+    --color-app-status-warning: var(--status-warning);
+    --color-app-status-error: var(--status-error);
+    --color-app-status-info: var(--status-info);
 
     --shadow-app-lifted: var(--shadow-3d-lifted);
     --shadow-app-spotlight: var(--shadow-spotlight);

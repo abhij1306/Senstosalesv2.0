@@ -22,6 +22,10 @@ const buttonVariants = cva(
                 outline: "bg-transparent text-app-fg border border-app-border/50 hover:bg-app-fg/5 backdrop-blur-sm",
                 link: "text-app-accent underline-offset-4 hover:underline border-none p-0 rounded-none",
                 excel: "bg-gradient-to-b from-[#1D6F42] to-[#155734] text-white hover:brightness-110 shadow-xl shadow-[#1D6F42]/20 border border-[#48C774]/20",
+                neumorphic: "neumorphic text-app-fg hover:neumorphic-hover active:scale-95",
+                "neumorphic-excel": "neumorphic text-emerald-600 dark:text-emerald-400 font-bold hover:neumorphic-hover active:scale-95",
+                "neumorphic-destructive": "neumorphic text-rose-500 font-bold hover:neumorphic-hover active:scale-95",
+                "neumorphic-disabled": "neumorphic opacity-50 cursor-not-allowed grayscale",
             },
             size: {
                 default: "h-10 px-6",

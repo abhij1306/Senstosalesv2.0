@@ -64,6 +64,19 @@ async def app_exception_handler(request: Request, exc: AppException):
         },
     )
 
+from app.core.exceptions import ResourceNotFoundException
+@app.exception_handler(ResourceNotFoundException)
+async def resource_not_found_handler(request: Request, exc: ResourceNotFoundException):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "success": False,
+            "message": exc.message,
+            "error_code": exc.error_code,
+            "details": exc.details,
+        },
+    )
+
 # Include Routers
 app.include_router(health.router, prefix="/api", tags=["Health"])
 app.include_router(common.router, tags=["Common"])  # No prefix - already has /api/common

@@ -10,6 +10,8 @@ import {
     Clock,
     Activity,
     CheckCircle,
+    Boxes,
+    FileCheck,
 } from "lucide-react";
 import { api, InvoiceListItem, InvoiceStats } from "@/lib/api";
 import { formatDate, formatIndianCurrency } from "@/lib/utils";
@@ -25,6 +27,7 @@ import {
     Button,
     Flex,
     Box,
+    Label,
 } from "@/components/design-system";
 import { SearchBar } from "@/components/design-system/molecules/SearchBar";
 
@@ -37,11 +40,11 @@ const columns: Column<InvoiceListItem>[] = [
         render: (_value, inv) => (
             <Link
                 href={`/invoice/${encodeURIComponent(inv.invoice_number)}`}
-                className="block"
+                className="block group"
             >
-                <Body className="text-app-accent hover:underline font-semibold">
+                <Accounting className="text-app-accent tracking-tight group-hover:underline underline-offset-4 decoration-2">
                     {inv.invoice_number}
-                </Body>
+                </Accounting>
             </Link>
         ),
     },
@@ -51,18 +54,18 @@ const columns: Column<InvoiceListItem>[] = [
         sortable: true,
         width: "10%",
         render: (v) => (
-            <Body className="text-[var(--color-sys-text-tertiary)] whitespace-nowrap">
+            <Body className="text-app-fg-muted font-bold text-[13px] whitespace-nowrap">
                 {formatDate(String(v))}
             </Body>
         ),
     },
     {
-        key: "linked_dc_numbers",
-        label: "Linked DCs",
+        key: "dc_number",
+        label: "LINKED DCS",
         width: "14%",
         render: (v) => (
             <Flex wrap gap={1}>
-                {String(v) && String(v) !== "null" ? (
+                {String(v) && String(v) !== "null" && String(v) !== "undefined" ? (
                     String(v)
                         .split(",")
                         .map((dc: string, i: number) => (
@@ -71,20 +74,20 @@ const columns: Column<InvoiceListItem>[] = [
                                 href={`/dc/${dc.trim()}`}
                                 className="no-underline"
                             >
-                                <Box className="px-1.5 py-0.5 rounded-full bg-[var(--color-sys-brand-primary)]/10 text-[var(--color-sys-brand-primary)] cursor-pointer hover:bg-[var(--color-sys-brand-primary)]/20 transition-colors">
-                                    <SmallText className="text-inherit leading-none font-bold">{dc.trim()}</SmallText>
+                                <Box className="px-2 py-0.5 rounded-lg bg-app-accent/10 text-app-accent cursor-pointer hover:bg-app-accent/20 transition-all shadow-sm">
+                                    <Accounting className="text-inherit leading-none text-[10px] tracking-tight">{dc.trim()}</Accounting>
                                 </Box>
                             </Link>
                         ))
                 ) : (
-                    <SmallText className="italic">Direct</SmallText>
+                    <SmallText className="italic font-medium text-app-fg-muted/50">Direct</SmallText>
                 )}
             </Flex>
         ),
     },
     {
         key: "po_numbers",
-        label: "Linked POs",
+        label: "LINKED POS",
         width: "14%",
         render: (v) => (
             <Flex wrap gap={1}>
@@ -97,13 +100,13 @@ const columns: Column<InvoiceListItem>[] = [
                                 href={`/po/${po.trim()}`}
                                 className="no-underline"
                             >
-                                <Box className="px-1.5 py-0.5 rounded-full bg-[var(--color-sys-bg-tertiary)]/50 text-[var(--color-sys-text-secondary)] border-none cursor-pointer hover:bg-[var(--color-sys-bg-tertiary)] transition-colors">
-                                    <SmallText className="text-inherit leading-none font-bold">{po.trim()}</SmallText>
+                                <Box className="px-2 py-0.5 rounded-lg bg-app-overlay/5 text-app-fg-muted border border-app-border/10 cursor-pointer hover:bg-app-overlay/10 transition-all shadow-sm">
+                                    <Accounting className="text-inherit leading-none text-[10px] tracking-tight">{po.trim()}</Accounting>
                                 </Box>
                             </Link>
                         ))
                 ) : (
-                    <SmallText className="italic">Direct</SmallText>
+                    <SmallText className="italic font-medium text-app-fg-muted/50">Direct</SmallText>
                 )}
             </Flex>
         ),
@@ -115,20 +118,8 @@ const columns: Column<InvoiceListItem>[] = [
         align: "right",
         isNumeric: true,
         render: (v) => (
-            <Accounting className="text-right block">
-                {Number(v) || 0}
-            </Accounting>
-        ),
-    },
-    {
-        key: "total_ordered_quantity",
-        label: "ORD",
-        width: "8%",
-        align: "right",
-        isNumeric: true,
-        render: (v) => (
-            <Accounting className="text-[var(--color-sys-text-tertiary)] text-right block">
-                {v || "-"}
+            <Accounting className="text-right pr-2">
+                {v}
             </Accounting>
         ),
     },
@@ -139,20 +130,8 @@ const columns: Column<InvoiceListItem>[] = [
         align: "right",
         isNumeric: true,
         render: (v) => (
-            <Accounting variant="success" className="text-right block">
-                {Number(v) || "-"}
-            </Accounting>
-        ),
-    },
-    {
-        key: "total_pending_quantity",
-        label: "BAL",
-        width: "8%",
-        align: "right",
-        isNumeric: true,
-        render: (v) => (
-            <Accounting variant="warning" className="text-right block">
-                {Number(v) || "-"}
+            <Accounting variant="success" className="text-right pr-2">
+                {v}
             </Accounting>
         ),
     },
@@ -163,8 +142,8 @@ const columns: Column<InvoiceListItem>[] = [
         align: "right",
         isNumeric: true,
         render: (v) => (
-            <Accounting variant="highlight" className="text-right block">
-                {Number(v) || "-"}
+            <Accounting variant="highlight" className="text-app-accent text-right pr-2">
+                {v}
             </Accounting>
         ),
     },
@@ -176,8 +155,8 @@ const columns: Column<InvoiceListItem>[] = [
         width: "12%",
         isCurrency: true,
         render: (v) => (
-            <Accounting className="text-sys-primary text-right block">
-                {Number(v)}
+            <Accounting className="text-app-fg text-right pr-2" isCurrency>
+                {v}
             </Accounting>
         ),
     },
@@ -187,7 +166,11 @@ const columns: Column<InvoiceListItem>[] = [
         sortable: true,
         width: "10%",
         align: "center",
-        render: (v) => <StatusBadge status={String(v || "Pending")} className="w-24 justify-center" />,
+        render: (v) => (
+            <div className="flex justify-center">
+                <StatusBadge status={String(v || "Pending")} className="w-24 shadow-sm" />
+            </div>
+        ),
     },
 ];
 
@@ -215,27 +198,27 @@ export function InvoiceListClient({ initialInvoices, initialStats }: InvoiceList
     const summaryCards = useMemo(
         (): SummaryCardProps[] => [
             {
-                title: "Total Invoices",
+                title: "Total Documents",
                 value: initialInvoices.length,
-                icon: <Receipt size={20} />,
+                icon: <Boxes size={20} />,
                 variant: "primary",
             },
             {
-                title: "Paid Invoices",
+                title: "Revenue Confirmed",
                 value: formatIndianCurrency(initialStats?.total_invoiced || 0),
-                icon: <CheckCircle size={20} />,
+                icon: <FileCheck size={20} />,
                 variant: "success",
             },
             {
-                title: "Pending Payments",
+                title: "Outstanding",
                 value: formatIndianCurrency(initialStats?.pending_payments || 0),
                 icon: <Clock size={20} />,
                 variant: "warning",
             },
             {
-                title: "Total Invoiced",
+                title: "YTD Billings",
                 value: formatIndianCurrency(initialStats?.total_invoiced || 0),
-                icon: <Activity size={20} />,
+                icon: <TrendingUp size={20} />,
                 variant: "primary",
             },
         ],
@@ -248,25 +231,23 @@ export function InvoiceListClient({ initialInvoices, initialStats }: InvoiceList
     }, []);
 
     const toolbar = (
-        <Flex align="center" gap={3}>
+        <Flex align="center" justify="between" className="w-full" gap={4}>
             <SearchBar
                 id="invoice-search"
                 value={searchQuery}
                 onChange={handleSearch}
-                placeholder="Search Invoices..."
+                placeholder="Search invoices or GSTIN..."
                 className="w-full max-w-sm"
             />
 
             <Button
-                variant="default"
+                color="primary"
                 size="sm"
                 onClick={() => router.push("/invoice/create")}
-                className="bg-app-accent text-white hover:brightness-110 shadow-md"
+                className="min-w-[140px] shadow-premium active:scale-95 transition-all"
             >
-                <Flex align="center" gap={2}>
-                    <Plus size={16} />
-                    <Body className="text-inherit">New Invoice</Body>
-                </Flex>
+                <Plus size={16} className="mr-2" />
+                <Body className="text-app-fg-inverse uppercase tracking-widest">New Invoice</Body>
             </Button>
         </Flex>
     );

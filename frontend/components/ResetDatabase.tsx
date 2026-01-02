@@ -18,8 +18,13 @@ export default function ResetDatabase() {
 
             if (response.ok) {
                 const data = await response.json();
+                const clearedCount = data.tables_cleared?.length || 0;
+                const preservedList = data.preserved?.join(", ") || "None";
                 alert(
-                    `✅ ${data.message}\n\nTables cleared: ${data.tables_cleared.length}\nPreserved: ${data.preserved.join(",")}`
+                    `✅ ${data.message || "Database reset successfully."}\n\n` +
+                    `Business Tables Cleared: ${clearedCount}\n` +
+                    `Preserved Master Data: ${preservedList}\n\n` +
+                    `The application will now restart.`
                 );
                 window.location.href = "/"; // Redirect to home
             } else {

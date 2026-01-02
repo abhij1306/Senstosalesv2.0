@@ -1,0 +1,97 @@
+[A1] TAX INVOICE
+[P2] Extra Copy
+[A3] Senstographic
+[I3] Invoice No.
+[L3] 4544
+[N3] Date
+[Q3] 2026-01-01
+[A4] H-20/21 Ind. Area. Govindpura Bhopal - 462023
+[I4] GEMC:
+[L4] Date:
+[N4] Mode/Terms of Payment
+[Q4] 45 Days
+[A5] GSTIN/UIN: 23AACFS6810L1Z7
+[I5] Challan No
+[L5] 1233
+[N5] Date
+[A6] State Name : Madhya Pradesh, Code : 23
+[I6] Purchase Order No.
+[L6] 1105149
+[N6] Date
+[A7] Contact : 0755- 4247748,9229113840
+[I7] Despatch Document No.
+[N7] SRV No
+[Q7] SRV Dt.
+[A8] Buyer
+[I8] Despatched through
+By Loading Vehicle
+[N8] Destination
+[A9] M/S Bharat Heavy Eletrical Ltd.
+[A10] GSTIN/UIN: 23AAACB4146P1ZN
+[I10] Terms of Delivery: 
+[A11] State Name : Madhya Pradesh
+[A12] Place of Supply : BHOPAL, MP
+[A13] PO
+SL
+[B13] Description of Goods
+[I13] HSN/SAC
+[J13] Material
+Code
+[K13] No of
+Pckt
+[L13] Quantity
+[M13] Rate
+[N13] Unit
+[O13] Taxable
+[P13] Central Tax
+[R13] State Tax
+[T13] Total
+[P14] Rate
+[Q14] Amount
+[R14] Rate
+[S14] Amount
+[A15] 1
+[B15] POLE TO POLE PACKERS OF DRG . NO. 42510539606 REV-00,AND AS PER SPECIFICATION HGM-0504 REV-02 & QSP/HG/102,REV01.
+[J15] HG4320043030
+[L15] 11
+[M15] 60
+[N15] NO
+[O15] 660
+[P15] 9.00%
+[Q15] 59.4
+[R15] 9.00%
+[S15] 59.4
+[T15] 778.8
+[A16] Total
+[L16] 11
+[O16] 660
+[Q16] 59.4
+[S16] 59.4
+[T16] 778.8
+[A17] Total Amount (In Words):- Rupees Seven Hundred and Seventy Eight and Paise Eighty Only
+[T17] E. & O.E
+[O18] Taxable
+[P18] Central Tax
+[R18] State Tax
+[T18] Total
+[A19] Total:
+[O19] Value
+[P19] Rate
+[Q19] Amount
+[R19] Rate
+[S19] Amount
+[T19] Tax Amount
+[O20] =O16
+[P20] 9
+[Q20] =Q16
+[R20] 9
+[S20] =S16
+[T20] =Q20+S20
+[A22] CGST (in words)  : Rupees Two Thousand Three Hundred Ninety Four and Paise Thirty One Only
+[A23] SGST (in words)  : Rupees Two Thousand Three Hundred Ninety Four and Paise Thirty One Only
+[A24] Declaration
+[R24] For Senstographic
+[A25] We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.
+[R26] Authorised Signatory
+[A27] SUBJECT TO BHOPAL JURISDICTION
+[A28] This is a Computer Generated Invoice

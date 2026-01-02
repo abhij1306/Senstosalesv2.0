@@ -1,0 +1,15 @@
+C:\Users\abhij\.gemini\antigravity\scratch\SenstoSales\frontend\app\po\[id]\PODetailClient.tsx
+C:\Users\abhij\.gemini\antigravity\scratch\SenstoSales\frontend\app\reports\page.tsx
+C:\Users\abhij\.gemini\antigravity\scratch\SenstoSales\frontend\components\dashboard\organisms\RevenueMomentum.tsx
+C:\Users\abhij\.gemini\antigravity\scratch\SenstoSales\frontend\components\design-system\templates\ReportsPageTemplate.tsx
+C:\Users\abhij\.gemini\antigravity\scratch\SenstoSales\frontend\components\po\organisms\PODetailCard.tsx
+C:\Users\abhij\.gemini\antigravity\scratch\SenstoSales\frontend\components\po\organisms\PODetailInfo.tsx
+C:\Users\abhij\.gemini\antigravity\scratch\SenstoSales\frontend\components\po\organisms\PODetailItems.tsx
+C:\Users\abhij\.gemini\antigravity\scratch\SenstoSales\frontend\components\po-notes\PONoteListClient.tsx
+C:\Users\abhij\.gemini\antigravity\scratch\SenstoSales\frontend\components\po-notes\organisms\PONoteCard.tsx
+C:\Users\abhij\.gemini\antigravity\scratch\SenstoSales\frontend\components\po-notes\organisms\PONoteDialog.tsx
+C:\Users\abhij\.gemini\antigravity\scratch\SenstoSales\frontend\components\reports\organisms\ReportNavGrid.tsx
+C:\Users\abhij\.gemini\antigravity\scratch\SenstoSales\frontend\components\reports\organisms\ReportsCharts.tsx
+C:\Users\abhij\.gemini\antigravity\scratch\SenstoSales\frontend\components\reports\organisms\ReportsDataCard.tsx
+C:\Users\abhij\.gemini\antigravity\scratch\SenstoSales\frontend\components\reports\organisms\ReportsToolbar.tsx
+C:\Users\abhij\.gemini\antigravity\scratch\SenstoSales\frontend\components\srv\organisms\SRVDetailCard.tsx

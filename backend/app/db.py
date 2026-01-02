@@ -70,6 +70,9 @@ def init_db(conn: sqlite3.Connection):
         "024_strengthen_data_types.sql",
         "025_advanced_logic_strengthening.sql",
         "026_create_po_notes_table.sql",
+        "028_add_srv_itm_and_rev_no.sql",
+        "029_add_manual_override_columns.sql",
+        "030_add_po_sl_no.sql",
     ]
 
     cursor = conn.cursor()

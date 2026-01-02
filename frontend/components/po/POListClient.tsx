@@ -6,16 +6,18 @@ import Link from "next/link";
 import { POListItem, POStats } from "@/lib/api";
 import {
     FileText,
-    Activity,
     Clock,
     Plus,
-    ShoppingCart,
+    IndianRupee,
+    Upload,
+    TrendingUp,
+    Package,
 } from "lucide-react";
 import { formatDate, formatIndianCurrency } from "@/lib/utils";
 import { useDebouncedValue } from "@/lib/hooks/useDebounce";
 
 import { Button } from "@/components/design-system/atoms/Button";
-import { Body, Accounting } from "@/components/design-system/atoms/Typography";
+import { Body, Accounting, Label, SmallText } from "@/components/design-system/atoms/Typography";
 import { StatusBadge } from "@/components/design-system/organisms/StatusBadge";
 import { useUpload } from "@/components/providers/UploadContext";
 import { SearchBar } from "@/components/design-system/molecules/SearchBar";
@@ -27,88 +29,96 @@ import { Flex } from "@/components/design-system/atoms/Layout";
 const columns: Column<POListItem>[] = [
     {
         key: "po_number",
-        label: "NUMBER",
-        width: "10%",
+        label: "Number",
+        width: "12%",
         render: (_value, po) => (
-            <Link href={`/po/${po.po_number}`} className="block">
-                <Body className="table-cell-text text-[var(--color-sys-brand-primary)] font-semibold hover:underline">
-                    {po.po_number}
-                </Body>
+            <Link href={`/po/${po.po_number}`} className="block group">
+                <Accounting className="text-app-fg tracking-tight group-hover:text-app-accent transition-colors">
+                    #{po.po_number}
+                </Accounting>
             </Link>
         ),
     },
     {
         key: "po_date",
-        label: "DATE",
+        label: "Date",
         width: "12%",
         render: (v) => (
-            <Body className="table-cell-date text-[var(--color-sys-text-secondary)] whitespace-nowrap">
+            <Body className="text-app-fg-muted">
                 {formatDate(String(v))}
             </Body>
         ),
     },
     {
-        key: "po_value",
-        label: "VALUE",
-        width: "13%",
-        align: "right",
-        isCurrency: true,
-    },
-    {
         key: "total_items_count",
-        label: "ITM",
-        width: "7%",
+        label: "Itm",
+        width: "6%",
         align: "center",
-        isNumeric: true,
+        render: (v) => (
+            <Body className="text-app-fg-muted">{v || 1}</Body>
+        )
     },
     {
         key: "total_ordered_quantity",
-        label: "ORD",
-        width: "9%",
-        align: "right",
-        isNumeric: true,
-    },
-    {
-        key: "total_dispatched_quantity",
-        label: "DLV",
+        label: "Ord",
         width: "10%",
         align: "right",
         isNumeric: true,
         render: (v) => (
-            <Accounting className="table-cell-number text-[var(--color-sys-status-success)]">
-                {Number(v)}
+            <Accounting className="text-app-fg-muted pr-2">
+                {v}
+            </Accounting>
+        ),
+    },
+    {
+        key: "total_dispatched_quantity",
+        label: "Dlv",
+        width: "10%",
+        align: "right",
+        isNumeric: true,
+        render: (v) => (
+            <Accounting className="text-emerald-600 dark:text-emerald-400 pr-2">
+                {v}
             </Accounting>
         ),
     },
     {
         key: "total_pending_quantity",
-        label: "BAL",
-        width: "9%",
+        label: "Bal",
+        width: "10%",
         align: "right",
         isNumeric: true,
         render: (v) => (
-            <Accounting className="table-cell-number text-[var(--color-sys-status-warning)]">
-                {Number(v)}
+            <Accounting
+                variant={Number(v) > 0 ? "warning" : "success"}
+                className="pr-2"
+            >
+                {v}
             </Accounting>
         ),
     },
     {
         key: "total_received_quantity",
-        label: "RECD",
+        label: "Recd",
         width: "10%",
         align: "right",
         isNumeric: true,
         render: (v) => (
-            <Accounting className="table-cell-number text-[var(--color-sys-brand-primary)]">
-                {Number(v)}
+            <Accounting className="text-app-fg-muted pr-2">
+                {v}
             </Accounting>
         ),
     },
     {
         key: "po_status",
         label: "Status",
-        width: "12%",
-        render: (v) => <StatusBadge status={String(v)} className="w-24 justify-center" />,
+        width: "14%",
+        align: "center",
+        render: (v) => (
+            <div className="flex justify-center pr-4">
+                <StatusBadge status={String(v).toUpperCase()} className="shadow-none uppercase" />
+            </div>
+        ),
     },
 ];
 
@@ -164,11 +174,12 @@ export function POListClient({ initialPOs, initialStats }: POListClientProps) {
                 value: initialPOs.length,
                 icon: <FileText size={20} />,
                 variant: "primary",
+                trend: { value: "+2", direction: "up" },
             },
             {
                 title: "Open Orders",
                 value: initialStats?.open_orders_count || 0,
-                icon: <Activity size={20} />,
+                icon: <Package size={20} />,
                 variant: "success",
             },
             {
@@ -180,8 +191,9 @@ export function POListClient({ initialPOs, initialStats }: POListClientProps) {
             {
                 title: "Total Value",
                 value: formatIndianCurrency(initialStats?.total_value_ytd || 0),
-                icon: <ShoppingCart size={20} />,
+                icon: <IndianRupee size={20} />,
                 variant: "primary",
+                progress: 75, // Target visualization
             },
         ],
         [initialPOs.length, initialStats]
@@ -198,7 +210,7 @@ export function POListClient({ initialPOs, initialStats }: POListClientProps) {
                 id="po-search"
                 value={searchQuery}
                 onChange={handleSearch}
-                placeholder="Search POs..."
+                placeholder="Search orders, items, or status..."
                 className="w-full max-w-sm"
             />
             <Flex align="center" gap={3}>
@@ -212,26 +224,22 @@ export function POListClient({ initialPOs, initialStats }: POListClientProps) {
                 />
 
                 <Button
-                    variant="ghost"
+                    variant="secondary"
                     onClick={handleUploadClick}
-                    className="shadow-sm border-sys-brand-primary/20 text-sys-brand-primary hover:bg-sys-brand-primary/5"
+                    className="min-w-[140px] shadow-sm bg-white dark:bg-white/10 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/20"
                 >
-                    <Flex align="center" gap={2}>
-                        <FileText size={16} />
-                        <Body className="text-inherit font-semibold">Upload POs</Body>
-                    </Flex>
+                    <Upload size={16} className="mr-2 text-app-fg" />
+                    <Body className="text-app-fg">Upload PO</Body>
                 </Button>
 
                 <Button
-                    variant="default"
+                    color="primary"
                     size="sm"
                     onClick={() => router.push("/po/create")}
-                    className="bg-[var(--color-sys-brand-primary)] text-sys-bg-white hover:brightness-110 shadow-md"
+                    className="min-w-[180px] shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-all py-2 bg-primary hover:bg-blue-600"
                 >
-                    <Flex align="center" gap={2}>
-                        <Plus size={16} />
-                        <Body className="text-inherit">New PO</Body>
-                    </Flex>
+                    <Plus size={18} className="mr-2" />
+                    <Body className="text-app-fg-inverse">New Purchase Order</Body>
                 </Button>
             </Flex>
         </Flex>
@@ -239,8 +247,8 @@ export function POListClient({ initialPOs, initialStats }: POListClientProps) {
 
     return (
         <ListPageTemplate
-            title="PURCHASE ORDERS"
-            subtitle="Track procurement contracts and delivery schedules"
+            title="Purchase Orders"
+            subtitle="Manage procurement contracts and track delivery schedules."
             toolbar={toolbar}
             summaryCards={summaryCards}
             columns={columns}
@@ -251,7 +259,7 @@ export function POListClient({ initialPOs, initialStats }: POListClientProps) {
             totalItems={filteredPOs.length}
             onPageChange={(newPage) => setPage(newPage)}
             emptyMessage="No purchase orders found"
-            density="compact"
+            density="normal"
         />
     );
 }

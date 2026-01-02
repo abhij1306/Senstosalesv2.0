@@ -202,7 +202,7 @@ def get_dashboard_kpis(db: sqlite3.Connection = Depends(get_db)):
         ).fetchone()[0]
         uninvoiced_dc = db.execute("""
             SELECT COUNT(*) FROM delivery_challans dc
-            LEFT JOIN gst_invoice_dc_links l ON dc.dc_number = l.dc_number
+            LEFT JOIN gst_invoices l ON dc.dc_number = l.dc_number
             WHERE l.dc_number IS NULL
         """).fetchone()[0]
 

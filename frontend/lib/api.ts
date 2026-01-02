@@ -577,5 +577,6 @@ export const api = {
   deleteBuyer: (id: number) =>
     apiFetch<{ success: boolean }>(`/api/buyers/${id}`, { method: "DELETE" }),
 
-  baseUrl: API_BASE_URL,
+
+
 };

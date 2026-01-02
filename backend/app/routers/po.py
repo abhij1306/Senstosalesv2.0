@@ -86,14 +86,26 @@ async def create_po_manual(
     po_data: PODetail, db: sqlite3.Connection = Depends(get_db)
 ):
     """Manually create a Purchase Order from structured data"""
+    return await process_po_update(po_data, db)
+
+
+@router.put("/{po_number}", response_model=PODetail)
+async def update_po(
+    po_number: str, po_data: PODetail, db: sqlite3.Connection = Depends(get_db)
+):
+    """Update an existing Purchase Order"""
+    # Force po_number consistency
+    po_data.header.po_number = po_number
+    return await process_po_update(po_data, db)
+
+
+async def process_po_update(po_data: PODetail, db: sqlite3.Connection):
+    """Shared logic for creating/updating PO via structured model"""
     try:
-        # Convert Pydantic model to dictionary format for ingestion service
-        # Map frontend keys to expected internal keys for IngestionService if possible
-        # Or just use a direct mapper
+        from app.services.ingest_po import POIngestionService
+        ingestion_service = POIngestionService()
         
-        from app.services.ingest_po import po_ingestion_service
-        
-        # Prepare header in scraper-like format (or update ingestion service to handle PODetail directly)
+        # 1. Map header to scraper-like format
         header_map = {
             "PURCHASE ORDER": str(po_data.header.po_number),
             "PO DATE": po_data.header.po_date,
@@ -125,11 +137,9 @@ async def create_po_manual(
             "REMARKS": po_data.header.remarks,
         }
         
-        # Prepare items
+        # 2. Map items and their nested deliveries
         items_list = []
         for item in po_data.items:
-            # Multi-delivery support in manual creation can be complex, 
-            # for now we create at least one delivery per item matching ord_qty
             item_map = {
                 "PO ITM": item.po_item_no,
                 "MATERIAL CODE": item.material_code,
@@ -138,26 +148,51 @@ async def create_po_manual(
                 "UNIT": item.unit,
                 "PO RATE": item.po_rate,
                 "ORD QTY": item.ordered_quantity,
-                "ITEM VALUE": item.item_value,
                 "RCD QTY": item.received_quantity,
                 "MTRL CAT": item.mtrl_cat,
-                # Mandatory Delivery Info for ingest_po
-                "LOT NO": 1,
-                "DELY QTY": item.ordered_quantity,
-                "DELY DATE": po_data.header.po_date,
-                "ENTRY ALLOW DATE": po_data.header.po_date,
-                "DEST CODE": po_data.header.department_no or 1,
+                "deliveries": []
             }
+            
+            # Map nested lots
+            if item.deliveries:
+                for d in item.deliveries:
+                    if d.delivered_quantity and d.delivered_quantity > d.ordered_quantity:
+                        raise HTTPException(status_code=400, detail=f"Lot {d.lot_no}: Delivered quantity ({d.delivered_quantity}) cannot exceed ordered quantity ({d.ordered_quantity})")
+                        
+                    item_map["deliveries"].append({
+                        "LOT NO": d.lot_no,
+                        "DELY QTY": d.ordered_quantity,
+                        "RCD QTY": d.received_quantity,
+                        "DELY DATE": d.dely_date,
+                        "ENTRY ALLOW DATE": d.entry_allow_date,
+                        "DEST CODE": d.dest_code,
+                        "DSP QTY": d.delivered_quantity # Pass DSP for track persistence
+                    })
+            else:
+                # Fallback to single lot if none provided
+                item_map["deliveries"].append({
+                    "LOT NO": 1,
+                    "DELY QTY": item.ordered_quantity,
+                    "DELY DATE": po_data.header.po_date,
+                    "ENTRY ALLOW DATE": po_data.header.po_date,
+                    "DEST CODE": po_data.header.department_no or 1,
+                })
+            
             items_list.append(item_map)
             
-        success, warnings = po_ingestion_service.ingest_po(db, header_map, items_list)
+        success, warnings = ingestion_service.ingest_po(db, header_map, items_list)
         
         if success:
+            db.commit()
+            # TOT-5 Sync
+            ReconciliationService.sync_po(db, str(po_data.header.po_number))
+            db.commit()
             return po_data
         else:
-            raise bad_request(f"Failed to create PO: {', '.join(warnings)}")
+            raise bad_request(f"Failed to ingest PO: {', '.join(warnings)}")
+            
     except Exception as e:
-        raise internal_error(f"Failed to create PO: {str(e)}", e)
+        raise internal_error(f"Failed to process PO update: {str(e)}", e)
 
 
 @router.post("/upload")
@@ -179,74 +214,65 @@ async def upload_po_html(
 
     if not po_header.get("PURCHASE ORDER"):
         raise bad_request("Could not extract PO number from HTML")
+    
+    # Debug: Log extracted data
+    print(f"🔍 SCRAPER OUTPUT: PO={po_header.get('PURCHASE ORDER')}, Items={len(po_items)}", flush=True)
+    if po_items:
+        print(f"🔍 Sample Item: {po_items[0]}", flush=True)
+    else:
+        print(f"⚠️ WARNING: No items extracted from HTML!", flush=True)
 
     # Ingest into database
     ingestion_service = POIngestionService()
+    linked_srvs_count = 0 # Initialize before transaction block
     try:
-        # Validate FY Uniqueness
-        from app.core.validation import get_financial_year
+        from app.db import db_transaction
+        
+        # Use explicit transaction context for atomicity
+        # If any error occurs (validation or DB), context manager rolls back
+        with db_transaction(db):
+             # Validate FY Uniqueness (Optional strict check)
+             from app.core.validation import get_financial_year
+             po_num = po_header.get("PURCHASE ORDER")
+             po_date = po_header.get("DATE")
+             if po_num and po_date:
+                 fy = get_financial_year(po_date)
+                 # Example: If strict uniqueness is desired, uncomment and adjust
+                 # existing = db.execute(
+                 #     "SELECT id FROM purchase_orders WHERE po_number = ? AND financial_year = ?",
+                 #     (po_num, fy),
+                 # ).fetchone()
+                 # if existing:
+                 #     raise ValueError(f"PO {po_num} for FY {fy} already exists.")
 
-        po_num = po_header.get("PURCHASE ORDER")
-        po_date = po_header.get("DATE")
-        if po_num and po_date:
-            fy = get_financial_year(po_date)
-            # Check for existing PO with same number and FY
-            # Note: If updating existing PO is allowed, logic might need adjustment.
-            # But duplicate upload usually implies overwrite or error.
-            # Current ingestion service checks for existence and updates if found.
-            # If we enforce uniqueness, we block overwrite?
-            # User requirement: "Validate... if duplicate found -> HTTP 400" implied for creation.
-            # But PO Upload is typically "Create OR Update".
-            # If so, validation should strictly block only if we DON'T want updates.
-            # If updates are allowed, validate_unique_number might be too strict unless we exclude current ID.
-            # But we don't have current ID yet (it's in the file).
+             # Ingestion service call
+             # Note: ingestion_service should NOT commit internally
+             success, warnings = ingestion_service.ingest_po(db, po_header, po_items)
 
-            # Let's check if it exists:
-            existing = db.execute(
-                "SELECT id FROM purchase_orders WHERE po_number = ? AND financial_year = ?",
-                (po_num, fy),
-            ).fetchone()
-            if existing:
-                # If it exists, ingestion service usually updates it.
-                # Does user want to BLOCK duplicate uploads or ALLOW updates?
-                # "Integrate FY Validation... Ensure INSERT fails if (Number + FY) exists."
-                # This implies blocking duplicates is desired for strictness.
-                # BUT POs are often re-uploaded.
-                # I will Log warning instead of blocking for PO Upload to avoid breaking workflow?
-                # Or check logic: if explicitly "Create", block. If "Upload", allow update?
-                # PO Router has only "Upload".
-                pass
+             if success:
+                 po_number = str(po_header.get("PURCHASE ORDER"))
+                 # TOT Sync removed - reconciliation happens at DC/SRV level, not PO upload
+                 
+                 if linked_srvs_count > 0:
+                     warnings.append(
+                         f"✅ Linked {linked_srvs_count} existing SRV(s) to PO {po_number}"
+                     )
+             else:
+                  # If ingestion returns false (logical failure), we raise exception to force rollback
+                  raise ValueError(f"Ingestion logic returned failure: {warnings}")
 
-        # DB transaction is already active via get_db dependency
-        success, warnings = ingestion_service.ingest_po(db, po_header, po_items)
-
-        if success:
-            # CRITICAL: Explicitly commit after successful ingest
-            db.commit()
-            
-            check = db.execute("SELECT count(*) FROM purchase_orders WHERE po_number = ?", 
-                             (po_header.get("PURCHASE ORDER"),)).fetchone()[0]
-            print(f"🔥🔥🔥 VERIFICATION: PO {po_header.get('PURCHASE ORDER')} SAVED? {check > 0}", flush=True)
-
-            # Update any SRVs that were waiting for this PO
-            # Update and link any related data using the Triangle of Truth sync
-            po_number = str(po_header.get("PURCHASE ORDER"))
-            ReconciliationService.sync_po(db, po_number)
-            db.commit() # Commit sync changes
-            linked_srvs_count = 0  # Placeholder as we now rely on sync_po
-
-            if linked_srvs_count > 0:
-                warnings.append(
-                    f"✅ Linked {linked_srvs_count} existing SRV(s) to PO {po_number}"
-                )
+        # Transaction committed automatically here if block exits successfully
 
         return {
-            "success": success,
+            "success": True,
             "po_number": po_header.get("PURCHASE ORDER"),
             "warnings": warnings,
             "linked_srvs": linked_srvs_count,
         }
     except Exception as e:
+        # Rethrow as HTTP 500/400 properly
+        if isinstance(e, ValueError): # Catch our validation errors
+             raise bad_request(str(e))
         raise internal_error(f"Failed to ingest PO: {str(e)}", e)
 
 
@@ -254,7 +280,7 @@ async def upload_po_html(
 async def upload_po_batch(
     files: List[UploadFile] = File(...), db: sqlite3.Connection = Depends(get_db)
 ):
-    """Upload and parse multiple PO HTML files"""
+    """Upload and parse multiple PO HTML files with atomic processing per file."""
 
     results = []
     successful = 0
@@ -262,6 +288,7 @@ async def upload_po_batch(
     total_linked_srvs = 0
 
     ingestion_service = POIngestionService()
+    from app.db import db_transaction
 
     for file in files:
         result = {
@@ -282,11 +309,18 @@ async def upload_po_batch(
 
             # Read and parse HTML
             content = await file.read()
+            print(f"📄 Read {len(content)} bytes from {file.filename}", flush=True)
             soup = BeautifulSoup(content, "lxml")
+            print(f"✅ Parsed HTML into BeautifulSoup", flush=True)
 
             # Extract data
+            print(f"🔍 Extracting PO header from {file.filename}...", flush=True)
             po_header = extract_po_header(soup)
+            print(f"📋 Header extracted: {po_header.get('PURCHASE ORDER')}", flush=True)
+            
+            print(f"🔍 Extracting PO items from {file.filename}...", flush=True)
             po_items = extract_items(soup)
+            print(f"📦 Items extracted: {len(po_items)}", flush=True)
 
             if not po_header.get("PURCHASE ORDER"):
                 print(f"🔥🔥🔥 PARSING FAILED for {file.filename}: PO Number missing", flush=True)
@@ -297,46 +331,43 @@ async def upload_po_batch(
             
             print(f"🔥🔥🔥 EXTRACTED PO: {po_header.get('PURCHASE ORDER')} from {file.filename}", flush=True)
 
-            # Ingest into database
-            success, warnings = ingestion_service.ingest_po(db, po_header, po_items)
+            # Atomic transaction per file
+            # If one file fails, only that one is rolled back. Others can succeed.
+            # (Assuming user wants batch to be "best effort" per file, but "all-or-nothing" WITHIN a file)
+            with db_transaction(db):
+                success, warnings = ingestion_service.ingest_po(db, po_header, po_items)
 
-            if success:
-                # CRITICAL: Explicitly commit after successful ingest
-                db.commit()
+                if success:
+                    # Reconciliation is now handled inside ingestion service
+                    # (skipped for new POs, run for existing POs with deliveries)
+                    po_number = str(po_header.get("PURCHASE ORDER"))
+                    
+                    linked_srvs_count = 0 # Placeholder
+                    total_linked_srvs += linked_srvs_count
 
-                # VERIFICATION: Check if PO exists immediately
-                check = db.execute("SELECT count(*) FROM purchase_orders WHERE po_number = ?", 
-                                 (po_header.get("PURCHASE ORDER"),)).fetchone()[0]
-                print(f"VERIFICATION: PO {po_header.get('PURCHASE ORDER')} exists? {check > 0}")
+                    result["success"] = True
+                    result["po_number"] = po_header.get("PURCHASE ORDER")
+                    result["linked_srvs"] = linked_srvs_count
 
-                # Update any SRVs that were waiting for this PO
-                # Update and link data using the Triangle of Truth sync
-                po_number = str(po_header.get("PURCHASE ORDER"))
-                ReconciliationService.sync_po(db, po_number)
-                db.commit() # Commit sync changes
-                linked_srvs_count = 0 # Placeholder
-                total_linked_srvs += linked_srvs_count
-
-                result["success"] = True
-                result["po_number"] = po_header.get("PURCHASE ORDER")
-                result["linked_srvs"] = linked_srvs_count
-
-                message = (
-                    warnings[0]
-                    if warnings
-                    else f"Successfully ingested PO {po_header.get('PURCHASE ORDER')}"
-                )
-                if linked_srvs_count > 0:
-                    message += f" (Linked {linked_srvs_count} SRV(s))"
-                result["message"] = message
-                successful += 1
-            else:
-                result["message"] = "Failed to ingest PO"
-                failed += 1
+                    message = (
+                        warnings[0]
+                        if warnings
+                        else f"Successfully ingested PO {po_header.get('PURCHASE ORDER')}"
+                    )
+                    if linked_srvs_count > 0:
+                        message += f" (Linked {linked_srvs_count} SRV(s))"
+                    result["message"] = message
+                    successful += 1
+                else:
+                    raise ValueError(f"Ingestion Error: {warnings}")
 
         except Exception as e:
+            import traceback
+            print(f"🔥🔥🔥 UPLOAD ERROR for {file.filename}:", flush=True)
+            print(traceback.format_exc(), flush=True)
             result["message"] = f"Error: {str(e)}"
             failed += 1
+            # Transaction already rolled back by context manager
 
         results.append(result)
 
@@ -378,3 +409,64 @@ def download_po_excel(po_number: str, db: sqlite3.Connection = Depends(get_db)):
         )
     except Exception as e:
         raise internal_error(f"Failed to generate Excel: {str(e)}", e)
+
+
+@router.patch("/{po_number}/items/{item_no}/delivered_qty")
+async def update_delivered_qty(
+    po_number: str,
+    item_no: int,
+    delivered_qty: float,
+    db: sqlite3.Connection = Depends(get_db)
+):
+    """
+    Manually update delivered quantity for a PO item.
+    Enforces PO-2 invariant and triggers TOT-5 reconciliation.
+    """
+    try:
+        # Fetch the item
+        item_row = db.execute(
+            """
+            SELECT id, ord_qty, manual_delivered_qty 
+            FROM purchase_order_items 
+            WHERE po_number = ? AND po_item_no = ?
+            """,
+            (po_number, item_no)
+        ).fetchone()
+        
+        if not item_row:
+            return bad_request(f"Item {item_no} not found in PO {po_number}")
+        
+        # PO-2 Validation: Cannot deliver more than ordered
+        ordered_qty = item_row["ord_qty"] or 0
+        if delivered_qty > ordered_qty + 0.001:  # 0.001 tolerance
+            return bad_request(
+                f"Cannot deliver more than ordered (PO-2). "
+                f"Ordered: {ordered_qty}, Attempted: {delivered_qty}"
+            )
+        
+        # Update manual_delivered_qty
+        db.execute(
+            """
+            UPDATE purchase_order_items 
+            SET manual_delivered_qty = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE po_number = ? AND po_item_no = ?
+            """,
+            (delivered_qty, po_number, item_no)
+        )
+        
+        db.commit()
+        
+        # TOT-5: Trigger reconciliation sync
+        ReconciliationService.sync_po(db, po_number)
+        db.commit()
+        
+        return {
+            "success": True,
+            "po_number": po_number,
+            "item_no": item_no,
+            "delivered_qty": delivered_qty,
+            "message": "Delivered quantity updated and reconciliation synced"
+        }
+        
+    except Exception as e:
+        raise internal_error(f"Failed to update delivered quantity: {str(e)}", e)

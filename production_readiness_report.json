@@ -1,0 +1,40 @@
+{
+  "timestamp": "2026-01-02T00:33:09.856320",
+  "overall": {
+    "overall_score": 57.0,
+    "overall_grade": "F",
+    "category_scores": {
+      "dark_theme": 88,
+      "backend": 100,
+      "security": 100
+    },
+    "timestamp": "2026-01-02T00:33:09.856271"
+  },
+  "audits": {
+    "dark_theme": {
+      "name": "Dark Theme Readiness",
+      "score": 88,
+      "grade": "B+",
+      "issues": 11
+    },
+    "eslint": {
+      "name": "Code Quality (ESLint)",
+      "score": 0,
+      "errors": 0,
+      "warnings": 0
+    },
+    "typescript": {
+      "name": "Type Safety",
+      "score": 0,
+      "errors": 0
+    },
+    "backend": {
+      "name": "Backend Quality",
+      "score": 100,
+      "issues": 0
+    }
+  },
+  "recommendations": [
+    "\u2705 All audits passed! System is production-ready."
+  ]
+}

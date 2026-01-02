@@ -29,9 +29,9 @@ export const DocumentTemplate = ({
     iconLayoutId,
 }: DocumentTemplateProps) => {
     return (
-        <div className={cn("space-y-4 will-change-[transform,opacity] min-h-screen", className)}>
-            {/* Compact Header - Translucent Glass */}
-            <div className="glass-header flex items-center justify-between px-6 py-4 mb-2 min-h-[64px]">
+        <div className={cn("min-h-screen will-change-[transform,opacity]", className)}>
+            {/* Header - Flowing Content */}
+            <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
                     {onBack && (
                         <Button
@@ -69,8 +69,8 @@ export const DocumentTemplate = ({
                 </div>
                 {actions && <div className="flex gap-2">{actions}</div>}
             </div>
-            {/* Content Area - Standardized Padding */}
-            <div className="px-6 pb-12">{children}</div>
+            {/* Content Area */}
+            <div>{children}</div>
         </div>
     );
 };

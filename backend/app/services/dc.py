@@ -18,6 +18,7 @@ from app.core.exceptions import (
 )
 from app.core.result import ServiceResult
 from app.models import DCCreate
+from app.core.number_utils import to_float, to_int, to_qty
 
 logger = logging.getLogger(__name__)
 
@@ -139,7 +140,7 @@ def validate_dc_items(
         # Use Reconciliation Ledger View for single source of truth
         recon_row = db.execute(
             """
-            SELECT rl.ordered_quantity, rl.total_delivered_qty 
+            SELECT rl.ord_qty, rl.actual_delivered_qty 
             FROM reconciliation_ledger rl
             JOIN purchase_order_items poi ON rl.po_number = poi.po_number AND rl.po_item_no = poi.po_item_no
             WHERE poi.id = ?
@@ -191,7 +192,7 @@ def check_dc_has_invoice(dc_number: str, db: sqlite3.Connection) -> Optional[str
     """
     invoice_row = db.execute(
         """
-        SELECT invoice_number FROM gst_invoice_dc_links 
+        SELECT invoice_number FROM gst_invoices 
         WHERE dc_number = ? 
         LIMIT 1
     """,
@@ -209,7 +210,7 @@ def create_dc(
     """
     try:
         from app.core.utils import get_financial_year
-        from app.core.number_utils import to_float, to_int, to_qty
+        # from app.core.number_utils import to_float, to_int, to_qty
 
         fy = get_financial_year(dc.dc_date)
 
@@ -219,6 +220,7 @@ def create_dc(
         year_end = f"20{fy.split('-')[1]}"
         full_year_end = f"{year_end}-03-31"
 
+        print(f"DEBUG: Service create_dc checking duplicate for {dc.dc_number} in {fy}")
         # Check for duplicate DC number within the FY
         existing = db.execute(
             """
@@ -230,6 +232,7 @@ def create_dc(
         ).fetchone()
 
         if existing:
+            print("DEBUG: Duplicate found")
             raise ConflictError(
                 f"DC number {dc.dc_number} already exists in Financial Year {fy}.",
                 details={"dc_number": dc.dc_number, "financial_year": fy},
@@ -238,35 +241,31 @@ def create_dc(
         final_dc_number = dc.dc_number
 
         # Validate
+        print("DEBUG: Validating header and items")
         validate_dc_header(dc)
         validate_dc_items(items, db, exclude_dc=None)
 
         logger.debug(f"Creating DC {final_dc_number} with {len(items)} items")
+        print("DEBUG: Inserting DC Header")
 
         # Insert DC header with finalized number
         db.execute(
             """
             INSERT INTO delivery_challans
-            (dc_number, dc_date, po_number, department_no, consignee_name, consignee_gstin,
-             consignee_address, inspection_company, eway_bill_no, vehicle_no, lr_no,
-             transporter, mode_of_transport, remarks)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (dc_number, dc_date, po_number, consignee_name, consignee_gstin,
+             consignee_address, vehicle_no, lr_no, transporter)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
             (
                 final_dc_number,
                 dc.dc_date,
                 dc.po_number,
-                dc.department_no,
                 dc.consignee_name,
                 dc.consignee_gstin,
                 dc.consignee_address,
-                dc.inspection_company,
-                dc.eway_bill_no,
                 dc.vehicle_no,
                 dc.lr_no,
                 dc.transporter,
-                dc.mode_of_transport,
-                dc.remarks,
             ),
         )
 
@@ -400,25 +399,19 @@ def update_dc(
         db.execute(
             """
             UPDATE delivery_challans SET
-            dc_date = ?, po_number = ?, department_no = ?, consignee_name = ?, consignee_gstin = ?,
-            consignee_address = ?, inspection_company = ?, eway_bill_no = ?, vehicle_no = ?, lr_no = ?,
-            transporter = ?, mode_of_transport = ?, remarks = ?
+            dc_date = ?, po_number = ?, consignee_name = ?, consignee_gstin = ?,
+            consignee_address = ?, vehicle_no = ?, lr_no = ?, transporter = ?
             WHERE dc_number = ?
         """,
             (
                 dc.dc_date,
                 dc.po_number,
-                dc.department_no,
                 dc.consignee_name,
                 dc.consignee_gstin,
                 dc.consignee_address,
-                dc.inspection_company,
-                dc.eway_bill_no,
                 dc.vehicle_no,
                 dc.lr_no,
                 dc.transporter,
-                dc.mode_of_transport,
-                dc.remarks,
                 dc_number,
             ),
         )

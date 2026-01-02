@@ -34,6 +34,13 @@ def calculate_entity_status(total_ordered: int, total_dispatched: int, total_rec
     
     return "Pending"
 
+def translate_raw_status(raw_status: str) -> str:
+    """ Maps numeric ERP codes to human readable strings. """
+    s = str(raw_status or "").strip()
+    if s == "0": return "Open"
+    if s == "2": return "Closed"
+    return s or "Draft"
+
 def calculate_pending_quantity(ordered: float, delivered: float) -> float:
     """
     Calculate Pending Quantity (Balance) enforcing Global Invariant.

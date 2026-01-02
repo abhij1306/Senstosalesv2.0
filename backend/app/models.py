@@ -63,7 +63,10 @@ class PODelivery(BaseModel):
 
     id: Optional[str] = None
     lot_no: Optional[int] = None
-    delivered_quantity: Optional[float] = None
+    ordered_quantity: Optional[float] = 0.0
+    delivered_quantity: Optional[float] = 0.0
+    received_quantity: Optional[float] = 0.0
+    manual_override_qty: Optional[float] = 0.0 # Added for TOT-5
     dely_date: Optional[str] = Field(None, description="YYYY-MM-DD")
     entry_allow_date: Optional[str] = Field(None, description="YYYY-MM-DD")
     dest_code: Optional[int] = None
@@ -284,6 +287,8 @@ class SRVItem(BaseModel):
     id: Optional[str] = None
     po_item_no: int
     lot_no: Optional[int] = None
+    srv_item_no: Optional[int] = None
+    rev_no: Optional[int] = None
     received_qty: float
     rejected_qty: float
     order_qty: Optional[float] = 0

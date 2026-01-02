@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     icon?: React.ReactNode;
     error?: string;
-    variant?: "default" | "glass" | "ghost";
+    variant?: "default" | "glass" | "ghost" | "neumorphic";
 }
 
 const InputInternal = React.forwardRef<HTMLInputElement, InputProps>(
@@ -33,6 +33,7 @@ const InputInternal = React.forwardRef<HTMLInputElement, InputProps>(
                             variant === "default" && "h-[38px] rounded-xl bg-app-surface border border-app-border/30 focus:shadow-lg focus:ring-1 focus:ring-app-accent/20 px-3.5",
                             variant === "glass" && "h-[38px] rounded-xl bg-app-overlay backdrop-blur-xl border border-app-border/40 px-3.5",
                             variant === "ghost" && "bg-transparent h-auto p-0",
+                            variant === "neumorphic" && "h-[38px] rounded-xl neumorphic-inset px-3.5 focus:shadow-none focus:ring-2 focus:ring-app-accent/10 focus:border-app-accent/30",
                             icon && variant !== "ghost" && "pl-11",
                             error && "ring-1 ring-rose-500/50",
                             className

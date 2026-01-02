@@ -107,7 +107,10 @@ export interface SupplierSummary {
 export interface PODelivery {
     id?: string;
     lot_no?: number;
+    ordered_quantity?: number;
     delivered_quantity?: number;
+    received_quantity?: number;
+    manual_override_qty?: number;
     dely_date?: string;
     entry_allow_date?: string;
     dest_code?: number;
@@ -216,11 +219,13 @@ export interface DCItemRow {
     remaining_quantity?: number;
     dispatched_quantity?: number;
     received_quantity?: number;
+    delivered_quantity?: number;
     dispatch_quantity: number;
     hsn_code?: string;
     hsn_rate?: number;
     remaining_post_dc?: number;
     drg_no?: string;
+    original_remaining?: number;
 }
 
 export interface DCHeader {
@@ -305,7 +310,10 @@ export interface InvoiceItem {
     igst_rate?: number;
     igst_amount?: number;
     total_amount: number;
+    amount?: number;
+    material_code?: string;
     no_of_packets?: number;
+    received_qty?: number;
 }
 
 export interface InvoiceHeader {
@@ -334,10 +342,15 @@ export interface InvoiceHeader {
     srv_no?: string;
     srv_date?: string;
     taxable_value?: number;
+    total_taxable_value?: number;
     cgst?: number;
+    cgst_total?: number;
     sgst?: number;
+    sgst_total?: number;
     igst?: number;
     total_invoice_value?: number;
+    dc_number?: string;
+    dc_date?: string;
     remarks?: string;
     created_at?: string;
 }

@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Truck, Plus, CheckCircle, Clock, Download, Activity } from "lucide-react";
+import { Truck, Plus, CheckCircle, Clock, Download, Activity, FileStack, PackageCheck, Ship } from "lucide-react";
 import { api, DCListItem, DCStats } from "@/lib/api";
 import { formatDate, formatIndianCurrency } from "@/lib/utils";
 import { useDebouncedValue } from "@/lib/hooks/useDebounce";
@@ -16,44 +16,46 @@ import {
     type Column,
     Button,
     Flex,
+    Label,
+    SmallText,
 } from "@/components/design-system";
 import { SearchBar } from "@/components/design-system/molecules/SearchBar";
 
 const columns: Column<DCListItem>[] = [
     {
         key: "dc_number",
-        label: "DC NUMBER",
+        label: "CHALLAN #",
         sortable: true,
         width: "15%",
         render: (_value, dc) => (
-            <Link href={`/dc/${dc.dc_number}`} className="block">
-                <Body className="text-app-accent hover:underline font-semibold">
+            <Link href={`/dc/${encodeURIComponent(dc.dc_number)}`} className="block group">
+                <Accounting className="text-app-accent tracking-tight group-hover:underline underline-offset-4 decoration-2">
                     {dc.dc_number}
-                </Body>
+                </Accounting>
             </Link>
         ),
     },
     {
         key: "dc_date",
-        label: "CHALLAN DATE",
+        label: "DATE",
         sortable: true,
         width: "12%",
         render: (v) => (
-            <Body className="text-[var(--color-sys-text-tertiary)]">
+            <Body className="text-app-fg-muted font-bold text-[13px] whitespace-nowrap">
                 {formatDate(String(v))}
             </Body>
         ),
     },
     {
         key: "po_number",
-        label: "PO REFERENCE",
+        label: "CONTRACT",
         sortable: true,
         width: "12%",
         render: (v) => (
-            <Link href={`/po/${v}`} className="block">
-                <Body className="text-app-accent hover:underline">
-                    {String(v) || "N/A"}
-                </Body>
+            <Link href={`/po/${v}`} className="block group">
+                <Accounting className="text-app-fg-muted text-[11px] group-hover:text-app-fg transition-colors">
+                    {String(v) || "---"}
+                </Accounting>
             </Link>
         ),
     },
@@ -64,18 +66,18 @@ const columns: Column<DCListItem>[] = [
         width: "10%",
         isNumeric: true,
         render: (v) => (
-            <Accounting className="text-right block">{Number(v) || 0}</Accounting>
+            <Accounting className="text-right pr-2">{v || 0}</Accounting>
         ),
     },
     {
         key: "total_dispatched_quantity",
-        label: "DLV",
+        label: "DISPATCHED",
         align: "right",
         width: "10%",
         isNumeric: true,
         render: (v) => (
-            <Accounting variant="success" className="text-right block">
-                {Number(v) || 0}
+            <Accounting variant="success" className="text-right pr-2">
+                {v || 0}
             </Accounting>
         ),
     },
@@ -86,8 +88,8 @@ const columns: Column<DCListItem>[] = [
         width: "10%",
         isNumeric: true,
         render: (v) => (
-            <Accounting variant="warning" className="text-right block">
-                {Number(v) || 0}
+            <Accounting variant="warning" className="text-right pr-2">
+                {v || 0}
             </Accounting>
         ),
     },
@@ -99,7 +101,7 @@ const columns: Column<DCListItem>[] = [
         width: "10%",
         isNumeric: true,
         render: (v) => (
-            <Accounting className="font-semibold text-right block">{Number(v) || 0}</Accounting>
+            <Accounting variant="highlight" className="text-app-accent text-right pr-2">{v || 0}</Accounting>
         ),
     },
     {
@@ -108,7 +110,11 @@ const columns: Column<DCListItem>[] = [
         sortable: true,
         align: "center",
         width: "11%",
-        render: (v) => <StatusBadge status={String(v)} className="w-24 justify-center" />,
+        render: (v) => (
+            <div className="flex justify-center">
+                <StatusBadge status={String(v)} className="w-24 shadow-sm" />
+            </div>
+        ),
     },
 ];
 
@@ -137,25 +143,25 @@ export function DCListClient({ initialDCs, initialStats }: DCListClientProps) {
     const summaryCards = useMemo(
         (): SummaryCardProps[] => [
             {
-                title: "Total Challans",
+                title: "Active Shipments",
                 value: initialStats?.total_challans || initialDCs.length,
-                icon: <Truck size={20} />,
+                icon: <Ship size={20} />,
                 variant: "primary",
             },
             {
-                title: "Delivered",
+                title: "Fully Delivered",
                 value: initialStats?.completed_delivery || 0,
-                icon: <CheckCircle size={20} />,
+                icon: <PackageCheck size={20} />,
                 variant: "success",
             },
             {
-                title: "Total Value",
+                title: "Contract Capacity",
                 value: formatIndianCurrency(initialStats?.total_value || 0),
-                icon: <Download size={20} />,
+                icon: <FileStack size={20} />,
                 variant: "primary",
             },
             {
-                title: "In Transit",
+                title: "Awaiting Receipt",
                 value: initialStats?.pending_delivery || 0,
                 icon: <Activity size={20} />,
                 variant: "warning",
@@ -170,25 +176,23 @@ export function DCListClient({ initialDCs, initialStats }: DCListClientProps) {
     }, []);
 
     const toolbar = (
-        <Flex align="center" gap={3}>
+        <Flex align="center" justify="between" className="w-full" gap={4}>
             <SearchBar
                 id="dc-search"
                 value={searchQuery}
                 onChange={handleSearch}
-                placeholder="Search DCs..."
+                placeholder="Search challans or contracts..."
                 className="w-full max-w-sm"
             />
 
             <Button
-                variant="default"
+                color="primary"
                 size="sm"
                 onClick={() => router.push("/dc/create")}
-                className="bg-app-accent text-white hover:brightness-110 shadow-md"
+                className="min-w-[120px] shadow-premium active:scale-95 transition-all"
             >
-                <Flex align="center" gap={2}>
-                    <Plus size={16} />
-                    <Body className="text-inherit">New DC</Body>
-                </Flex>
+                <Plus size={16} className="mr-2" />
+                <Body className="text-app-fg-inverse uppercase tracking-widest">New Challan</Body>
             </Button>
         </Flex>
     );

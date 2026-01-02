@@ -59,10 +59,10 @@ export function SidebarNav() {
             <Package className="text-white w-5 h-5" />
           </div>
           <div className="flex flex-col">
-            <span className="text-md font-black text-app-fg tracking-tight leading-none uppercase">
+            <span className="text-md font-bold text-app-fg tracking-tight leading-none uppercase">
               SENSTO<span className="text-app-accent">SALES</span>
             </span>
-            <span className="text-[8px] font-black text-app-fg/40 mt-1 uppercase tracking-[0.3em]">
+            <span className="text-[8px] font-bold text-app-fg/40 mt-1 uppercase tracking-[0.3em]">
               PRO ENTERPRISE
             </span>
           </div>
@@ -73,7 +73,7 @@ export function SidebarNav() {
       <div className="flex-1 px-3 py-4 space-y-6 overflow-y-auto no-scrollbar relative z-10">
         {navGroups.map((group) => (
           <div key={group.label} className="space-y-0.5">
-            <h3 className="px-3 text-[9px] font-black text-app-fg/40 uppercase tracking-[0.3em] mb-2">
+            <h3 className="px-3 text-[9px] font-bold text-app-fg/40 uppercase tracking-[0.3em] mb-2">
               {group.label}
             </h3>
             {group.items.map((item) => {
@@ -141,7 +141,7 @@ export function SidebarNav() {
               <span className="text-[10px] font-bold text-app-fg truncate">Abhijit S.</span>
               <div className="flex items-center gap-1 mt-0.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                <span className="text-[7px] font-black text-app-fg/40 uppercase tracking-widest truncate">Administrator</span>
+                <span className="text-[7px] font-bold text-app-fg/40 uppercase tracking-widest truncate">Administrator</span>
               </div>
             </div>
             <div className="p-1.5 hover:bg-app-fg/10 rounded-lg transition-colors cursor-pointer text-app-fg/40 hover:text-app-fg">

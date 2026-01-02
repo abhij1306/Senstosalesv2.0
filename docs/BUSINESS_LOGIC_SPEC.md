@@ -1,6 +1,6 @@
 # BUSINESS LOGIC & SYSTEM INVARIANTS (THE BIBLE)
 > **Status**: ENFORCED
-> **Last Updated**: 2025-12-30
+> **Last Updated**: 2026-01-01
 
 This document is the **Single Source of Truth** for all business logic, data flows, and system invariants in the SenstoSales application. Any code that violates these rules is considered a critical bug.
 
@@ -66,6 +66,31 @@ The system is architected to handle multiple distinct Buyers (Units) simultaneou
 - **TOT-2 (Reconciliation)**: `delivered_qty` is calculated as `MAX(total_dispatched_via_dc, total_received_via_srv)`.
 - **TOT-5 (Reconciliation Sync)**: `ReconciliationService.sync_po()` is the atomic authority on quantity state.
 - **Precision (P-01)**: All quantities processed with 15,3 decimal precision and 0.001 tolerance.
+
+### 3.4 PO Upload Reconciliation Logic
+- **PO-UPLOAD-1 (New POs)**: 
+    - For **first-time PO uploads**, reconciliation is **SKIPPED** (no DCs/SRVs exist yet).
+    - Items are inserted with `status='Active'` and transactions commit immediately.
+    - Debug log: `"ℹ️ New PO upload {po_number}, skipping sync"`
+
+- **PO-UPLOAD-2 (Existing PO Re-uploads)**:
+    - For **re-uploads** of existing POs (e.g., updated RCD QTY from BHEL portal), reconciliation **RUNS CONDITIONALLY**.
+    - The PO HTML is the source of truth for `rcd_qty` (received quantity).
+    - If reconciliation fails, the upload **continues** (non-blocking) since RCD QTY is already updated in items table.
+    - Debug log: `"🔄 Running TOT Sync for updated PO {po_number} (syncing RCD QTY)"`
+
+- **PO-UPLOAD-3 (High Water Mark Auto-Update)**:
+    - When a PO is re-uploaded with updated `RCD QTY`, the system automatically recalculates:
+        - `delivered_qty = MAX(dispatched_qty, received_qty)`
+    - **Example**: PO with `ORD=10`, `DSP=5`, `RECD=0` is re-uploaded with `RECD=9` →
+        - System updates: `delivered_qty = MAX(5, 9) = 9`
+        - Frontend displays: Ordered=10, Dispatched=5, Received=9, Delivered=9, Pending=1
+    - This ensures delivered quantity never falls below received quantity (reality check).
+
+- **PO-UPLOAD-4 (Transaction Safety)**:
+    - All PO ingestion happens within a **database transaction** (`db_transaction` context).
+    - If ANY error occurs (scraper failure, validation error, reconciliation crash), the **entire transaction rolls back**.
+    - No partial data is persisted (atomic insert guarantee).
 
 ---
 

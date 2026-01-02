@@ -19,6 +19,7 @@ export interface SummaryCardProps {
         value: string;
         direction: "up" | "down" | "neutral";
     };
+    progress?: number; // 0 to 100
     variant?: "default" | "primary" | "success" | "warning" | "secondary" | "error";
     className?: string;
 }
@@ -34,11 +35,11 @@ const variantTextStyles = {
 
 const variantIconStyles = {
     default: "bg-app-fg/5 text-app-fg/40",
-    primary: "bg-app-accent/10 text-app-accent",
+    primary: "bg-blue-50 dark:bg-blue-900/20 text-blue-500",
     secondary: "bg-app-accent/10 text-app-accent",
-    success: "bg-emerald-500/10 text-emerald-500",
-    warning: "bg-orange-500/10 text-orange-500",
-    error: "bg-rose-500/10 text-rose-500",
+    success: "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500",
+    warning: "bg-orange-50 dark:bg-orange-900/20 text-orange-500",
+    error: "bg-rose-50 dark:bg-rose-900/20 text-rose-500",
 };
 
 const trendStyles = {
@@ -52,25 +53,35 @@ export const SummaryCard = React.memo(function SummaryCard({
     value,
     icon,
     trend,
+    progress,
     variant = "primary",
     className,
 }: SummaryCardProps) {
     return (
-        <div className={cn("bg-app-surface border border-app-border rounded-xl shadow-sm h-[140px] transition-all duration-300", className)}>
+        <div className={cn(
+            "bg-app-surface/50 backdrop-blur-xl border border-app-border/30 rounded-3xl shadow-sm h-[160px] transition-all duration-300 group",
+            "hover:scale-[1.02] hover:shadow-xl hover:shadow-app-accent/5 hover:bg-app-surface/70 hover:border-app-border/50",
+            className
+        )}>
             <div className="p-6 h-full flex flex-col justify-between">
                 <div className="flex justify-between items-start">
-                    <SmallText
-                        className={cn(
-                            "uppercase tracking-[0.15em] font-bold text-[10px] opacity-80",
-                            variant !== "default" ? variantTextStyles[variant] : "text-[var(--app-fg-muted)]"
-                        )}
-                    >
-                        {title}
-                    </SmallText>
+                    <div className="min-w-0">
+                        <SmallText
+                            className={cn(
+                                "uppercase tracking-[0.15em] font-bold text-[11px] opacity-60 truncate block mb-1",
+                                variant !== "default" ? variantTextStyles[variant] : "text-[var(--app-fg-muted)]"
+                            )}
+                        >
+                            {title}
+                        </SmallText>
+                        <H2 className={cn("leading-tight font-black tracking-tight text-[28px] whitespace-nowrap truncate", variantTextStyles[variant])}>
+                            {value}
+                        </H2>
+                    </div>
                     {icon && (
                         <div
                             className={cn(
-                                "w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-300",
+                                "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shrink-0 ml-3",
                                 variantIconStyles[variant]
                             )}
                         >
@@ -78,21 +89,31 @@ export const SummaryCard = React.memo(function SummaryCard({
                         </div>
                     )}
                 </div>
-                <div className="mt-auto pt-2">
-                    <H2 className={cn("leading-none font-bold tracking-tight mt-1 whitespace-nowrap truncate", variantTextStyles[variant])}>
-                        {value}
-                    </H2>
-                    <div className="h-4 flex items-end mt-1.5">
-                        {trend ? (
-                            <div className={cn("text-[10px] font-bold uppercase tracking-wider flex items-center gap-1", trendStyles[trend.direction])}>
-                                <span>{trend.direction === "up" ? "↑" : trend.direction === "down" ? "↓" : "•"}</span>
-                                <span>{trend.value}</span>
-                                <span className="text-[var(--app-fg-muted)] font-semibold ml-1">L/M</span>
-                            </div>
-                        ) : (
-                            <div className="text-[10px] opacity-0 pointer-events-none">Spacer</div>
-                        )}
-                    </div>
+
+                <div className="mt-auto">
+                    {progress !== undefined ? (
+                        <div className="w-full bg-app-surface-hover/50 rounded-full h-1.5 overflow-hidden">
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progress}%` }}
+                                transition={{ duration: 1, ease: "easeOut" }}
+                                className={cn(
+                                    "h-full rounded-full",
+                                    variant === "primary" ? "bg-app-accent" :
+                                        variant === "success" ? "bg-emerald-500" :
+                                            variant === "warning" ? "bg-orange-500" : "bg-app-accent"
+                                )}
+                            />
+                        </div>
+                    ) : trend ? (
+                        <div className={cn("text-[12px] font-bold tracking-tight flex items-center gap-1", trendStyles[trend.direction])}>
+                            <span className="material-symbols-outlined text-[14px]">
+                                {trend.direction === "up" ? "trending_up" : trend.direction === "down" ? "trending_down" : "horizontal_rule"}
+                            </span>
+                            <span>{trend.value}</span>
+                            <span className="text-app-fg-muted/60 font-semibold ml-1">this month</span>
+                        </div>
+                    ) : null}
                 </div>
             </div>
         </div>

@@ -11,18 +11,32 @@
     --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
     --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
     --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+
+    /* Global Spacing Variables */
+    --page-padding-x: 3rem;
+    /* px-12 equivalent */
+    --page-padding-y: 1.5rem;
+    /* pt-6 equivalent */
   }
 
   body {
     background-color: var(--bg-base);
     color: var(--app-fg);
-    font-family: var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-body);
     font-size: 13px;
     font-weight: 500;
     line-height: 1.5;
+    font-feature-settings: "cv11", "ss01";
+    /* Enable Apple-style character variants */
     -webkit-font-smoothing: antialiased;
     min-height: 100vh;
     transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Force Tabular Numbers for all accounting/numeric classes */
+  .tabular-nums,
+  .font-mono {
+    font-variant-numeric: tabular-nums;
   }
 
   h1,
@@ -47,7 +61,8 @@
     width: 100%;
     min-height: 64px;
     background: transparent;
-    border-bottom: 1px solid var(--border-subtle);
+    /* Border removed for clean look */
+    /* border-bottom: 1px solid var(--border-subtle); */
     transition: all 0.2s ease;
     margin-bottom: 1.5rem;
   }
@@ -129,21 +144,21 @@
   }
 
   .status-badge-pending {
-    background: color-mix(in srgb, var(--color-sys-status-warning), transparent 88%);
-    color: var(--color-sys-status-warning);
-    border: 1px solid color-mix(in srgb, var(--color-sys-status-warning), transparent 80%);
+    background: color-mix(in srgb, var(--color-app-status-warning), transparent 88%);
+    color: var(--color-app-status-warning);
+    border: 1px solid color-mix(in srgb, var(--color-app-status-warning), transparent 80%);
   }
 
   .status-badge-closed {
-    background: color-mix(in srgb, var(--color-sys-status-success), transparent 88%);
-    color: var(--color-sys-status-success);
-    border: 1px solid color-mix(in srgb, var(--color-sys-status-success), transparent 80%);
+    background: color-mix(in srgb, var(--color-app-status-success), transparent 88%);
+    color: var(--color-app-status-success);
+    border: 1px solid color-mix(in srgb, var(--color-app-status-success), transparent 80%);
   }
 
   .status-badge-delivered {
-    background: color-mix(in srgb, var(--color-sys-status-info), transparent 88%);
-    color: var(--color-sys-status-info);
-    border: 1px solid color-mix(in srgb, var(--color-sys-status-info), transparent 80%);
+    background: color-mix(in srgb, var(--color-app-status-info), transparent 88%);
+    color: var(--color-app-status-info);
+    border: 1px solid color-mix(in srgb, var(--color-app-status-info), transparent 80%);
   }
 
   .status-badge-draft {
@@ -185,6 +200,50 @@
     .dark .hover-scrollbar:hover::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.2);
     }
+  }
+
+  .surface-card:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Neumorphic Design System Utilities */
+  .neumorphic {
+    background: var(--bg-surface);
+    box-shadow: 6px 6px 12px 0 rgba(0, 0, 0, 0.08),
+      -6px -6px 12px 0 rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.2s ease;
+  }
+
+  .dark .neumorphic {
+    box-shadow: 6px 6px 12px 0 rgba(0, 0, 0, 0.4),
+      -2px -2px 8px 0 rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .neumorphic-inset {
+    background: var(--bg-surface);
+    box-shadow: inset 4px 4px 8px 0 rgba(0, 0, 0, 0.05),
+      inset -4px -4px 8px 0 rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .dark .neumorphic-inset {
+    box-shadow: inset 4px 4px 8px 0 rgba(0, 0, 0, 0.3),
+      inset -2px -2px 6px 0 rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.01);
+  }
+
+  .neumorphic:active {
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.05),
+      inset -2px -2px 5px rgba(255, 255, 255, 0.5);
+    transform: scale(0.98);
+  }
+
+  .neumorphic-hover:hover {
+    box-shadow: 8px 8px 16px 0 rgba(0, 0, 0, 0.1),
+      -8px -8px 16px 0 rgba(255, 255, 255, 0.9);
+    transform: translateY(-1px);
   }
 }
 

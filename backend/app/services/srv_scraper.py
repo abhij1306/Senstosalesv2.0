@@ -163,6 +163,12 @@ def parse_srv_item_row(cells: List, headers: List[str]) -> Optional[Dict]:
         # Extract SRV Number (for internal grouping/validation)
         item["row_srv_number"] = get_val(["SRV NO", "SRV", "SRV_NO"])
 
+        # Extract SRV Item Number
+        item["srv_item_no"] = parse_int(get_val(["SRV ITM", "SRV ITEM"]))
+
+        # Extract Revision Number
+        item["rev_no"] = parse_int(get_val(["REV NO", "REV"]))
+
         # Extract Lot Number (SUB ITM)
         item["lot_no"] = parse_int(get_val(["SUB ITM", "LOT NO", "LOT"]))
 

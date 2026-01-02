@@ -1,27 +1,33 @@
 import type { Metadata } from "next";
-import { Inter, Outfit, JetBrains_Mono } from "next/font/google";
+import { Inter, Roboto, Public_Sans } from "next/font/google";
 import "./globals.css";
 import { SidebarNav as Sidebar } from "@/components/design-system/organisms/SidebarNav";
-// Header import removed
-// Link to toaster removed as component not found
-// import { Toaster } from "@/components/ui/toaster";
 import { UploadProvider } from "@/components/providers/UploadContext";
 import BatchUploadCard from "@/components/global/BatchUploadCard";
 import { cn } from "@/lib/utils";
-// Header import removed
 import PageTransition from "@/components/PageTransition";
 import { ThemeToggle } from "@/components/ThemeToggle";
-
 import { WebVitalsReporter } from "@/components/WebVitalsReporter";
 import { Providers } from "./providers";
 import { GlobalSearch } from "@/components/design-system/organisms";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-heading", display: "swap" });
-const mono = JetBrains_Mono({
+const inter = Inter({
     subsets: ["latin"],
-    variable: "--font-jetbrains-mono",
-    display: "swap"
+    variable: "--font-inter",
+    display: "swap",
+});
+
+const roboto = Roboto({
+    weight: ["400", "500", "700", "900"],
+    subsets: ["latin"],
+    variable: "--font-roboto",
+    display: "swap",
+});
+
+const publicSans = Public_Sans({
+    subsets: ["latin"],
+    variable: "--font-public-sans",
+    display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -36,7 +42,12 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body className={cn(inter.variable, outfit.variable, mono.variable, "font-sans antialiased")}>
+            <body className={cn(
+                inter.variable,
+                roboto.variable,
+                publicSans.variable,
+                "font-sans antialiased"
+            )}>
                 <Providers>
                     <UploadProvider>
                         <div className="flex h-screen bg-background overflow-hidden relative">
@@ -62,7 +73,10 @@ export default function RootLayout({
 
 
                                 {/* Main Content Area - Shifted Up */}
-                                <main className="flex-1 overflow-y-scroll overflow-x-hidden scrollbar-thin scrollbar-thumb-muted-foreground/10 hover:scrollbar-thumb-muted-foreground/20 px-12 pb-32 pt-6">
+                                <main
+                                    className="flex-1 overflow-y-scroll overflow-x-hidden scrollbar-thin scrollbar-thumb-muted-foreground/10 hover:scrollbar-thumb-muted-foreground/20 pb-32"
+                                    style={{ paddingLeft: 'var(--page-padding-x)', paddingRight: 'var(--page-padding-x)', paddingTop: 'var(--page-padding-y)' }}
+                                >
                                     <div className="mx-auto max-w-[1400px] w-full relative min-h-[calc(100vh-140px)]">
                                         <PageTransition>{children}</PageTransition>
                                     </div>

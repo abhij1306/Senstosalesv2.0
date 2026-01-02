@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
     Edit2,
@@ -9,7 +9,7 @@ import {
     FileText,
     FileDown,
 } from "lucide-react";
-import { api, API_BASE_URL } from "@/lib/api";
+import { api } from "@/lib/api";
 import { formatDate, cn } from "@/lib/utils";
 import { PODetail, POItem, PODelivery, SRVListItem } from "@/types";
 import {
@@ -18,10 +18,11 @@ import {
     Flex,
     Box,
 } from "@/components/design-system";
-import { PODetailCard } from "@/components/design-system/organisms";
+import { PODetailCard } from "@/components/po/organisms/PODetailCard";
+import { usePOStore } from "@/store/poStore";
 
 interface PODetailClientProps {
-    initialPO: PODetail;
+    initialPO: PODetail | null;
     initialSrvs: SRVListItem[];
     initialDC: { has_dc: boolean; dc_id?: string } | null;
 }
@@ -32,8 +33,24 @@ export default function PODetailClient({
     initialDC,
 }: PODetailClientProps) {
     const router = useRouter();
-    // Initialize state with Server Data (Zero Waterfall)
-    const [data, setData] = useState<PODetail>(initialPO);
+
+    // Zustand Store Integration
+    const data = usePOStore((state) => state.data);
+    const setPO = usePOStore((state) => state.setPO);
+    const updateHeader = usePOStore((state) => state.updateHeader);
+    const updateItem = usePOStore((state) => state.updateItem);
+    const addItem = usePOStore((state) => state.addItem);
+    const removeItem = usePOStore((state) => state.removeItem);
+    const addDelivery = usePOStore((state) => state.addDelivery);
+    const removeDelivery = usePOStore((state) => state.removeDelivery);
+
+    // Initialize store with server data
+    useEffect(() => {
+        if (initialPO) {
+            setPO(initialPO);
+        }
+    }, [initialPO, setPO]);
+
     const [srvs] = useState<SRVListItem[]>(initialSrvs);
     const [hasDC] = useState(initialDC?.has_dc || false);
     const [dcId] = useState(initialDC?.dc_id || null);
@@ -41,9 +58,38 @@ export default function PODetailClient({
     const [loading, setLoading] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [expandedItems, setExpandedItems] = useState<Set<number>>(
-        new Set(initialPO.items?.map((item: POItem) => item.po_item_no) || [])
+        new Set(initialPO?.items?.map((item: POItem) => item.po_item_no) || [])
     );
     const [activeTab, setActiveTab] = useState("basic");
+
+    // Handle Not Found State
+    if (!initialPO || !initialPO.header) {
+        return (
+            <DocumentTemplate
+                title="Purchase Order Not Found"
+                description="The requested purchase order could not be found or has been deleted."
+                onBack={() => router.back()}
+                layoutId="po-not-found"
+                icon={<FileText size={20} className="text-app-fg-muted" />}
+                iconLayoutId="po-icon-not-found"
+            >
+                <div className="flex flex-col items-center justify-center p-12 text-center h-[50vh]">
+                    <div className="w-16 h-16 rounded-full bg-app-surface-hover flex items-center justify-center mb-4">
+                        <FileText size={32} className="text-app-fg-muted" />
+                    </div>
+                    <h3 className="text-lg font-medium text-app-fg-primary mb-2">
+                        PO Not Found
+                    </h3>
+                    <p className="text-sm text-app-fg-muted max-w-md mb-6">
+                        We couldn't find the Purchase Order you're looking for. It may have been deleted or the ID is incorrect.
+                    </p>
+                    <Button onClick={() => router.push("/po/list")}>
+                        Return to List
+                    </Button>
+                </div>
+            </DocumentTemplate>
+        );
+    }
 
     const handleSave = useCallback(async () => {
         if (!data || !data.header) return;
@@ -58,28 +104,6 @@ export default function PODetailClient({
         }
     }, [data]);
 
-    const addItem = useCallback(() => {
-        if (!data || !data.items) return;
-        const maxItemNo = Math.max(
-            ...data.items.map((i: POItem) => i.po_item_no || 0),
-            0,
-        );
-        const newItem: POItem = {
-            po_item_no: maxItemNo + 1,
-            material_code: "",
-            material_description: "NEW PROCUREMENT ITEM",
-            drg_no: "",
-            unit: "NOS",
-            ordered_quantity: 0,
-            po_rate: 0,
-            item_value: 0,
-            delivered_quantity: 0,
-            deliveries: [],
-        };
-        setData({ ...data, items: [...data.items, newItem] });
-        setExpandedItems(new Set([...Array.from(expandedItems), maxItemNo + 1]));
-    }, [data, expandedItems]);
-
     const toggleItem = useCallback((itemNo: number) => {
         const s = new Set(expandedItems);
         if (s.has(itemNo)) {
@@ -90,53 +114,8 @@ export default function PODetailClient({
         setExpandedItems(s);
     }, [expandedItems]);
 
-    const updateHeader = useCallback((field: string, value: any) => {
-        if (!data) return;
-        setData({ ...data, header: { ...data.header, [field]: value } });
-    }, [data]);
-
-    const updateItem = useCallback((index: number, field: string, value: any) => {
-        if (!data || !data.items) return;
-        const newItems = [...data.items];
-        newItems[index] = { ...newItems[index], [field]: value };
-        if (field === "po_rate" || field === "ordered_quantity") {
-            newItems[index].item_value =
-                (newItems[index].ordered_quantity || 0) * (newItems[index].po_rate || 0);
-        }
-        setData({ ...data, items: newItems });
-    }, [data]);
-
-    const addDelivery = useCallback((itemIdx: number) => {
-        if (!data || !data.items) return;
-        const newItems = [...data.items];
-        const item = newItems[itemIdx];
-        const maxLotNo = Math.max(
-            ...(item.deliveries?.map((d: PODelivery) => d.lot_no || 0) || []),
-            0,
-        );
-        const newLot: PODelivery = {
-            lot_no: maxLotNo + 1,
-            delivered_quantity: 0,
-            dely_date: new Date().toISOString().split("T")[0],
-        };
-        newItems[itemIdx].deliveries = [...(item.deliveries || []), newLot];
-        setData({ ...data, items: newItems });
-    }, [data]);
-
-    const removeDelivery = useCallback((itemIdx: number, deliveryIdx: number) => {
-        if (!data || !data.items) return;
-        const newItems = [...data.items];
-        newItems[itemIdx].deliveries = newItems[itemIdx].deliveries.filter(
-            (_, i) => i !== deliveryIdx,
-        );
-        setData({ ...data, items: newItems });
-    }, [data]);
-
-    const removeItem = useCallback((index: number) => {
-        if (!data || !data.items) return;
-        const newItems = data.items.filter((_, i) => i !== index);
-        setData({ ...data, items: newItems });
-    }, [data]);
+    // Safe destructuring after Not Found check
+    if (!data || !data.header) return null;
 
     const { header, items } = data;
 
@@ -175,7 +154,7 @@ export default function PODetailClient({
                     className="text-app-fg-muted hover:bg-app-surface-hover text-xs"
                 >
                     <a
-                        href={`${API_BASE_URL}/api/po/${header.po_number}/download`}
+                        href={`/api/po/${header.po_number}/download`}
                         target="_blank"
                         rel="noreferrer"
                     >
@@ -223,23 +202,15 @@ export default function PODetailClient({
             iconLayoutId={`po-icon-${header.po_number}`}
         >
             <PODetailCard
-                header={header}
-                items={items}
                 srvs={srvs}
                 editMode={editMode}
                 expandedItems={expandedItems}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 toggleItem={toggleItem}
-                addItem={addItem}
-                removeItem={removeItem}
-                updateItem={updateItem}
-                updateHeader={updateHeader}
-                addDelivery={addDelivery}
-                removeDelivery={removeDelivery}
-                onUpdateItems={(newItems) => setData({ ...data, items: newItems as POItem[] })}
-                onSRVClick={(srvNo) => router.push(`/srv/${srvNo}`)}
+                onSRVClick={(srvNo: string) => router.push(`/srv/${srvNo}`)}
             />
         </DocumentTemplate>
     );
 }
+

@@ -1,15 +1,12 @@
 "use client";
 
-import { useEffect, useState, Suspense, useCallback } from "react";
+import React, { useEffect, useState, Suspense, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Save, Loader2, AlertCircle, Search, ChevronDown, Check, X, CheckCircle2 } from "lucide-react";
+import { cn, amountInWords } from "@/lib/utils";
+import { Save, Loader2, AlertCircle, Search, ChevronDown, Check, X, CheckCircle2, Receipt } from "lucide-react";
 import { api, type Buyer } from "@/lib/api";
-import type { InvoiceFormData, InvoiceItemUI } from "@/types/ui";
-import { createDefaultInvoiceForm } from "@/lib/uiAdapters";
-import { amountInWords, formatIndianCurrency } from "@/lib/utils";
 import * as Select from "@radix-ui/react-select";
-import { motion, useDragControls } from "framer-motion";
+import { motion, useDragControls, AnimatePresence } from "framer-motion";
 import {
   H3,
   Label,
@@ -20,36 +17,77 @@ import {
   Input,
   Card,
   DocumentTemplate,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  DocumentJourney,
+  MonoCode,
 } from "@/components/design-system";
-import { DocumentJourney } from "@/components/design-system/molecules/DocumentJourney";
+import { useInvoiceStore } from "@/store/invoiceStore";
 
 const TAX_RATES = { cgst: 9.0, sgst: 9.0 };
 
 function CreateInvoicePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dcId = searchParams?.get("dc") || "";
+  const dcIdFromUrl = searchParams?.get("dc") || "";
 
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const {
+    data,
+    dcData,
+    isCheckingNumber,
+    isDuplicateNumber,
+    setInvoice,
+    setHeader,
+    updateHeader,
+    setDCData,
+    setItems,
+    setNumberStatus,
+  } = useInvoiceStore();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [invoiceItems, setInvoiceItems] = useState<InvoiceItemUI[]>([]);
-  const [manualDcId, setManualDcId] = useState(dcId);
-  const [formData, setFormData] = useState<InvoiceFormData>(
-    createDefaultInvoiceForm(dcId || undefined)
-  );
+  const [manualDcId, setManualDcId] = useState(dcIdFromUrl);
 
   // Multi-Buyer States
   const [buyers, setBuyers] = useState<Buyer[]>([]);
   const [selectedBuyerId, setSelectedBuyerId] = useState<string>("");
-
-  const [isDuplicate, setIsDuplicate] = useState(false);
-  const [isChecking, setIsChecking] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+
+  const header = data?.header || {
+    invoice_number: "",
+    invoice_date: new Date().toISOString().split("T")[0],
+    dc_number: dcIdFromUrl,
+    buyer_name: "",
+    buyer_gstin: "",
+    buyer_address: "",
+    buyer_state: "",
+    buyer_state_code: "",
+    place_of_supply: "",
+    total_taxable_value: 0,
+    cgst_total: 0,
+    sgst_total: 0,
+    total_invoice_value: 0,
+  } as any;
+
+  const items = data?.items || [];
+
+  // Memoized Item Grouping for Parent-Lot hierarchy
+  const groupedItems = useMemo(() => {
+    return Object.values(items.reduce((acc, item) => {
+      // In Invoice, po_sl_no is used for lot reference
+      const key = item.description || "item";
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(item);
+      return acc;
+    }, {} as Record<string, typeof items>));
+  }, [items]);
 
   useEffect(() => {
     fetchInitialData();
-  }, [dcId]);
+  }, [dcIdFromUrl]);
 
   const fetchInitialData = async () => {
     try {
@@ -59,217 +97,174 @@ function CreateInvoicePageContent() {
       const defaultBuyer = buyerList.find((b) => b.is_default);
       if (defaultBuyer) {
         setSelectedBuyerId(defaultBuyer.id.toString());
-        applyBuyerToForm(defaultBuyer);
+        applyBuyerToStore(defaultBuyer);
       } else if (buyerList.length > 0) {
         setSelectedBuyerId(buyerList[0].id.toString());
-        applyBuyerToForm(buyerList[0]);
+        applyBuyerToStore(buyerList[0]);
       }
 
-      if (dcId) loadDC(dcId);
+      if (dcIdFromUrl) loadDC(dcIdFromUrl);
     } catch {
-      // Logic failure for buyers not critical
+      // Failure not critical
     }
   };
 
-  const applyBuyerToForm = (buyer: Buyer) => {
-    setFormData((prev) => ({
-      ...prev,
-      buyer_name: buyer.name,
-      buyer_gstin: buyer.gstin,
-      buyer_address: buyer.billing_address,
-      buyer_state: buyer.state || "",
-      buyer_state_code: buyer.state_code || "",
-      place_of_supply: buyer.place_of_supply,
-    }));
+  const applyBuyerToStore = (buyer: Buyer) => {
+    updateHeader("buyer_name", buyer.name);
+    updateHeader("buyer_gstin", buyer.gstin);
+    updateHeader("buyer_address", buyer.billing_address);
+    updateHeader("buyer_state", buyer.state || "");
+    updateHeader("buyer_state_code", buyer.state_code || "");
+    updateHeader("place_of_supply", buyer.place_of_supply);
   };
 
   const handleBuyerChange = (id: string) => {
     setSelectedBuyerId(id);
     const buyer = buyers.find((b) => b.id.toString() === id);
-    if (buyer) applyBuyerToForm(buyer);
+    if (buyer) applyBuyerToStore(buyer);
   };
 
   const checkNumberDuplicate = async (num: string, date: string) => {
     if (!num || num.length < 3) return;
-    setIsChecking(true);
+    setNumberStatus(true, false);
     try {
       const res = await api.checkDuplicateNumber("Invoice", num, date);
-      setIsDuplicate(res.exists);
+      setNumberStatus(false, res.exists);
     } catch {
-      // Fail silently
-    } finally {
-      setIsChecking(false);
+      setNumberStatus(false, false);
     }
   };
 
-  const loadDC = useCallback(async (id: string) => {
+  const loadDC = async (id: string) => {
     if (!id) return;
-    setLoading(true);
+    setIsLoading(true);
     setError(null);
     try {
-      const data = await api.getDCDetail(id);
+      const dcDetail = await api.getDCDetail(id);
 
-      if (!data?.header) {
+      if (!dcDetail?.header) {
         setError("Challan not found.");
-        setLoading(false);
+        setIsLoading(false);
         return;
       }
 
-      setFormData((prev) => ({
-        ...prev,
-        dc_number: data.header.dc_number || "",
-        challan_date: data.header.dc_date || "",
-        buyers_order_no: data.header.po_number?.toString() || "",
-        buyers_order_date: data.header.po_date || "",
-        vehicle_no: data.header.vehicle_no || "",
-        lr_no: data.header.lr_no || "",
-        transporter: data.header.transporter || "",
-        destination: (data.header as any).destination || "",
-      }));
+      setDCData(dcDetail.header);
 
-      if (data.items?.length > 0) {
-        const items: InvoiceItemUI[] = data.items.map((item: any) => {
-          const qty = item.dispatched_quantity || item.dispatch_qty || 0;
-          const rate = item.po_rate || 0;
-          const taxableValue = qty * rate;
-          const cgstAmount = (taxableValue * TAX_RATES.cgst) / 100;
-          const sgstAmount = (taxableValue * TAX_RATES.sgst) / 100;
-          return {
-            lotNumber: item.lot_no?.toString() || "",
-            description: item.description || item.material_description || "",
-            hsnCode: item.hsn_code || "",
-            quantity: qty,
-            unit: "NO",
-            rate: rate,
-            taxableValue,
-            tax: {
-              cgstRate: TAX_RATES.cgst,
-              cgstAmount,
-              sgstRate: TAX_RATES.sgst,
-              sgstAmount,
-              igstRate: 0,
-              igstAmount: 0,
-            },
-            totalAmount: taxableValue + cgstAmount + sgstAmount,
-          };
-        });
-        setInvoiceItems(items);
-        calculateTotals(items);
+      const newHeader = {
+        ...header,
+        dc_number: dcDetail.header.dc_number || "",
+        dc_date: dcDetail.header.dc_date || "",
+        buyers_order_no: dcDetail.header.po_number?.toString() || "",
+        buyers_order_date: dcDetail.header.po_date || "",
+        vehicle_no: dcDetail.header.vehicle_no || "",
+        lr_no: dcDetail.header.lr_no || "",
+        transporter: dcDetail.header.transporter || "",
+        destination: (dcDetail.header as any).destination || "",
+      };
+      setHeader(newHeader);
+
+      if (dcDetail.items?.length > 0) {
+        const mappedItems = dcDetail.items
+          .map((item: any) => {
+            const qty = item.dispatched_quantity || item.dispatch_qty || 0;
+            const rate = item.po_rate || 0;
+            const taxableValue = qty * rate;
+            const cgstAmount = (taxableValue * TAX_RATES.cgst) / 100;
+            const sgstAmount = (taxableValue * TAX_RATES.sgst) / 100;
+
+            return {
+              po_sl_no: item.lot_no?.toString() || "1",
+              description: item.description || item.material_description || "",
+              hsn_sac: item.hsn_code || "",
+              quantity: qty,
+              unit: item.unit || "NOS",
+              rate: rate,
+              taxable_value: taxableValue,
+              cgst_amount: cgstAmount,
+              sgst_amount: sgstAmount,
+              total_amount: taxableValue + cgstAmount + sgstAmount,
+              received_qty: item.received_quantity || 0,
+            };
+          })
+          .filter((item: any) => item.quantity > 0);
+
+        setItems(mappedItems);
+        calculateTotals(mappedItems);
       }
     } catch (err: any) {
       setError(err.message || "Failed to load DC");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  }, []);
+  };
 
-  const calculateTotals = (items: InvoiceItemUI[]) => {
-    const taxable = items.reduce((sum, item) => sum + item.taxableValue, 0);
-    const cgst = items.reduce((sum, item) => sum + item.tax.cgstAmount, 0);
-    const sgst = items.reduce((sum, item) => sum + item.tax.sgstAmount, 0);
-    const total = items.reduce((sum, item) => sum + item.totalAmount, 0);
+  const calculateTotals = (currentItems: any[]) => {
+    const taxable = currentItems.reduce((sum, item) => sum + (item.taxable_value || 0), 0);
+    const cgst = currentItems.reduce((sum, item) => sum + (item.cgst_amount || 0), 0);
+    const sgst = currentItems.reduce((sum, item) => sum + (item.sgst_amount || 0), 0);
+    const total = taxable + cgst + sgst;
 
-    const validTotal = isNaN(total) ? 0 : total;
-
-    setFormData(
-      (prev) =>
-        ({
-          ...prev,
-          taxable_value: isNaN(taxable) ? 0 : taxable,
-          cgst: isNaN(cgst) ? 0 : cgst,
-          sgst: isNaN(sgst) ? 0 : sgst,
-          total_invoice_value: validTotal,
-          amount_in_words: amountInWords(validTotal),
-        }) as any
-    );
+    updateHeader("total_taxable_value", taxable);
+    updateHeader("cgst_total", cgst);
+    updateHeader("sgst_total", sgst);
+    updateHeader("total_invoice_value", total);
   };
 
   const handleSave = async () => {
     setShowWarning(false);
-    setSaving(true);
+    setIsSaving(true);
     setError(null);
     try {
-      const apiItems = invoiceItems.map((item) => ({
-        po_sl_no: item.lotNumber,
-        description: item.description,
-        quantity: item.quantity,
-        unit: item.unit || "NO",
-        rate: item.rate,
-        hsn_sac: item.hsnCode,
-        no_of_packets: (item as any).no_of_packets,
-      }));
-
       const payload = {
-        invoice_number: formData.invoice_number,
-        invoice_date: formData.invoice_date,
-        dc_number: formData.dc_number,
-        buyer_name: formData.buyer_name,
-        buyer_address: (formData as any).buyer_address,
-        buyer_gstin: formData.buyer_gstin,
-        buyer_state: formData.buyer_state,
-        buyer_state_code: (formData as any).buyer_state_code,
-        place_of_supply: formData.place_of_supply,
-        buyers_order_no: formData.buyers_order_no,
-        buyers_order_date: formData.buyers_order_date,
-        vehicle_no: formData.vehicle_no,
-        lr_no: formData.lr_no,
-        transporter: formData.transporter,
-        destination: formData.destination,
-        terms_of_delivery: formData.terms_of_delivery,
-        gemc_number: formData.gemc_number,
-        gemc_date: formData.gemc_date,
-        mode_of_payment: formData.mode_of_payment,
-        payment_terms: formData.payment_terms || "45 Days",
-        despatch_doc_no: formData.despatch_doc_no,
-        srv_no: formData.srv_no,
-        srv_date: formData.srv_date,
-        remarks: formData.remarks,
-        items: apiItems,
+        invoice_number: header.invoice_number,
+        invoice_date: header.invoice_date,
+        dc_number: header.dc_number,
+        buyer_name: header.buyer_name,
+        buyer_address: header.buyer_address,
+        buyer_gstin: header.buyer_gstin,
+        buyer_state: header.buyer_state,
+        buyer_state_code: header.buyer_state_code,
+        place_of_supply: header.place_of_supply,
+        buyers_order_no: header.buyers_order_no,
+        buyers_order_date: header.buyers_order_date,
+        vehicle_no: header.vehicle_no,
+        lr_no: header.lr_no,
+        transporter: header.transporter,
+        destination: header.destination,
+        terms_of_delivery: header.terms_of_delivery,
+        gemc_number: header.gemc_number,
+        gemc_date: header.gemc_date,
+        mode_of_payment: header.mode_of_payment,
+        payment_terms: header.payment_terms || "45 Days",
+        despatch_doc_no: header.despatch_doc_no,
+        srv_no: header.srv_no,
+        srv_date: header.srv_date,
+        remarks: header.remarks,
+        items: items,
       };
 
       await api.createInvoice(payload);
-      router.push(`/invoice/${formData.invoice_number}`);
+      router.push(`/invoice/${header.invoice_number}`);
     } catch (err: any) {
-      // console.error("Invoice creation failed:", err);
-      // Handle Pydantic 422 errors specifically to show something readable
-      if (err.status === 422 && Array.isArray(err.data?.detail)) {
-        const details = err.data.detail.map((d: any) => `${d.loc.join(".")}: ${d.msg}`).join(", ");
-        setError(`Validation Error: ${details}`);
-      } else {
-        const msg =
-          typeof err.message === "object"
-            ? JSON.stringify(err.message)
-            : err.message || "Failed to create invoice";
-        setError(msg);
-      }
+      setError(err.message || "Failed to create invoice");
     } finally {
-      setSaving(false);
+      setIsSaving(false);
     }
   };
 
   const topActions = (
     <div className="flex items-center gap-2">
-      <Button variant="outline" size="sm" onClick={() => router.back()} disabled={saving}>
+      <Button variant="outline" size="sm" onClick={() => router.back()} disabled={isSaving}>
         Cancel
       </Button>
       <Button
-        variant="default"
+        color="primary"
         size="sm"
         onClick={() => setShowWarning(true)}
-        disabled={
-          saving ||
-          invoiceItems.length === 0 ||
-          isDuplicate ||
-          isChecking ||
-          !formData.invoice_number
-        }
+        disabled={isSaving || items.length === 0 || isDuplicateNumber || !header.invoice_number}
       >
-        {saving ? (
-          <Loader2 size={16} className="animate-spin mr-2" />
-        ) : (
-          <Save size={16} className="mr-2" />
-        )}
-        {saving ? "Saving..." : "Generate Invoice"}
+        {isSaving ? <Loader2 size={16} className="animate-spin mr-2" /> : <Save size={16} className="mr-2" />}
+        {isSaving ? "Saving..." : "Generate Invoice"}
       </Button>
     </div>
   );
@@ -279,461 +274,278 @@ function CreateInvoicePageContent() {
       title="Create GST Invoice"
       description="Generate billing documentation from DC"
       actions={topActions}
+      onBack={() => router.back()}
+      icon={<Receipt size={20} className="text-app-accent" />}
+      iconLayoutId="create-invoice-icon"
     >
-      <div className="mb-6">
-        <DocumentJourney currentStage="Invoice" />
-      </div>
-
       <div className="space-y-6">
+        <DocumentJourney currentStage="Invoice" className="mb-2" />
+
         {error && (
-          <Card className="p-4 bg-red-50 border-red-100">
-            <div className="flex items-center gap-2 text-red-600">
+          <Card className="p-4 bg-app-status-error/10 border-none">
+            <div className="flex items-center gap-2 text-app-status-error">
               <AlertCircle size={16} />
-              <SmallText className="font-medium">{error}</SmallText>
+              <SmallText className="text-app-status-error">{error}</SmallText>
             </div>
           </Card>
         )}
 
         {/* DC Selection */}
-        {!dcId && (
+        {!dcIdFromUrl && (
           <Card className="p-6">
-            <Label className="text-app-fg-muted mb-2 block">
-              Delivery Challan Reference
-            </Label>
+            <Label className="mb-2 block">Delivery Challan Reference</Label>
             <div className="flex gap-3 mt-1">
               <div className="flex-1">
                 <Input
                   value={manualDcId}
                   onChange={(e) => setManualDcId(e.target.value)}
                   placeholder="Enter DC number"
-                  className="font-medium text-app-fg"
+                  className="text-app-fg text-lg"
                 />
               </div>
-              <Button
-                variant="secondary"
-                onClick={() => loadDC(manualDcId)}
-                disabled={!manualDcId || loading}
-              >
-                {loading ? (
-                  <Loader2 size={16} className="animate-spin mr-2" />
-                ) : (
-                  <Search size={16} className="mr-2" />
-                )}
-                {loading ? "Loading..." : "Load DC"}
+              <Button variant="secondary" onClick={() => loadDC(manualDcId)} disabled={!manualDcId || isLoading}>
+                {isLoading ? <Loader2 size={16} className="animate-spin mr-2" /> : <Search size={16} className="mr-2" />}
+                {isLoading ? "Loading..." : "Load DC"}
               </Button>
             </div>
           </Card>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            {/* Invoice Details */}
-            {/* Invoice Details */}
-            <Card className="p-6">
-              <H3 className="mb-6 text-app-fg text-sm">Invoice Information</H3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
-                <div className="space-y-1.5">
-                  <Label className="text-app-fg-muted">
-                    Invoice Number
-                  </Label>
-                  <Input
-                    value={formData.invoice_number}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setFormData({ ...formData, invoice_number: val });
-                      checkNumberDuplicate(val, formData.invoice_date);
-                    }}
-                    className={cn(
-                      "font-medium tabular-nums",
-                      isDuplicate
-                        ? "border-app-status-error text-app-status-error focus:ring-app-status-error/10"
-                        : "text-app-fg"
-                    )}
-                    placeholder="INV/001/24-25"
-                  />
-                  {isChecking && (
-                    <SmallText className="text-app-fg-muted animate-pulse">
-                      Checking uniqueness...
-                    </SmallText>
-                  )}
-                  {isDuplicate && (
-                    <SmallText className="text-app-status-error">
-                      This number already exists in this FY
-                    </SmallText>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-app-fg-muted">
-                    Invoice Date
-                  </Label>
-                  <Input
-                    type="date"
-                    value={formData.invoice_date}
-                    onChange={(e) => setFormData({ ...formData, invoice_date: e.target.value })}
-                    className="font-medium text-app-fg"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-app-fg-muted">
-                    Linked DC
-                  </Label>
-                  <div className="font-medium text-app-fg tabular-nums px-3 py-2 bg-app-surface-hover/30 rounded-xl border border-dashed border-app-border">
-                    {formData.dc_number || "---"}
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-app-fg-muted">
-                    Order Reference
-                  </Label>
-                  <div className="font-medium text-app-fg px-3 py-2 bg-app-surface-hover/30 rounded-xl border border-dashed border-app-border">
-                    {formData.buyers_order_no || "---"}
-                  </div>
-                </div>
-              </div>
-            </Card>
+        {/* Info Tabs */}
+        <Tabs defaultValue="buyer" className="w-full">
+          <TabsList className="mb-4 bg-app-overlay/5 p-1 rounded-xl inline-flex border border-app-border/10">
+            <TabsTrigger value="buyer">Buyer Info</TabsTrigger>
+            <TabsTrigger value="references">References</TabsTrigger>
+            <TabsTrigger value="logistics">Logistics</TabsTrigger>
+          </TabsList>
 
-            <Card className="p-6">
-              <H3 className="mb-6 text-app-fg text-sm">Logistics & Payments</H3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
-                <div className="space-y-1.5">
-                  <Label className="text-app-fg-muted">
-                    Vehicle No
-                  </Label>
-                  <Input
-                    value={formData.vehicle_no || ""}
-                    onChange={(e) => setFormData({ ...formData, vehicle_no: e.target.value })}
-                    className="font-medium text-app-fg"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-app-fg-muted">
-                    Transporter
-                  </Label>
-                  <Input
-                    value={formData.transporter || ""}
-                    onChange={(e) => setFormData({ ...formData, transporter: e.target.value })}
-                    className="font-medium text-app-fg"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-app-fg-muted">
-                    Payment Terms
-                  </Label>
-                  <Input
-                    value={formData.payment_terms || "45 Days"}
-                    onChange={(e) => setFormData({ ...formData, payment_terms: e.target.value })}
-                    className="font-medium text-app-fg"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-app-fg-muted">
-                    Mode of Payment
-                  </Label>
-                  <Input
-                    value={formData.mode_of_payment || ""}
-                    onChange={(e) => setFormData({ ...formData, mode_of_payment: e.target.value })}
-                    className="font-medium text-app-fg"
-                  />
-                </div>
-              </div>
-            </Card>
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.15 }}
+            >
+              <Card className="p-6 mt-0 border-none shadow-sm bg-app-surface/50 backdrop-blur-md">
+                <TabsContent value="buyer" className="mt-0">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 border-r border-app-border/10 pr-6">
+                      <div className="space-y-2">
+                        <Label>INVOICE NUMBER</Label>
+                        <Input
+                          value={header.invoice_number}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            updateHeader("invoice_number", val);
+                            checkNumberDuplicate(val, header.invoice_date);
+                          }}
+                          className={cn("tabular-nums text-lg", isDuplicateNumber ? "border-app-status-error ring-app-status-error/10" : "")}
+                          placeholder="INV/001/24-25"
+                        />
+                        {isDuplicateNumber && <SmallText className="text-app-status-error">This number already exists</SmallText>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label>INVOICE DATE</Label>
+                        <Input type="date" value={header.invoice_date} onChange={(e) => updateHeader("invoice_date", e.target.value)} />
+                      </div>
+                    </div>
 
-          <div className="space-y-6">
-            {/* Buyer Selection Card */}
-            <Card className="p-6 border-app-accent/20 bg-app-accent/5 ring-1 ring-app-accent/10">
-              <Label className="text-app-accent mb-4 block">
-                Bill To: Entity Selection
-              </Label>
-
-              <Select.Root value={selectedBuyerId} onValueChange={handleBuyerChange}>
-                <Select.Trigger className="flex items-center justify-between w-full px-4 py-2 bg-white border border-blue-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
-                  <Select.Value placeholder="Select Buyer" />
-                  <Select.Icon>
-                    <ChevronDown size={14} className="text-blue-400" />
-                  </Select.Icon>
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Content className="overflow-hidden bg-white rounded-xl shadow-xl border border-slate-100 z-50">
-                    <Select.Viewport className="p-1">
-                      {buyers.map((b) => (
-                        <Select.Item
-                          key={b.id}
-                          value={b.id.toString()}
-                          className="flex items-center px-8 py-2 text-sm text-slate-700 rounded-lg outline-none hover:bg-blue-50 hover:text-blue-700 cursor-pointer relative data-[highlighted]:bg-blue-50"
-                        >
-                          <Select.ItemText>{b.name}</Select.ItemText>
-                          <Select.ItemIndicator className="absolute left-2">
-                            <Check size={14} />
-                          </Select.ItemIndicator>
-                        </Select.Item>
-                      ))}
-                    </Select.Viewport>
-                  </Select.Content>
-                </Select.Portal>
-              </Select.Root>
-
-              <div className="mt-8 pt-6 border-t border-blue-100 space-y-4">
-                <div>
-                  <Label>Live Snapshot</Label>
-                  <H3 className="text-app-fg leading-tight">
-                    {formData.buyer_name || "---"}
-                  </H3>
-                </div>
-                <div className="space-y-1">
-                  <Label>GSTIN</Label>
-                  <Accounting className="text-h4 text-app-accent">
-                    {formData.buyer_gstin || "---"}
-                  </Accounting>
-                </div>
-                <div className="space-y-1">
-                  <Label>Billing Address</Label>
-                  <SmallText className="text-app-fg-muted block leading-relaxed">
-                    {formData.buyer_address || "---"}
-                  </SmallText>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div>
-                    <Label>State</Label>
-                    <SmallText className="font-bold text-app-fg">
-                      {formData.buyer_state || "---"}
-                    </SmallText>
+                    <div className="lg:col-span-1">
+                      <Label className="text-app-accent mb-3 block uppercase tracking-widest">Billed To</Label>
+                      <Select.Root value={selectedBuyerId} onValueChange={handleBuyerChange}>
+                        <Select.Trigger className="flex items-center justify-between w-full px-4 py-2 bg-app-surface border border-app-border/20 rounded-xl text-sm shadow-sm mb-4">
+                          <Select.Value placeholder="Select Buyer" />
+                          <Select.Icon><ChevronDown size={14} /></Select.Icon>
+                        </Select.Trigger>
+                        <Select.Portal>
+                          <Select.Content className="overflow-hidden bg-app-surface rounded-2xl shadow-premium border border-app-border/10 z-50">
+                            <Select.Viewport className="p-1">
+                              {buyers.map((b) => (
+                                <Select.Item key={b.id} value={b.id.toString()} className="flex items-center px-8 py-3 text-sm text-app-fg-muted rounded-xl outline-none hover:bg-app-accent/10 hover:text-app-accent cursor-pointer">
+                                  <Select.ItemText>{b.name}</Select.ItemText>
+                                </Select.Item>
+                              ))}
+                            </Select.Viewport>
+                          </Select.Content>
+                        </Select.Portal>
+                      </Select.Root>
+                      <div className="p-4 rounded-xl bg-app-overlay/5 border border-app-border/10">
+                        <H3 className="text-app-fg text-sm mb-1">{header.buyer_name || "---"}</H3>
+                        <Body className="text-app-fg-muted leading-relaxed">{header.buyer_address || "---"}</Body>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <Label>POS</Label>
-                    <SmallText className="font-bold text-app-fg">
-                      {formData.place_of_supply || "---"}
-                    </SmallText>
+                </TabsContent>
+
+                <TabsContent value="references" className="mt-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="space-y-1.5"><Label>Order Number</Label><Input value={header.buyers_order_no || ""} onChange={(e) => updateHeader("buyers_order_no", e.target.value)} /></div>
+                    <div className="space-y-1.5"><Label>Order Date</Label><Input type="date" value={header.buyers_order_date || ""} onChange={(e) => updateHeader("buyers_order_date", e.target.value)} /></div>
+                    <div className="space-y-1.5"><Label>GEMC No</Label><Input value={header.gemc_number || ""} onChange={(e) => updateHeader("gemc_number", e.target.value)} /></div>
+                    <div className="space-y-1.5"><Label>SRV No</Label><Input value={header.srv_no || ""} onChange={(e) => updateHeader("srv_no", e.target.value)} /></div>
                   </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </div>
+                </TabsContent>
+
+                <TabsContent value="logistics" className="mt-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="space-y-1.5"><Label>Vehicle No</Label><Input value={header.vehicle_no || ""} onChange={(e) => updateHeader("vehicle_no", e.target.value)} /></div>
+                    <div className="space-y-1.5"><Label>LR Number</Label><Input value={header.lr_no || ""} onChange={(e) => updateHeader("lr_no", e.target.value)} /></div>
+                    <div className="space-y-1.5"><Label>Transporter</Label><Input value={header.transporter || ""} onChange={(e) => updateHeader("transporter", e.target.value)} /></div>
+                    <div className="space-y-1.5"><Label>Payment Terms</Label><Input value={header.payment_terms || "45 Days"} onChange={(e) => updateHeader("payment_terms", e.target.value)} /></div>
+                  </div>
+                </TabsContent>
+              </Card>
+            </motion.div>
+          </AnimatePresence>
+        </Tabs>
 
         {/* Items Table */}
-        {invoiceItems.length > 0 && (
-          <Card className="p-0 overflow-hidden border-none shadow-sm">
-            <div className="px-6 py-4 bg-app-surface-hover/30 border-b border-app-border">
-              <H3 className="font-medium text-app-fg">
-                Invoice Items ({invoiceItems.length})
-              </H3>
-            </div>
-            <div className="overflow-x-auto">
+        {items.length > 0 && (
+          <div className="space-y-4">
+            <Label className="m-0 text-app-fg-muted uppercase tracking-widest">
+              Billing Structure ({items.length} Items)
+            </Label>
+            <div className="table-container shadow-premium-hover bg-app-surface/30">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50/30">
-                    <th className="py-3 px-6 text-left">
-                      <Label>Lot</Label>
-                    </th>
-                    <th className="py-3 px-6 text-left">
-                      <Label>Description</Label>
-                    </th>
-                    <th className="py-3 px-6 text-left">
-                      <Label>HSN</Label>
-                    </th>
-                    <th className="py-3 px-6 text-right">
-                      <Label>Qty</Label>
-                    </th>
-                    <th className="py-3 px-6 text-right">
-                      <Label>Rate</Label>
-                    </th>
-                    <th className="py-3 px-6 text-right">
-                      <Label>Total</Label>
-                    </th>
+                  <tr className="border-b border-app-border/10 bg-app-overlay/10">
+                    <th className="py-3 px-4 text-left w-[60px]"><Label>Lot</Label></th>
+                    <th className="py-3 px-4 text-left"><Label>Description</Label></th>
+                    <th className="py-3 px-4 text-left w-[120px]"><Label>HSN/SAC</Label></th>
+                    <th className="py-3 px-4 text-right w-[100px]"><Label>Qty</Label></th>
+                    <th className="py-3 px-4 text-right w-[100px]"><Label>Rate</Label></th>
+                    <th className="py-3 px-4 text-right w-[120px] bg-blue-50/10 dark:bg-blue-900/10"><Label className="text-blue-600 dark:text-blue-400">Taxable</Label></th>
+                    <th className="py-3 px-4 text-right w-[100px]"><Label>Recd</Label></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {invoiceItems.map((item, idx) => (
-                    <tr
-                      key={`item-${idx}`}
-                      className="border-b border-app-border hover:bg-app-surface-hover/5 transition-colors"
-                    >
-                      <td className="py-2 px-6">
-                        <Accounting className="font-medium text-app-fg font-mono">
-                          {item.lotNumber}
-                        </Accounting>
-                      </td>
-                      <td className="py-2 px-6 text-app-fg">{item.description}</td>
-                      <td className="py-2 px-6 font-mono text-app-fg-muted">
-                        {item.hsnCode}
-                      </td>
-                      <td className="py-2 px-6 text-right">
-                        <Accounting className="text-app-fg-muted text-right block">
-                          {item.quantity}
-                        </Accounting>
-                      </td>
-                      <td className="py-2 px-6 text-right text-app-fg-muted font-mono">
-                        {formatIndianCurrency(item.rate)}
-                      </td>
-                      <td className="py-2 px-6 text-right text-app-fg">
-                        <Accounting isCurrency className="font-mono text-right block">
-                          {item.totalAmount}
-                        </Accounting>
-                      </td>
-                    </tr>
-                  ))}
+                  {groupedItems.map((group, groupIdx) => {
+                    const parent = group[0];
+                    const tQty = group.reduce((sum, i) => sum + (i.quantity || 0), 0);
+                    const tVal = group.reduce((sum, i) => sum + (i.taxable_value || 0), 0);
+                    const tRec = group.reduce((sum, i) => sum + (i.received_qty || 0), 0);
+
+                    return (
+                      <React.Fragment key={(parent.description || "") + groupIdx}>
+                        {/* Summary Header */}
+                        <tr className="bg-app-overlay/10 border-b border-app-border/5">
+                          <td className="py-3 px-4"><MonoCode className="text-app-accent/60">#S</MonoCode></td>
+                          <td className="py-3 px-4"><Body className="text-[13px] text-app-fg-muted/80">{parent.description}</Body></td>
+                          <td className="py-3 px-4"><SmallText className="text-app-fg-muted/40 uppercase tracking-widest">{parent.hsn_sac || "-"}</SmallText></td>
+                          <td className="py-3 px-4 text-right"><Accounting className="text-[13px] text-app-fg-muted/60">{tQty}</Accounting></td>
+                          <td className="py-3 px-4 text-right"><Accounting className="text-[13px] text-app-fg-muted/40">{parent.rate}</Accounting></td>
+                          <td className="py-3 px-4 text-right bg-blue-50/5 dark:bg-blue-900/5"><Accounting className="text-[13px] text-blue-600/60 dark:text-blue-400/60">{tVal}</Accounting></td>
+                          <td className="py-3 px-4 text-right"><Accounting className="text-[13px] text-app-fg-muted/60">{tRec}</Accounting></td>
+                        </tr>
+                        {/* Lot Rows */}
+                        {group.map((item, idx) => (
+                          <tr key={idx} className="bg-app-surface border-b border-app-border/5 transition-colors">
+                            <td className="py-2 px-0 relative">
+                              <div className="absolute left-[30px] top-0 bottom-0 w-[2px] bg-app-accent/20" />
+                              <div className="flex items-center gap-2 pl-[38px]">
+                                <span className="text-app-accent/30" style={{ fontSize: '10px' }}>L</span>
+                                <MonoCode className="text-app-fg-muted">L-{item.po_sl_no}</MonoCode>
+                              </div>
+                            </td>
+                            <td colSpan={2} />
+                            <td className="py-2 px-4 text-right"><Accounting className="text-app-fg-muted">{item.quantity}</Accounting></td>
+                            <td className="py-2 px-4 text-right" />
+                            <td className="py-2 px-4 text-right bg-blue-50/5 dark:bg-blue-900/5">
+                              <Accounting className="text-blue-600 dark:text-blue-400">{item.taxable_value}</Accounting>
+                            </td>
+                            <td className="py-2 px-4 text-right"><Accounting className="text-app-fg-muted">{item.received_qty}</Accounting></td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
-            <div className="bg-app-surface-hover/30 border-t border-app-border p-8">
-              <div className="grid grid-cols-2 gap-x-12 gap-y-4 max-w-sm ml-auto">
-                <Label>Taxable Value</Label>
-                <Accounting isCurrency className="text-right text-app-fg-muted">
-                  {formData.taxable_value || 0}
-                </Accounting>
 
-                <Label>CGST @ 9%</Label>
-                <Accounting isCurrency className="text-right text-app-fg-muted">
-                  {formData.cgst || 0}
-                </Accounting>
-
-                <Label>SGST @ 9%</Label>
-                <Accounting isCurrency className="text-right text-app-fg-muted">
-                  {formData.sgst || 0}
-                </Accounting>
-
-                <div className="col-span-2 my-2 border-t border-app-border"></div>
-
-                <Label className="text-small leading-tight text-app-fg">
-                  Grand Total
-                </Label>
-                <Accounting isCurrency className="text-right text-xl text-app-fg">
-                  {formData.total_invoice_value}
-                </Accounting>
-
-                <div className="col-span-2 mt-4 text-right">
-                  <SmallText className="italic text-app-fg-muted">
-                    {(formData as any).amount_in_words || "---"} Only
-                  </SmallText>
-                </div>
+            {/* Totals Card */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
+              <div className="lg:col-start-2">
+                <Card className="p-8 bg-app-surface/50 border-none shadow-premium-hover backdrop-blur-xl">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center pb-2 border-b border-app-border/10">
+                      <Label className="uppercase tracking-widest text-app-fg-muted">Net Taxable Value</Label>
+                      <Accounting className="text-xl text-app-fg">{header.total_taxable_value}</Accounting>
+                    </div>
+                    <div className="flex justify-between items-center text-app-fg-muted">
+                      <Label className="uppercase tracking-widest">CGST (9%) + SGST (9%)</Label>
+                      <Accounting className="text-sm">{(header.cgst_total + header.sgst_total).toFixed(2)}</Accounting>
+                    </div>
+                    <div className="pt-6 mt-4 border-t border-app-border/20 flex justify-between items-end">
+                      <div className="space-y-2">
+                        <Label className="uppercase text-app-accent tracking-widest">Total Invoice Value</Label>
+                        <SmallText className="text-app-fg-muted block max-w-[280px] leading-snug italic lowercase first-letter:uppercase">
+                          {amountInWords(header.total_invoice_value)} Only
+                        </SmallText>
+                      </div>
+                      <Accounting className="text-4xl text-app-fg tracking-tighter leading-none">
+                        {header.total_invoice_value}
+                      </Accounting>
+                    </div>
+                  </div>
+                </Card>
               </div>
             </div>
-          </Card>
+          </div>
         )}
       </div>
 
-      {/* Invoice Generation Warning Modal */}
-      {showWarning && (
-        <DraggableWarningModal
-          onClose={() => setShowWarning(false)}
-          onConfirm={handleSave}
-        />
-      )}
+      {/* Verification Modal */}
+      <AnimatePresence>
+        {showWarning && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-app-overlay/40 backdrop-blur-sm"
+            onClick={() => setShowWarning(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-md"
+            >
+              <Card className="p-0 overflow-hidden border-none shadow-2xl bg-app-surface">
+                <div className="p-8 pb-6 bg-gradient-to-br from-app-status-error/5 to-app-status-warning/5 border-b border-app-border/10 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-app-status-error flex items-center justify-center shadow-lg shadow-app-status-error/20">
+                    <AlertCircle className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <H3 className="text-app-fg leading-none">Generate Invoice?</H3>
+                    <SmallText className="text-app-fg-muted mt-1 uppercase tracking-widest">Permanent Financial Action</SmallText>
+                  </div>
+                </div>
+                <div className="p-8">
+                  <div className="p-4 rounded-2xl bg-app-status-error/5 border border-app-status-error/10 mb-6">
+                    <Body className="text-sm text-app-status-error italic">
+                      Warning: Generating this invoice will lock the associated DC and cannot be undone.
+                    </Body>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button variant="outline" className="flex-1 font-medium" onClick={() => setShowWarning(false)}>Cancel</Button>
+                    <Button color="primary" className="flex-1 shadow-lg shadow-app-accent/20" onClick={handleSave}>Confirm</Button>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </DocumentTemplate>
   );
 }
 
-// Extracted for cleaner Hook usage (useDragControls)
-function DraggableWarningModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: () => void }) {
-  const dragControls = useDragControls();
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <motion.div
-        drag
-        dragListener={false}
-        dragControls={dragControls}
-        dragMomentum={false}
-        whileDrag={{ scale: 1.02, cursor: "grabbing" }}
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        transition={{ type: "spring", duration: 0.3 }}
-        onClick={(e: React.MouseEvent) => e.stopPropagation()}
-        className="relative w-full max-w-md cursor-default"
-      >
-        <Card className="p-0 overflow-hidden border-none shadow-2xl bg-white/95 backdrop-blur-xl">
-          {/* Header with gradient - DRAGGABLE HANDLE */}
-          <div
-            onPointerDown={(e) => dragControls.start(e)}
-            className="relative px-6 pt-6 pb-4 bg-gradient-to-br from-amber-50 to-orange-50 border-b border-amber-100 cursor-grab active:cursor-grabbing select-none"
-          >
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
-                <AlertCircle className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <H3 className="text-slate-900 mb-1">⚠️ Critical Warning</H3>
-                <SmallText className="text-slate-600">
-                  Please read carefully before proceeding
-                </SmallText>
-              </div>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="p-6 space-y-4">
-            <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
-              <Body className="text-slate-800 leading-relaxed">
-                Once this <strong className="text-amber-700">Invoice is generated</strong>, it{" "}
-                <strong className="text-red-600">cannot be modified or deleted</strong>.
-              </Body>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-slate-700 font-medium flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                The invoice will be permanently locked
-              </Label>
-              <Label className="text-slate-700 font-medium flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                The linked DC will also be locked from editing
-              </Label>
-              <Label className="text-slate-700 font-medium flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                Ensure all details are correct before proceeding
-              </Label>
-            </div>
-          </div>
-
-          {/* Footer Actions */}
-          <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              className="flex-1 border-slate-300 hover:bg-slate-100"
-            >
-              <X size={16} className="mr-2" />
-              Cancel
-            </Button>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={onConfirm}
-              className="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg"
-            >
-              <CheckCircle2 size={16} className="mr-2" />
-              I Understand, Proceed
-            </Button>
-          </div>
-        </Card>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-
 export default function CreateInvoicePage() {
   return (
-    <Suspense
-      fallback={
-        <div className="p-32 text-center">
-          <Body className="text-slate-400 animate-pulse">Loading template...</Body>
-        </div>
-      }
-    >
+    <Suspense fallback={<div className="h-screen w-full bg-app-bg animate-pulse" />}>
       <CreateInvoicePageContent />
     </Suspense>
   );
 }
-
-
-

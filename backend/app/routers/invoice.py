@@ -267,24 +267,18 @@ def get_invoice_detail(invoice_number: str, db: sqlite3.Connection = Depends(get
             settings = {row["key"]: row["value"] for row in settings_rows}
 
             # Apply settings as fallback
+            # Apply settings as fallback - STRICTLY NO HARDCODING
+            # If settings are missing, these will be None or empty, prompting user to configure settings.
             if not header_dict.get("buyer_name"):
-                header_dict["buyer_name"] = settings.get(
-                    "buyer_name", "M/S Bharat Heavy Electrical Ltd."
-                )
+                header_dict["buyer_name"] = settings.get("buyer_name", "")
             if not header_dict.get("buyer_address"):
-                header_dict["buyer_address"] = settings.get(
-                    "buyer_address", "BHEL, Bhopal"
-                )
+                header_dict["buyer_address"] = settings.get("buyer_address", "")
             if not header_dict.get("buyer_gstin"):
-                header_dict["buyer_gstin"] = settings.get(
-                    "buyer_gstin", "23AAACB4146P1ZN"
-                )
+                header_dict["buyer_gstin"] = settings.get("buyer_gstin", "")
             if not header_dict.get("buyer_state"):
-                header_dict["buyer_state"] = settings.get("buyer_state", "MP")
+                header_dict["buyer_state"] = settings.get("buyer_state", "")
             if not header_dict.get("place_of_supply"):
-                header_dict["place_of_supply"] = settings.get(
-                    "buyer_place_of_supply", "BHOPAL, MP"
-                )
+                header_dict["place_of_supply"] = settings.get("buyer_place_of_supply", "")
 
         # Fetch invoice items
         # CRITICAL FIX: Join on BOTH po_item_no AND po_number to prevent row multiplication
@@ -315,18 +309,13 @@ def get_invoice_detail(invoice_number: str, db: sqlite3.Connection = Depends(get
         # Fetch linked DCs
         dc_links = []
         try:
-            dc_rows = db.execute(
-                """
-                SELECT dc.* 
-                FROM gst_invoice_dc_links link
-                JOIN delivery_challans dc ON link.dc_number = dc.dc_number
-                WHERE link.invoice_number = ?
-            """,
-                (invoice_number,),
-            ).fetchall()
-
-            # CRITICAL FIX: Convert IMMEDIATELY
-            dc_links = [dict(dc) for dc in dc_rows]
+            if header_dict.get("dc_number"):
+                dc_rows = db.execute(
+                    "SELECT * FROM delivery_challans WHERE dc_number = ?",
+                    (header_dict["dc_number"],),
+                ).fetchall()
+                # CRITICAL FIX: Convert IMMEDIATELY
+                dc_links = [dict(dc) for dc in dc_rows]
         except sqlite3.OperationalError as e:
             logger.warning(f"Could not fetch DC links: {e}")
 

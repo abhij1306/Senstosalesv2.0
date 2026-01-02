@@ -39,6 +39,8 @@ class POIngestionService:
             raise ValueError("Scraper returned zero items for this PO. Aborting ingestion.")
             
         print(f"🔥🔥🔥 START INGEST: H={len(po_header)} I={len(po_items)}", flush=True)
+        print(f"📋 PO Number: {po_header.get('PURCHASE ORDER')}", flush=True)
+        print(f"📦 Items to process: {[item.get('PO ITM') for item in po_items]}", flush=True)
 
         warnings = []
         processed_item_ids = []
@@ -143,17 +145,12 @@ class POIngestionService:
                 tuple(header_data.values()),
             )
 
-            # 6. Group & Standardize Items
-            items_grouped = {}
+            # 6. Process Items
+            # Scraper now returns structured objects with nested 'deliveries'
             for item in po_items:
-                po_itm = to_int(item.get("PO ITM"))
-                if po_itm not in items_grouped:
-                    items_grouped[po_itm] = {"item": item, "deliveries": []}
-                items_grouped[po_itm]["deliveries"].append(item)
-
-            # 7. Process Items
-            for po_item_no, data in items_grouped.items():
-                item = data["item"]
+                po_item_no = to_int(item.get("PO ITM"))
+                if po_item_no is None:
+                    continue
                 
                 # Use existing ID to prevent breaking FKs on update
                 existing_item = db.execute(
@@ -165,7 +162,6 @@ class POIngestionService:
 
                 ord_qty = to_qty(item.get("ORD QTY") or item.get("ordered_quantity") or 0)
                 po_rate = to_money(item.get("PO RATE") or item.get("po_rate") or 0)
-                item_val = to_money(item.get("ITEM VALUE") or item.get("item_value") or (ord_qty * po_rate))
 
                 db.execute(
                     """
@@ -204,24 +200,44 @@ class POIngestionService:
 
                 db.execute("DELETE FROM purchase_order_deliveries WHERE po_item_id = ?", (item_id,))
 
-                for dely in data["deliveries"]:
+                # Iterate through extracted lots
+                deliveries = item.get("deliveries", [])
+                if not deliveries:
+                    # Fallback for old scraper or manual items
+                    deliveries = [{"LOT NO": 1, "DELY QTY": ord_qty}]
+
+                for dely in deliveries:
                     lot_no = to_int(dely.get("LOT NO") or 1)
                     track = existing_tracking.get(lot_no, {"delivered": 0, "received": 0})
                     
+                    # Use RCD QTY from PO HTML if available (it's the truth for PO state)
+                    rcd_qty = to_qty(dely.get("RCD QTY"))
+                    if rcd_qty is None:
+                        rcd_qty = track["received"]
+                    
+                    # Support manual override of DSP (delivered) quantity
+                    # Router sends "DSP QTY" if it's a manual edit session
+                    dsp_qty = to_qty(dely.get("DSP QTY"))
+                    manual_override = 0.0
+                    if dsp_qty is not None:
+                        manual_override = dsp_qty
+                    else:
+                        dsp_qty = track["delivered"]
+
                     db.execute(
                         """
                         INSERT INTO purchase_order_deliveries (
                             po_item_id, lot_no, dely_qty, dely_date, entry_allow_date, 
-                            dest_code, delivered_qty, received_qty
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                            dest_code, delivered_qty, received_qty, manual_override_qty
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                         (
                             item_id, lot_no, 
-                            to_qty(dely.get("DELY QTY") or dely.get("ordered_quantity")),
+                            to_qty(dely.get("DELY QTY") or ord_qty),
                             normalize_date(dely.get("DELY DATE")),
                             normalize_date(dely.get("ENTRY ALLOW DATE") or dely.get("DELY DATE")),
                             to_int(dely.get("DEST CODE")),
-                            track["delivered"], track["received"]
+                            dsp_qty, rcd_qty, manual_override
                         ),
                     )
 
@@ -237,18 +253,28 @@ class POIngestionService:
                     [po_number] + processed_item_ids
                 )
 
-            # 10. Global Reconciliation Sync (TOT-5)
-            from app.services.reconciliation_service import ReconciliationService
-            # 10. Global Reconciliation Sync (TOT-5)
-            from app.services.reconciliation_service import ReconciliationService
-            # Link orphan SRVs first
-            # po_found column removed in Migration 024. Logic handled by ReconciliationService or join checks.
-            ReconciliationService.sync_po(db, po_number)
-
-            warnings.append(f"✅ Ingested PO {po_number} with {len(items_grouped)} items.")
+            # Reconciliation: Only for UPDATES to existing POs
+            # For NEW uploads, there's nothing to reconcile yet
+            # For EXISTING uploads, sync to update received quantities from PO HTML
+            if existing:  # PO existed before this ingestion
+                print(f"🔄 Running TOT Sync for updated PO {po_number} (syncing RCD QTY)...", flush=True)
+                try:
+                    from app.services.reconciliation_service import ReconciliationService
+                    ReconciliationService.sync_po(db, po_number)
+                    print(f"✅ TOT Sync completed", flush=True)
+                except Exception as sync_err:
+                    print(f"⚠️ TOT Sync failed (non-critical): {sync_err}", flush=True)
+                    # Don't fail the entire upload if sync fails - RCD QTY is already updated in items table
+            else:
+                print(f"ℹ️ New PO upload {po_number}, skipping sync", flush=True)
+            
+            warnings.append(f"✅ Ingested PO {po_number} with {len(po_items)} items.")
             return True, warnings
 
         except Exception as e:
+            print(f"❌ INGESTION ERROR: {type(e).__name__}: {str(e)}", flush=True)
+            import traceback
+            traceback.print_exc()
             raise ValueError(f"Ingestion Failure: {str(e)}")
 
 

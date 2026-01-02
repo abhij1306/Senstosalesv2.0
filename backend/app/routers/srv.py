@@ -111,8 +111,8 @@ def get_srv_list(
             CASE WHEN po.po_number IS NOT NULL THEN 1 ELSE 0 END as po_found,
             COALESCE(SUM(si.received_qty), 0) as total_received_qty,
             COALESCE(SUM(si.rejected_qty), 0) as total_rejected_qty,
-            0 as total_order_qty,
-            0 as total_challan_qty,
+            COALESCE(SUM(si.order_qty), 0) as total_order_qty,
+            COALESCE(SUM(si.challan_qty), 0) as total_challan_qty,
             (COALESCE(SUM(si.received_qty), 0) - COALESCE(SUM(si.rejected_qty), 0)) as total_accepted_qty,
             GROUP_CONCAT(DISTINCT si.challan_no) as challan_numbers,
             '' as invoice_numbers,
@@ -215,8 +215,7 @@ def get_srv_detail(srv_number: str, db: sqlite3.Connection = Depends(get_db)):
     items_result = db.execute(
         """
             SELECT 
-                id, po_item_no, lot_no, received_qty, rejected_qty,
-                challan_no
+                *
             FROM srv_items
             WHERE srv_number = ?
             ORDER BY po_item_no, lot_no

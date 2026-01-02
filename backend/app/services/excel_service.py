@@ -91,19 +91,14 @@ class ExcelService:
             settings = {}
 
         # Default Fallbacks
-        s_name = settings.get("supplier_name", "SENSTOGRAPHIC")
-        s_desc = settings.get(
-            "supplier_description",
-            "Manufacturers & Suppliers of Fibre Glass Re-inforced Plastic Products",
-        )
-        s_addr = settings.get(
-            "supplier_address",
-            "Plot No. 20/21, 'H' Sector, Industrial Estate, Govindpura, Bhopal - 462023",
-        )
-        s_gst = settings.get("supplier_gstin", "23AACFS6810L1Z7")
-        s_phone = settings.get("supplier_contact", "0755 – 4247748, 9229113840")
-        s_state = settings.get("supplier_state", "Madhya Pradesh")
-        s_state_code = settings.get("supplier_state_code", "23")
+        # Default Fallbacks - STRICTLY from Settings
+        s_name = settings.get("supplier_name", "")
+        s_desc = settings.get("supplier_description", "")
+        s_addr = settings.get("supplier_address", "")
+        s_gst = settings.get("supplier_gstin", "")
+        s_phone = settings.get("supplier_contact", "")
+        s_state = settings.get("supplier_state", "")
+        s_state_code = settings.get("supplier_state_code", "")
 
         # Formats
         title_fmt = workbook.add_format(
@@ -237,10 +232,10 @@ class ExcelService:
             except Exception as e:
                 logger.error(f"Failed to fetch default buyer: {e}")
 
-        # Default Buyer Info logic: Header > Default Buyer > Hardcoded Fallback
-        b_name = header.get("consignee_name") or default_buyer.get("name") or "M/S Bharat Heavy Electricals Ltd."
-        b_addr = header.get("consignee_address") or default_buyer.get("billing_address") or "Bhopal, MP"
-        b_gst = header.get("consignee_gstin") or default_buyer.get("gstin") or "23AAACB4146P1ZN"
+        # Default Buyer Info logic: Header > Default Buyer > Settings > Empty
+        b_name = header.get("consignee_name") or default_buyer.get("name") or settings.get("buyer_name", "")
+        b_addr = header.get("consignee_address") or default_buyer.get("billing_address") or settings.get("buyer_address", "")
+        b_gst = header.get("consignee_gstin") or default_buyer.get("gstin") or settings.get("buyer_gstin", "")
         
         # Parse Place of Supply if needed
         b_pos_raw = header.get("place_of_supply") or default_buyer.get("place_of_supply") or "BHOPAL, MP"
@@ -302,387 +297,189 @@ class ExcelService:
         header: Dict, items: List[Dict], db: sqlite3.Connection
     ) -> StreamingResponse:
         """
-        Generate strict Excel format matching 'GST_INV_31.xls' audit structure.
-        Uses a 19-column grid (A-S).
+        Generate Invoice using 'Invoice_4544.xlsx' as a template.
         """
-        output = io.BytesIO()
-        workbook = xlsxwriter.Workbook(output)
-        worksheet = workbook.add_worksheet("Invoice")
+        import openpyxl
+        from openpyxl.styles import Font, Alignment, Border, Side
+        import os
+        
+        template_path = "Invoice_4544.xlsx"
+        if not os.path.exists(template_path):
+             # Fallback if template missing - log warning and return empty or error
+             # For now, assuming it exists as per user input
+             logger.error("Template Invoice_4544.xlsx not found.")
+             return StreamingResponse(io.BytesIO(b"Template not found"), media_type="text/plain")
 
-        # Styles
-        font_name = "Arial"
-        title_fmt = workbook.add_format(
-            {
-                "bold": True,
-                "font_size": 13,
-                "align": "center",
-                "valign": "vcenter",
-                "font_name": font_name,
-            }
-        )
-        copy_fmt = workbook.add_format(
-            {
-                "font_size": 24,
-                "align": "right",
-                "valign": "vcenter",
-                "font_name": font_name,
-            }
-        )
-        header_bold = workbook.add_format(
-            {
-                "bold": True,
-                "font_size": 10,
-                "font_name": font_name,
-                "border": 1,
-                "valign": "top",
-            }
-        )
-        header_normal = workbook.add_format(
-            {
-                "font_size": 10,
-                "font_name": font_name,
-                "border": 1,
-                "valign": "top",
-                "text_wrap": True,
-            }
-        )
+        # Load Workbook
+        wb = openpyxl.load_workbook(template_path)
+        ws = wb.active
 
-        table_hdr = workbook.add_format(
-            {
-                "bold": True,
-                "font_size": 10,
-                "font_name": font_name,
-                "border": 1,
-                "align": "center",
-                "valign": "vcenter",
-                "text_wrap": True,
-            }
-        )
-        cell_center = workbook.add_format(
-            {
-                "font_size": 10,
-                "font_name": font_name,
-                "border": 1,
-                "align": "center",
-                "valign": "vcenter",
-            }
-        )
-        cell_left = workbook.add_format(
-            {
-                "font_size": 10,
-                "font_name": font_name,
-                "border": 1,
-                "align": "left",
-                "valign": "vcenter",
-                "text_wrap": True,
-            }
-        )
-        cell_right = workbook.add_format(
-            {
-                "font_size": 10,
-                "font_name": font_name,
-                "border": 1,
-                "align": "right",
-                "valign": "vcenter",
-                "num_format": "#,##0.00",
-            }
-        )
-        decl_fmt = workbook.add_format(
-            {
-                "font_size": 9,
-                "font_name": font_name,
-                "italic": True,
-                "text_wrap": True,
-                "valign": "top",
-            }
-        )
+        # Helper to set cell value safely
+        def set_val(coord, value):
+            if value is not None:
+                ws[coord] = value
 
-        # Column Widths (Adjusted for 20 cols A-T)
-        worksheet.set_column("A:A", 5)  # PO SL
-        worksheet.set_column("B:H", 6)  # Description (Merged)
-        worksheet.set_column("I:I", 10)  # HSN
-        worksheet.set_column("J:J", 12)  # Material Code (NEW)
-        worksheet.set_column("K:K", 8)  # No of Pckt
-        worksheet.set_column("L:L", 10)  # Quantity
-        worksheet.set_column("M:M", 10)  # Rate
-        worksheet.set_column("N:N", 8)  # Unit
-        worksheet.set_column("O:O", 12)  # Taxable
-        worksheet.set_column("P:Q", 10)  # CGST
-        worksheet.set_column("R:S", 10)  # SGST
-        worksheet.set_column("T:T", 15)  # Total
-
-        # Fetch settings from DB
+        # --- HEADER MAPPING ---
+        # Supplier Details (Green - from Settings mostly, but template has Senstographic hardcoded in A3)
+        # We will write over it if needed, or assume template is correct for Supplier.
+        # User said "Green for data to be fetched from Settings".
+        
+        # Fetch settings
         try:
             rows = db.execute("SELECT key, value FROM settings").fetchall()
             settings = {row["key"]: row["value"] for row in rows}
-        except Exception as e:
-            logger.error(f"Failed to fetch business settings, using defaults: {e}")
+        except Exception:
             settings = {}
 
-        # --- ROW 0: TITLE ---
-        worksheet.merge_range(0, 0, 0, 19, "TAX INVOICE", title_fmt)
-
-        # --- ROW 1: COPY ---
-        worksheet.merge_range(1, 15, 1, 19, "Extra Copy", copy_fmt)
-
-        # --- HEADER BLOCKS (Rows 2-13) ---
-        # Supplier (Left) - Multi-line with proper formatting
-        s_name = settings.get("supplier_name", "Senstographic")
-        s_addr = settings.get(
-            "supplier_address", "H-20/21 Ind. Area, Govindpura Bhopal - 462023"
-        )
-        s_gst = settings.get("supplier_gstin", "23AACFS6810L1Z7")
-        s_state = settings.get("supplier_state", "Madhya Pradesh")
-        s_state_code = settings.get("supplier_state_code", "23")
-        s_contact = settings.get("supplier_contact", "0755-4247748,9229113840")
-
-        # Supplier block - each field on separate row
-        worksheet.merge_range(2, 0, 2, 7, s_name, header_bold)
-        worksheet.merge_range(3, 0, 3, 7, s_addr, header_normal)
-        worksheet.merge_range(4, 0, 4, 7, f"GSTIN/UIN: {s_gst}", header_normal)
-        worksheet.merge_range(
-            5, 0, 5, 7, f"State Name : {s_state}, Code : {s_state_code}", header_normal
-        )
-        worksheet.merge_range(6, 0, 6, 7, f"Contact : {s_contact}", header_normal)
-
-        # Info Box (Right) - Adjusted Merge ranges
-        # Invoice No (rows 2-3)
-        worksheet.merge_range(2, 8, 2, 12, "Invoice No.", header_bold)
-        worksheet.merge_range(
-            2, 13, 2, 15, header.get("invoice_number", ""), cell_center
-        )
-        worksheet.merge_range(2, 16, 2, 16, "Dated", header_bold)
-        worksheet.merge_range(2, 17, 2, 19, header.get("invoice_date", ""), cell_center)
-
-        # GEMC & Mode of Payment (Row 3)
-        gemc = header.get("gemc_number") or ""
-        gemc_dt = header.get("gemc_date") or ""
-        worksheet.merge_range(
-            3, 8, 3, 13, f"GEMC:- {gemc} Dt:- {gemc_dt}", header_normal
-        )
-
-        payment_mode = (
-            header.get("mode_of_payment") or header.get("payment_terms") or "45 Days"
-        )
-        worksheet.merge_range(3, 14, 3, 16, "Mode/Terms of Payment", header_bold)
-        worksheet.merge_range(3, 17, 3, 19, payment_mode, cell_center)
-
-        # Default Buyer logic
-        default_buyer = {}
-        if not header.get("buyer_name"):
-             try:
-                buyer_row = db.execute(
-                    "SELECT name, billing_address, gstin, place_of_supply FROM buyers WHERE is_default = 1 AND is_active = 1 LIMIT 1"
-                ).fetchone()
-                if buyer_row:
-                    default_buyer = dict(buyer_row)
-             except Exception as e:
-                logger.error(f"Failed to fetch default buyer for invoice: {e}")
-
-        # Buyer - Multi-line with proper label
-        b_contact = header.get("buyer_contact") or "Sr. Accounts Officer (PB)"
-        b_name = header.get("buyer_name") or default_buyer.get("name") or "M/S Bharat Heavy Electrical Ltd."
-        b_gst = header.get("buyer_gstin") or default_buyer.get("gstin") or "23AAACB4146P1ZN"
+        # If settings exist, overwrite Supplier Block
+        if settings.get("supplier_name"):
+            set_val("A3", settings["supplier_name"])
+        if settings.get("supplier_address"):
+            set_val("A4", settings["supplier_address"])
+        if settings.get("supplier_gstin"):
+            set_val("A5", f"GSTIN/UIN: {settings['supplier_gstin']}")
+        if settings.get("supplier_contact"):
+            set_val("A7", f"Contact : {settings['supplier_contact']}")
         
-        # Parse state/pos
-        b_pos = header.get("place_of_supply") or default_buyer.get("place_of_supply") or "BHOPAL, MP"
-        b_state = header.get("buyer_state") or "MP" # Simplify state logic for now
+        # User Input (Yellow) - Invoice Details
+        set_val("L3", header.get("invoice_number", "")) # Invoice No
+        set_val("Q3", header.get("invoice_date", ""))   # Date
+        set_val("L5", str(header.get("dc_number", "") or "")) # Challan No
+        set_val("L6", str(header.get("po_numbers", "") or "")) # PO No
+        set_val("Q4", header.get("payment_terms") or "45 Days") # Terms
+        set_val("L4", header.get("gem_date") or "") # GEMC Date/Ref if mapped
 
-        # Buyer block - each field on separate row (rows 7-12)
-        worksheet.merge_range(7, 0, 7, 7, "Buyer", header_bold)
-        worksheet.merge_range(8, 0, 8, 7, b_contact, header_normal)
-        worksheet.merge_range(9, 0, 9, 7, b_name, header_normal)
-        worksheet.merge_range(10, 0, 10, 7, f"GSTIN/UIN: {b_gst}", header_normal)
-        worksheet.merge_range(11, 0, 11, 7, f"State Name : {b_state}", header_normal)
-        worksheet.merge_range(12, 0, 12, 7, f"Place of Supply : {b_pos}", header_normal)
+        # Destination / Dispatch
+        set_val("Q7", header.get("srv_date", "")) # SRV Dt
+        # Note: SRV No is N7 label, Value likely in Q7 or close. Map says N7 is SRV No label.
+        # Template inspect showed [N7] SRV No, [Q7] SRV Dt. Where is SRV No Value? Probably O7 or P7?
+        # Let's put SRV No in P7 for now or append to Label?
+        # Dump showed: [N7] SRV No. No value in between.
+        # We will put SRV No in O7.
+        set_val("O7", header.get("srv_number", ""))
 
-        # More Info (Right side)
-        # Challan No (Row 4)
-        worksheet.merge_range(4, 8, 4, 12, "Challan No", header_bold)
-        worksheet.merge_range(
-            4, 13, 4, 15, str(header.get("dc_number", "")), cell_center
-        )
-        worksheet.merge_range(4, 16, 4, 16, "Dated", header_bold)
-        worksheet.merge_range(4, 17, 4, 19, header.get("dc_date", ""), cell_center)
+        # Buyer Details (Yellow)
+        # Fetch Default Buyer if empty
+        b_name = header.get("buyer_name")
+        b_gst = header.get("buyer_gstin")
+        
+        if not b_name:
+             try:
+                buyer = db.execute("SELECT * FROM buyers WHERE is_default=1").fetchone()
+                if buyer:
+                    b_name = buyer["name"]
+                    set_val("A9", b_name)
+                    set_val("A10", f"GSTIN/UIN: {buyer['gstin']}")
+                    set_val("A11", f"State Name : {buyer.get('state', 'Madhya Pradesh')}")
+                    set_val("A12", f"Place of Supply : {buyer.get('place_of_supply', 'BHOPAL, MP')}")
+             except: pass
+        else:
+             set_val("A9", b_name)
+             set_val("A10", f"GSTIN/UIN: {b_gst}")
+             set_val("A11", f"State Name : {header.get('buyer_state', 'Madhya Pradesh')}")
+             set_val("A12", f"Place of Supply : {header.get('place_of_supply', 'BHOPAL, MP')}")
 
-        # Buyer Order No (Row 5)
-        worksheet.merge_range(5, 8, 5, 12, "Buyer's Order No.", header_bold)
-        worksheet.merge_range(
-            5, 13, 5, 15, str(header.get("po_numbers", "")), cell_center
-        )
-        worksheet.merge_range(5, 16, 5, 16, "Dated", header_bold)
-        worksheet.merge_range(
-            5, 17, 5, 19, header.get("buyers_order_date", ""), cell_center
-        )
+        
+        # --- ITEMS (Yellow) ---
+        # Start Row 15 (Index 15 means Row 15 in Excel? openpyxl is 1-based, so Row 15)
+        start_row = 15
+        
+        # We need to insert rows if items > 1 (Template has 1 row at 15, then Total at 16)
+        # Verify if template already has multiple rows? Map showed A15 data, A16 Total.
+        # So we have exactly 1 data row.
+        
+        num_items = len(items)
+        if num_items > 1:
+            ws.insert_rows(start_row + 1, amount=num_items - 1)
+            # We need to copy styles/merge cells if needed.
+            # Ideally, Copy style from Row 15 to new rows.
+        
+        total_qty = 0
+        total_taxable = 0
+        total_cgst = 0
+        total_sgst = 0
+        total_val = 0
 
-        # Despatch Doc & SRV (Row 6)
-        despatch_doc = header.get("despatch_doc_no") or ""
-        worksheet.merge_range(6, 8, 6, 12, "Despatch Document No.", header_bold)
-        worksheet.merge_range(6, 13, 6, 15, despatch_doc, cell_center)
-
-        header.get("srv_no") or ""
-        srv_dt = header.get("srv_date") or ""
-        worksheet.merge_range(6, 16, 6, 17, "SRV No", header_bold)
-        worksheet.write(6, 18, "SRV Dt.", header_bold)
-        worksheet.write(6, 19, srv_dt, cell_center)
-
-        # Dispatch through (Row 7-8)
-        transporter = (
-            header.get("dispatch_through")
-            or header.get("transporter")
-            or "By Loading Vehicle"
-        )
-        worksheet.merge_range(7, 8, 7, 12, "Despatched through", header_bold)
-        worksheet.merge_range(7, 13, 7, 15, transporter, cell_center)
-
-        # Destination (Row 7 right)
-        worksheet.merge_range(7, 16, 7, 16, "Destination", header_bold)
-        worksheet.merge_range(7, 17, 7, 19, header.get("destination", ""), cell_center)
-
-        # Terms of Delivery (Row 8)
-        worksheet.merge_range(
-            8,
-            8,
-            8,
-            19,
-            f"Terms of Delivery: {header.get('terms_of_delivery', '')}",
-            header_normal,
-        )
-
-        # --- TABLE HEADER (Rows 14-15) ---
-        row = 14
-        worksheet.merge_range(row, 0, row + 1, 0, "PO\nSL", table_hdr)
-        worksheet.merge_range(row, 1, row + 1, 7, "Description of Goods", table_hdr)
-        worksheet.merge_range(row, 8, row + 1, 8, "HSN/SAC", table_hdr)
-
-        # NEW COLUMN: Material Code
-        worksheet.merge_range(row, 9, row + 1, 9, "Material\nCode", table_hdr)
-
-        worksheet.merge_range(row, 10, row + 1, 10, "No of\nPckt", table_hdr)
-        worksheet.merge_range(row, 11, row + 1, 11, "Quantity", table_hdr)
-        worksheet.merge_range(row, 12, row + 1, 12, "Rate", table_hdr)
-        worksheet.merge_range(row, 13, row + 1, 13, "Unit", table_hdr)
-        worksheet.merge_range(row, 14, row + 1, 14, "Taxable", table_hdr)
-        worksheet.merge_range(row, 15, row, 16, "Central Tax", table_hdr)
-        worksheet.merge_range(row, 17, row, 18, "State Tax", table_hdr)
-        worksheet.merge_range(row, 19, row + 1, 19, "Total", table_hdr)
-
-        row += 1
-        worksheet.write(row, 15, "Rate", table_hdr)
-        worksheet.write(row, 16, "Amount", table_hdr)
-        worksheet.write(row, 17, "Rate", table_hdr)
-        worksheet.write(row, 18, "Amount", table_hdr)
-
-        # --- DATA ROWS ---
-        row += 1
         for idx, item in enumerate(items):
-            worksheet.write(row, 0, item.get("po_item_no", idx + 1), cell_center)
-            worksheet.merge_range(
-                row, 1, row, 7, item.get("description", ""), cell_left
-            )
-            worksheet.write(row, 8, item.get("hsn_sac", ""), cell_center)
+            current_row = start_row + idx
+            
+            # Data Extraction
+            qty = float(item.get("quantity", 0) or 0)
+            rate = float(item.get("rate", 0) or 0)
+            taxable = qty * rate
+            
+            # Tax Logic (Assuming 9% CGST 9% SGST as per template)
+            cgst_rate = 9.0
+            sgst_rate = 9.0
+            cgst_amt = taxable * (cgst_rate / 100.0)
+            sgst_amt = taxable * (sgst_rate / 100.0)
+            tot_line = taxable + cgst_amt + sgst_amt
 
-            # Material Code
-            worksheet.write(row, 9, item.get("material_code", ""), cell_center)
+            total_qty += qty
+            total_taxable += taxable
+            total_cgst += cgst_amt
+            total_sgst += sgst_amt
+            total_val += tot_line
 
-            worksheet.write(row, 10, item.get("no_of_packets", 0), cell_center)
-            worksheet.write(row, 11, item.get("quantity", 0), cell_center)
-            worksheet.write(row, 12, item.get("rate", 0), cell_right)
-            worksheet.write(row, 13, item.get("unit", "NOS"), cell_center)
-            worksheet.write(row, 14, item.get("taxable_value", 0), cell_right)
+            # Write Cells
+            set_val(f"A{current_row}", item.get("po_item_no", idx + 1)) # PO SL
+            set_val(f"B{current_row}", item.get("description", "")) # Desc
+            set_val(f"J{current_row}", item.get("material_code", "")) # Mat Code
+            set_val(f"L{current_row}", qty)
+            set_val(f"M{current_row}", rate)
+            set_val(f"N{current_row}", item.get("unit", "NOS"))
+            
+            # Calculated (Blue)
+            set_val(f"O{current_row}", taxable)
+            set_val(f"P{current_row}", f"{cgst_rate}%")
+            set_val(f"Q{current_row}", cgst_amt)
+            set_val(f"R{current_row}", f"{sgst_rate}%")
+            set_val(f"S{current_row}", sgst_amt)
+            set_val(f"T{current_row}", tot_line)
 
-            worksheet.write(row, 15, "9.00%", cell_center)
-            worksheet.write(row, 16, item.get("cgst_amount", 0), cell_right)
-            worksheet.write(row, 17, "9.00%", cell_center)
-            worksheet.write(row, 18, item.get("sgst_amount", 0), cell_right)
+        # --- TOTALS (Blue) ---
+        # The Total Row is now at start_row + num_items
+        total_row = start_row + num_items
+        # Verify if Total row exists there (it shifts down with insert_rows)
+        # Ensure we write to the correct row.
+        
+        set_val(f"L{total_row}", total_qty)
+        set_val(f"O{total_row}", total_taxable)
+        set_val(f"Q{total_row}", total_cgst)
+        set_val(f"S{total_row}", total_sgst)
+        set_val(f"T{total_row}", total_val)
+        
+        # Words
+        amount_words = amount_to_words(total_val)
+        set_val(f"A{total_row + 1}", f"Total Amount (In Words):- {amount_words}")
 
-            worksheet.write(row, 19, item.get("total_amount", 0), cell_right)
-            row += 1
+        # Summary Block (Taxable, CGST, SGST, Total) - usually at bottom
+        # Map showed [O18] Taxable... [O20]=O16
+        # These references need to shift if we added rows.
+        # OpenPyXL *should* handle formula shifting if we use insert_rows.
+        # But hardcoded values need manual update.
+        # We will update the Summary Values explicitly.
+        
+        # Assuming summary block is fixed relative to Total Row?
+        # Map: Total is Row 16. Summary starts Row 18. Gap of 1 row.
+        # New Total is `total_row`. Summary starts `total_row + 2`.
+        sum_start = total_row + 2
+        
+        # Update summary values
+        # O column: Value
+        set_val(f"O{sum_start + 1}", total_taxable) # Taxable Value
+        set_val(f"Q{sum_start + 1}", total_cgst)    # CGST Amount
+        set_val(f"S{sum_start + 1}", total_sgst)    # SGST Amount
+        set_val(f"T{sum_start + 1}", total_cgst + total_sgst) # Total Tax
 
-        # Totals
-        worksheet.merge_range(row, 0, row, 7, "Total", table_hdr)
-        worksheet.write(row, 8, "", table_hdr)
-        worksheet.write(row, 9, "", table_hdr)  # Mat Code
-        worksheet.write(
-            row, 10, sum(i.get("no_of_packets", 0) or 0 for i in items), cell_center
-        )
-        worksheet.write(
-            row, 11, sum(i.get("quantity", 0) or 0 for i in items), cell_center
-        )
-        worksheet.write(row, 12, "", table_hdr)
-        worksheet.write(row, 13, "", table_hdr)
-        worksheet.write(row, 14, header.get("taxable_value", 0), cell_right)
-        worksheet.write(row, 15, "", table_hdr)
-        worksheet.write(row, 16, header.get("cgst", 0), cell_right)
-        worksheet.write(row, 17, "", table_hdr)
-        worksheet.write(row, 18, header.get("sgst", 0), cell_right)
-        worksheet.write(row, 19, header.get("total_invoice_value", 0), cell_right)
-
-        # Words Footer
-        row += 1
-        # from app.core.num_to_words import amount_to_words
-
-        amount_words = amount_to_words(header.get("total_invoice_value", 0))
-        worksheet.merge_range(
-            row, 0, row, 18, f"Total Amount (In Words):- {amount_words}", header_bold
-        )
-
-        # Final block
-        row += 1
-        worksheet.merge_range(
-            row,
-            7,
-            row,
-            12,
-            "For Senstographic",
-            workbook.add_format(
-                {
-                    "bold": True,
-                    "align": "right",
-                    "font_size": 11,
-                    "font_name": "Calibri",
-                }
-            ),
-        )
-        row += 1
-        worksheet.merge_range(
-            row,
-            0,
-            row + 1,
-            6,
-            "We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct",
-            decl_fmt,
-        )
-        row += 2
-        worksheet.merge_range(
-            row,
-            7,
-            row,
-            12,
-            "Authorised Signatory",
-            workbook.add_format(
-                {"align": "right", "font_size": 11, "font_name": "Calibri"}
-            ),
-        )
-
-        # Footer Rows
-        row += 2
-        footer_fmt = workbook.add_format(
-            {"align": "center", "font_size": 10, "font_name": "Calibri"}
-        )
-        worksheet.merge_range(
-            row, 0, row, 12, "SUBJECT TO BHOPAL JURISDICTION", footer_fmt
-        )
-        row += 1
-        worksheet.merge_range(
-            row, 0, row, 12, "This is a Computer Generated Invoice", footer_fmt
-        )
-
-        workbook.close()
+        # Save to Buffer
+        output = io.BytesIO()
+        wb.save(output)
         output.seek(0)
-
-        filename = f"Invoice_{header.get('invoice_number', 'Draft')}.xlsx"
+        
+        filename = f"Invoice_{header.get('invoice_number')}.xlsx"
         headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
+        
         return StreamingResponse(
             output,
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1211,4 +1008,145 @@ class ExcelService:
             headers={
                 "Content-Disposition": 'attachment; filename="SRV_Upload_Template.xlsx"'
             },
+        )
+
+    @staticmethod
+    def generate_exact_dc_excel(
+        header: Dict, items: List[Dict], db: sqlite3.Connection
+    ) -> StreamingResponse:
+        """
+        Generate Delivery Challan using 'Invoice_4544.xlsx' as a template.
+        Adapted to show 'DELIVERY CHALLAN'.
+        """
+        import openpyxl
+        import io
+        import os
+        from fastapi.responses import StreamingResponse
+
+        template_path = "Invoice_4544.xlsx"
+        if not os.path.exists(template_path):
+             print("Template Invoice_4544.xlsx not found.")
+             return StreamingResponse(io.BytesIO(b"Template not found"), media_type="text/plain")
+
+        # Load Workbook
+        wb = openpyxl.load_workbook(template_path)
+        ws = wb.active
+
+        # Helper to set cell value safely
+        def set_val(coord, value):
+            if value is not None:
+                ws[coord] = value
+
+        # --- HEADER TRANSFORMATION ---
+        # 1. Change Title
+        set_val("A1", "DELIVERY CHALLAN")
+
+        # 2. Supplier Details (from Settings)
+        try:
+            rows = db.execute("SELECT key, value FROM settings").fetchall()
+            settings = {row["key"]: row["value"] for row in rows}
+        except Exception:
+            settings = {}
+
+        if settings.get("supplier_name"):
+            set_val("A3", settings["supplier_name"])
+        if settings.get("supplier_address"):
+            set_val("A4", settings["supplier_address"])
+        if settings.get("supplier_gstin"):
+            set_val("A5", f"GSTIN/UIN: {settings['supplier_gstin']}")
+        if settings.get("supplier_contact"):
+            set_val("A7", f"Contact : {settings['supplier_contact']}")
+        
+        # 3. DC Details -> Map to Invoice Slots
+        set_val("I3", "Challan No.")
+        set_val("L3", header.get("dc_number", "")) 
+        
+        # Date
+        set_val("Q3", header.get("dc_date", ""))
+
+        # Challan No -> PO No?
+        set_val("I5", "Order No.")
+        set_val("L5", str(header.get("po_numbers", "") or header.get("po_number", "") or ""))
+
+        # Clear other specific Invoice fields
+        set_val("I6", "") 
+        set_val("L6", "")
+
+        set_val("Q4", header.get("payment_terms") or "") 
+        set_val("L4", header.get("gem_date") or "") 
+
+        # Logistics
+        set_val("O7", header.get("srv_number", "")) 
+        set_val("Q7", header.get("srv_date", ""))
+
+        # Buyer Details
+        b_name = header.get("consignee_name")
+        if not b_name:
+             b_name = header.get("buyer_name")
+
+        set_val("A9", b_name or "")
+        set_val("A10", f"GSTIN/UIN: {header.get('consignee_gstin', '')}")
+        set_val("A11", f"State: {header.get('destination', '')}") 
+        set_val("A12", f"Place of Supply/Dest: {header.get('destination', '')}")
+
+        # --- HEADERS ---
+        set_val("L14", "ORDERED") 
+        set_val("M14", "DISPATCH")
+        set_val("N14", "BALANCE")
+        set_val("O14", "RECEIVED")
+        set_val("P14", "UNIT")
+        set_val("Q14", "HSN")
+        # Clear unused headers
+        for col in ["R", "S", "T"]:
+            set_val(f"{col}14", "")
+
+        # --- ITEMS ---
+        start_row = 15
+        num_items = len(items)
+        if num_items > 1:
+            ws.insert_rows(start_row + 1, amount=num_items - 1)
+        
+        total_qty = 0
+
+        for idx, item in enumerate(items):
+            current_row = start_row + idx
+            
+            # Context quantities
+            ord_qty = float(item.get("lot_ordered_qty") or 0)
+            disp_qty = float(item.get("dispatched_quantity") or 0)
+            bal_qty = float(item.get("remaining_post_dc") or 0)
+            recd_qty = float(item.get("received_quantity") or 0)
+            
+            total_qty += disp_qty
+
+            set_val(f"A{current_row}", item.get("po_item_no", idx + 1))
+            set_val(f"B{current_row}", item.get("material_description", "") or item.get("description", ""))
+            
+            # Map columns per user request: ORDER -> DISPATCH -> BAL -> RECD
+            set_val(f"L{current_row}", ord_qty)
+            set_val(f"M{current_row}", disp_qty)
+            set_val(f"N{current_row}", bal_qty)
+            set_val(f"O{current_row}", recd_qty)
+            
+            set_val(f"P{current_row}", item.get("unit") or "NOS")
+            set_val(f"Q{current_row}", item.get("hsn_code", ""))
+
+            # Clear remnants of the Invoice template (Rate/Tax)
+            for col in ["R", "S", "T"]:
+                set_val(f"{col}{current_row}", "")
+
+        # --- TOTALS ---
+        total_row = start_row + num_items
+        set_val(f"M{total_row}", total_qty)
+        
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        filename = f"DC_{header.get('dc_number', 'Draft')}.xlsx"
+        headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
+        return StreamingResponse(
+            output,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers=headers,
         )

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import React from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
     Edit2,
@@ -14,8 +15,8 @@ import {
     FileDown,
 } from "lucide-react";
 import { api, API_BASE_URL } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
-import { DCItemRow, DCDetail } from "@/types";
+import { formatDate, cn } from "@/lib/utils";
+import { DCDetail } from "@/types";
 import {
     H3,
     Body,
@@ -30,19 +31,12 @@ import {
     TabsList,
     TabsTrigger,
     TabsContent,
-    Column,
+    MonoCode,
 } from "@/components/design-system";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { DetailSkeleton } from "@/components/design-system/molecules/skeletons/DetailSkeleton";
-
-const DataTable = dynamic(
-    () => import("@/components/design-system/organisms/DataTable").then((mod) => mod.DataTable),
-    {
-        loading: () => <div className="h-64 w-full bg-app-surface-hover rounded-xl animate-pulse" />,
-        ssr: false,
-    }
-);
+import { useDCStore } from "@/store/dcStore";
 
 const DocumentJourney = dynamic(
     () =>
@@ -64,61 +58,49 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
     const router = useRouter();
     const dcId = initialData.header.dc_number;
 
-    // Initialize state from Server Data
+    const { data, isEditing, setDC, updateHeader, updateItem, setEditing, reset } = useDCStore();
+
+    useEffect(() => {
+        if (initialData) setDC(initialData);
+    }, [initialData, setDC]);
+
+    // UI Local State
     const [loading, setLoading] = useState(false);
-    const [editMode, setEditMode] = useState(false);
-    const [hasInvoice] = useState(initialInvoiceData?.has_invoice || false);
-    const [invoiceNumber] = useState(initialInvoiceData?.invoice_number || null);
     const [error, setError] = useState<string | null>(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [activeTab, setActiveTab] = useState("basic");
 
-    const [formData, setFormData] = useState({
-        dc_number: initialData.header.dc_number || "",
-        dc_date: initialData.header.dc_date || "",
-        po_number: initialData.header.po_number?.toString() || "",
-        supplier_phone: initialData.header.supplier_phone || "0755 – 4247748",
-        supplier_gstin: initialData.header.supplier_gstin || "23AACFS6810L1Z7",
-        consignee_name: initialData.header.consignee_name || "The Sr. Manager (CRX)",
-        consignee_address:
-            initialData.header.consignee_address || "M/S Bharat Heavy Eletrical Ltd. Bhopal",
-        department_no: initialData.header.department_no?.toString() || "",
-        eway_bill_number: initialData.header.eway_bill_no || "",
-        status: initialData.header.remarks?.includes("Status:") ? "Pending" : (initialData.header as any).status || "Pending",
-    });
+    const hasInvoice = initialInvoiceData?.has_invoice || false;
+    const invoiceNumber = initialInvoiceData?.invoice_number || null;
 
-    const [items, setItems] = useState<DCItemRow[]>(
-        initialData.items ? initialData.items.map((item: any, idx: number) => ({
-            id: `item-${idx}`,
-            lot_no: item.lot_no?.toString() || (idx + 1).toString(),
-            material_code: item.material_code || "",
-            description: item.material_description || item.description || "",
-            ordered_quantity: item.lot_ordered_qty || item.ordered_qty || 0,
-            remaining_post_dc: item.remaining_post_dc || 0,
-            dispatch_quantity: item.dispatched_quantity || item.dispatch_qty || item.dispatch_quantity || 0,
-            received_quantity: item.received_quantity || 0,
-            po_item_id: item.po_item_id,
-            drg_no: item.drg_no,
-        })) : []
-    );
+    if (!data) return <DetailSkeleton />;
 
-    const [notes] = useState<string[]>(
-        initialData.header.remarks ? initialData.header.remarks.split("\n\n") : []
-    );
+    const header = data.header;
+    const items = data.items || [];
+    const notes = header.remarks ? header.remarks.split("\n\n") : [];
 
-    const handleSave = useCallback(async () => {
+    // Memoized grouping for Parent-Lot hierarchy
+    const groupedItems = useMemo(() => {
+        return Object.values(items.reduce((acc, item) => {
+            const key = item.po_item_id;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(item);
+            return acc;
+        }, {} as Record<string, typeof items>));
+    }, [items]);
+
+    const handleSave = async () => {
         setLoading(true);
         try {
-            // Reconstruct comments from notes if needed, or keeping it simple
-            const updatedHeader = { ...formData, remarks: notes.join("\n\n") };
-            await api.updateDC(dcId, updatedHeader, items);
-            setEditMode(false);
+            await api.updateDC(dcId, header, items);
+            setEditing(false);
+            setError(null);
         } catch (err: any) {
             setError(err.message || "Failed to save");
         } finally {
             setLoading(false);
         }
-    }, [dcId, formData, items, notes]);
+    };
 
     const handleDelete = useCallback(async () => {
         setLoading(true);
@@ -133,89 +115,9 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
         }
     }, [dcId, router]);
 
-    const itemColumns: Column<any>[] = [
-        {
-            key: "material_code",
-            label: "Code",
-            width: "10%",
-            render: (v) => <Accounting className="text-app-fg-muted">{v as string}</Accounting>,
-        },
-        {
-            key: "description",
-            label: "Description",
-            width: "35%",
-            render: (_v, row) => (
-                <div className="space-y-0.5">
-                    <Body className="text-app-fg">{row.description}</Body>
-                    {row.drg_no && (
-                        <SmallText className="text-app-accent">
-                            DRG: {row.drg_no}
-                        </SmallText>
-                    )}
-                </div>
-            ),
-        },
-        {
-            key: "ordered_quantity",
-            label: "Ord",
-            align: "right",
-            width: "8%",
-            render: (v) => <Accounting className="text-right">{v as number}</Accounting>,
-        },
-        {
-            key: "dispatch_quantity",
-            label: "Dlv",
-            align: "right",
-            width: "8%",
-            render: (v, row) => {
-                const idx = items.findIndex(item => item === row);
-                // Type assertion for v as number since dispatch_quantity is number
-                const val = v as number;
-
-                if (editMode && idx !== -1) {
-                    return (
-                        <Input
-                            type="number"
-                            value={val || ""}
-                            onChange={(e) => {
-                                const newItems = [...items];
-                                newItems[idx].dispatch_quantity = parseFloat(e.target.value) || 0;
-                                setItems(newItems);
-                            }}
-                            className="text-right max-w-[80px] ml-auto h-8 px-2 font-mono text-app-accent border-app-border focus:border-app-accent"
-                        />
-                    );
-                }
-                return (
-                    <Accounting variant="success" className="text-right block">
-                        {val}
-                    </Accounting>
-                );
-            },
-        },
-        {
-            key: "remaining_post_dc",
-            label: "Bal",
-            align: "right",
-            width: "8%",
-            render: (v) => <Accounting className="text-right block font-mono">{v as number}</Accounting>,
-        },
-        {
-            key: "received_quantity",
-            label: "Rec",
-            align: "right",
-            width: "8%",
-            render: (v) => (
-                <Accounting className="text-app-status-success text-right block font-mono">
-                    {v as number}
-                </Accounting>
-            ),
-        },
-    ];
-
     const topActions = (
         <div className="flex gap-3">
-            {!editMode ? (
+            {!isEditing ? (
                 <>
                     <Button
                         variant="secondary"
@@ -234,7 +136,7 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                             size="sm"
                             onClick={() => router.push(`/invoice/${encodeURIComponent(invoiceNumber!)}`)}
                         >
-                            <FileText size={16} />
+                            <FileText size={16} className="mr-2" />
                             View Invoice
                         </Button>
                     )}
@@ -244,49 +146,45 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                             size="sm"
                             onClick={() => router.push(`/invoice/create?dc=${dcId}`)}
                         >
-                            <Plus size={16} />
+                            <Plus size={16} className="mr-2" />
                             Create Invoice
                         </Button>
                     )}
-                    <Button variant="default" size="sm" onClick={() => setEditMode(true)}>
-                        <Edit2 size={16} />
+                    <Button variant="default" size="sm" onClick={() => setEditing(true)}>
+                        <Edit2 size={16} className="mr-2" />
                         Edit
                     </Button>
                     {!hasInvoice && (
                         <Button variant="destructive" size="sm" onClick={() => setShowDeleteConfirm(true)}>
-                            <Trash2 size={16} />
+                            <Trash2 size={16} className="mr-2" />
                             Delete
                         </Button>
                     )}
                 </>
             ) : (
                 <>
-                    <Button variant="ghost" size="sm" onClick={() => setEditMode(false)}>
-                        <X size={16} />
+                    <Button variant="ghost" size="sm" onClick={reset}>
+                        <X size={16} className="mr-2" />
                         Cancel
                     </Button>
-                    <Button variant="default" size="sm" onClick={handleSave}>
-                        <Save size={16} />
-                        Save
+                    <Button variant="default" size="sm" onClick={handleSave} disabled={loading}>
+                        {loading ? <span className="animate-spin mr-2">◌</span> : <Save size={16} className="mr-2" />}
+                        Save Changes
                     </Button>
                 </>
             )}
         </div>
     );
 
-    if (loading && !items.length) {
-        return <DetailSkeleton />;
-    }
-
     return (
         <DocumentTemplate
-            title={`DC #${formData.dc_number}`}
-            description={`${formData.consignee_name} • ${formatDate(formData.dc_date)}`}
+            title={`DC #${header.dc_number}`}
+            description={`${header.consignee_name} • ${formatDate(header.dc_date)}`}
             actions={topActions}
             onBack={() => router.back()}
-            layoutId={`dc-title-${formData.dc_number}`}
+            layoutId={`dc-title-${header.dc_number}`}
             icon={<Truck size={20} className="text-app-status-success" />}
-            iconLayoutId={`dc-icon-${formData.dc_number}`}
+            iconLayoutId={`dc-icon-${header.dc_number}`}
         >
             <div className="space-y-6">
                 <DocumentJourney currentStage="DC" className="mb-2" />
@@ -295,27 +193,24 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                     <Card className="p-4 bg-app-status-error/10 border-none shadow-sm">
                         <div className="flex items-center gap-2 text-app-status-error">
                             <AlertCircle size={16} />
-                            <SmallText className="font-semibold text-app-status-error">{error}</SmallText>
+                            <SmallText className="text-app-status-error">{error}</SmallText>
                         </div>
                     </Card>
                 )}
 
-                {/* Delete Confirmation Dialog */}
+                {/* Delete Confirmation */}
                 {showDeleteConfirm && (
-                    <Card className="p-6 bg-[var(--color-sys-status-error)]/[0.03] border-none shadow-premium-hover">
+                    <Card className="p-6 bg-app-status-error/5 border-none shadow-premium-hover">
                         <div className="space-y-4">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-app-status-error/10 rounded-full">
                                     <Trash2 size={20} className="text-app-status-error" />
                                 </div>
-                                <div>
-                                    <H3 className="text-h3 text-app-fg">
-                                        Delete Delivery Challan?
-                                    </H3>
-                                    <SmallText className="text-app-fg-muted mt-1 block">
-                                        This action cannot be undone. The DC and all its items will be permanently
-                                        deleted.
-                                    </SmallText>
+                                <div className="space-y-1">
+                                    <H3 className="text-app-fg">Delete Delivery Challan?</H3>
+                                    <Body className="text-app-fg-muted mt-1">
+                                        This action cannot be undone. The DC and all its items will be permanently deleted.
+                                    </Body>
                                 </div>
                             </div>
                             <div className="flex gap-3 justify-end">
@@ -323,7 +218,7 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                                     Cancel
                                 </Button>
                                 <Button variant="destructive" size="sm" onClick={handleDelete}>
-                                    <Trash2 size={16} />
+                                    <Trash2 size={16} className="mr-2" />
                                     Delete DC
                                 </Button>
                             </div>
@@ -341,9 +236,9 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={activeTab}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -5 }}
                             transition={{ duration: 0.15 }}
                         >
                             <Card className="p-6 mt-0 border-none shadow-sm bg-app-surface/50 backdrop-blur-sm relative top-[-1px]">
@@ -351,113 +246,69 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div className="space-y-1.5">
                                             <Label>DC Number</Label>
-                                            <Input value={formData.dc_number} readOnly className="bg-[var(--color-sys-bg-tertiary)]/50" />
+                                            <Input value={header.dc_number} readOnly className="bg-app-overlay/5" />
                                         </div>
                                         <div className="space-y-1.5">
                                             <Label>DC Date</Label>
                                             <Input
                                                 type="date"
-                                                value={formData.dc_date}
-                                                onChange={(e) => setFormData({ ...formData, dc_date: e.target.value })}
-                                                readOnly={!editMode}
+                                                value={header.dc_date}
+                                                onChange={(e) => updateHeader("dc_date", e.target.value)}
+                                                readOnly={!isEditing}
+                                                className={!isEditing ? "bg-transparent border-transparent" : ""}
                                             />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <Label>PO Number</Label>
+                                            <Label>PO Reference</Label>
                                             <Input
-                                                value={formData.po_number}
+                                                value={header.po_number}
                                                 readOnly
-                                                className="bg-app-surface-hover cursor-pointer"
-                                                onClick={() => router.push(`/po/${formData.po_number}`)}
-                                            />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label>Department No</Label>
-                                            <Input
-                                                value={formData.department_no}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        department_no: e.target.value,
-                                                    })
-                                                }
-                                                readOnly={!editMode}
-                                            />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label>E-Way Bill Number</Label>
-                                            <Input
-                                                value={formData.eway_bill_number}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        eway_bill_number: e.target.value,
-                                                    })
-                                                }
-                                                readOnly={!editMode}
+                                                className="bg-app-surface-hover cursor-pointer text-app-accent"
+                                                onClick={() => router.push(`/po/${header.po_number}`)}
                                             />
                                         </div>
                                     </div>
                                 </TabsContent>
-
                                 <TabsContent value="supplier" className="mt-0">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-1.5">
                                             <Label>Supplier Phone</Label>
                                             <Input
-                                                value={formData.supplier_phone}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        supplier_phone: e.target.value,
-                                                    })
-                                                }
-                                                readOnly={!editMode}
+                                                value={header.supplier_phone}
+                                                onChange={(e) => updateHeader("supplier_phone", e.target.value)}
+                                                readOnly={!isEditing}
+                                                className={!isEditing ? "bg-transparent border-transparent" : ""}
                                             />
                                         </div>
                                         <div className="space-y-1.5">
                                             <Label>Supplier GSTIN</Label>
                                             <Input
-                                                value={formData.supplier_gstin}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        supplier_gstin: e.target.value,
-                                                    })
-                                                }
-                                                readOnly={!editMode}
+                                                value={header.supplier_gstin}
+                                                onChange={(e) => updateHeader("supplier_gstin", e.target.value)}
+                                                readOnly={!isEditing}
+                                                className={!isEditing ? "bg-transparent border-transparent" : ""}
                                             />
                                         </div>
                                     </div>
                                 </TabsContent>
-
                                 <TabsContent value="consignee" className="mt-0">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-1.5">
                                             <Label>Consignee Name</Label>
                                             <Input
-                                                value={formData.consignee_name}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        consignee_name: e.target.value,
-                                                    })
-                                                }
-                                                readOnly={!editMode}
+                                                value={header.consignee_name}
+                                                onChange={(e) => updateHeader("consignee_name", e.target.value)}
+                                                readOnly={!isEditing}
+                                                className={!isEditing ? "bg-transparent border-transparent" : ""}
                                             />
                                         </div>
                                         <div className="space-y-1.5">
                                             <Label>Consignee Address</Label>
                                             <Input
-                                                value={formData.consignee_address}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        consignee_address: e.target.value,
-                                                    })
-                                                }
-                                                readOnly={!editMode}
-                                                className="min-h-[60px]"
+                                                value={header.consignee_address}
+                                                onChange={(e) => updateHeader("consignee_address", e.target.value)}
+                                                readOnly={!isEditing}
+                                                className={cn("min-h-[60px]", !isEditing ? "bg-transparent border-transparent" : "")}
                                             />
                                         </div>
                                     </div>
@@ -467,31 +318,134 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                     </AnimatePresence>
                 </Tabs>
 
-                {/* Items Table */}
+                {/* Items Table with Parent-Lot Hierarchy */}
                 <div className="space-y-3">
-                    <Label className="m-0 mb-3 text-app-fg-muted uppercase tracking-wider text-xs font-bold block">
-                        Dispatched Items ({items.length})
-                    </Label>
-                    <div className="surface-card bg-app-border/30">
-                        <div className="bg-app-surface">
-                            <DataTable columns={itemColumns} data={items} keyField="id" density="compact" />
-                        </div>
+                    <Label className="m-0 mb-1">Dispatched Items ({items.length})</Label>
+                    <div className="table-container shadow-premium-hover">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b border-app-border/10 bg-app-overlay/5">
+                                    <th className="py-3 px-2 text-left w-[60px]"><Label>Lot</Label></th>
+                                    <th className="py-3 px-2 text-left w-[120px]"><Label>Code</Label></th>
+                                    <th className="py-3 px-2 text-left w-[120px]"><Label>Drawing</Label></th>
+                                    <th className="py-3 px-2 text-left w-[200px]"><Label>Description</Label></th>
+                                    <th className="py-3 px-2 text-center w-[60px]"><Label>Unit</Label></th>
+                                    <th className="py-3 px-2 text-right w-[80px]"><Label>Ord</Label></th>
+                                    <th className="py-3 px-2 text-right w-[80px]"><Label>Dlv</Label></th>
+                                    <th className="py-3 px-2 text-right w-[100px] bg-blue-50/10 dark:bg-blue-900/10">
+                                        <Label className="text-blue-600 dark:text-blue-400">Disp</Label>
+                                    </th>
+                                    <th className="py-3 px-2 text-right w-[100px] bg-blue-50/10 dark:bg-blue-900/10">
+                                        <Label className="text-blue-600 dark:text-blue-400">Bal</Label>
+                                    </th>
+                                    <th className="py-3 px-2 text-right w-[80px]"><Label>Recd</Label></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {groupedItems.map((group, groupIdx) => {
+                                    const parentItem = group[0];
+                                    const totalOrd = group.reduce((sum, i) => sum + (i.ordered_quantity || 0), 0);
+                                    const totalDlv = group.reduce((sum, i) => sum + (i.delivered_quantity || 0), 0);
+                                    const totalRec = group.reduce((sum, i) => sum + (i.received_quantity || 0), 0);
+                                    const totalBal = group.reduce((sum, i) => sum + (i.remaining_post_dc || 0), 0);
+                                    const totalDisp = group.reduce((sum, i) => sum + (i.dispatch_quantity || 0), 0);
+
+                                    return (
+                                        <React.Fragment key={parentItem.po_item_id || groupIdx}>
+                                            <tr className="bg-app-overlay/5 border-b border-app-border/5">
+                                                <td className="py-3 px-2 align-top">
+                                                    <MonoCode className="text-app-fg-muted/60">
+                                                        #{parentItem.po_item_no || groupIdx + 1}
+                                                    </MonoCode>
+                                                </td>
+                                                <td className="py-3 px-2 align-top">
+                                                    <Accounting className="text-app-fg-muted/60">{parentItem.material_code || "-"}</Accounting>
+                                                </td>
+                                                <td className="py-3 px-2 align-top">
+                                                    <SmallText className="text-app-fg-muted/50">{parentItem.drg_no || "-"}</SmallText>
+                                                </td>
+                                                <td className="py-3 px-2 align-top">
+                                                    <Body className="truncate max-w-[200px] text-app-fg-muted/70" title={parentItem.material_description || parentItem.description}>
+                                                        {parentItem.material_description || parentItem.description}
+                                                    </Body>
+                                                </td>
+                                                <td className="py-3 px-2 align-top text-center">
+                                                    <SmallText className="uppercase text-app-fg-muted/50">{parentItem.unit}</SmallText>
+                                                </td>
+                                                <td className="py-3 px-2 align-top text-right">
+                                                    <Accounting className="text-app-fg-muted/60">{totalOrd}</Accounting>
+                                                </td>
+                                                <td className="py-3 px-2 align-top text-right">
+                                                    <Accounting className="text-app-fg-muted/60">{totalDlv}</Accounting>
+                                                </td>
+                                                <td className="py-3 px-2 align-top text-right bg-blue-50/5 dark:bg-blue-900/5">
+                                                    <Accounting className="text-blue-600/60 dark:text-blue-400/60">{totalDisp}</Accounting>
+                                                </td>
+                                                <td className="py-3 px-2 align-top text-right bg-blue-50/5 dark:bg-blue-900/5">
+                                                    <Accounting className="text-blue-600/60 dark:text-blue-400/60">{totalBal}</Accounting>
+                                                </td>
+                                                <td className="py-3 px-2 align-top text-right">
+                                                    <Accounting className="text-app-fg-muted/60">{totalRec}</Accounting>
+                                                </td>
+                                            </tr>
+
+                                            {group.map((item) => {
+                                                const originalIndex = items.findIndex(i => i.id === item.id);
+                                                return (
+                                                    <tr key={item.id} className="bg-app-surface transition-colors border-b border-app-border/5">
+                                                        <td className="py-2 px-0 relative">
+                                                            <div className="absolute left-[30px] top-0 bottom-0 w-[2px] bg-app-accent/20" />
+                                                            <div className="flex items-center gap-2 pl-[38px]">
+                                                                <span className="text-app-accent/30" style={{ fontSize: '10px' }}>L</span>
+                                                                <MonoCode className="text-app-fg-muted">L-{item.lot_no}</MonoCode>
+                                                            </div>
+                                                        </td>
+                                                        <td colSpan={4} />
+                                                        <td className="py-2 px-2 text-right">
+                                                            <Accounting className="text-app-fg-muted">{item.ordered_quantity}</Accounting>
+                                                        </td>
+                                                        <td className="py-2 px-2 text-right">
+                                                            <Accounting className="text-app-fg-muted">{item.delivered_quantity}</Accounting>
+                                                        </td>
+                                                        <td className="py-2 px-2 bg-blue-50/5 dark:bg-blue-900/5">
+                                                            {isEditing ? (
+                                                                <Input
+                                                                    type="number"
+                                                                    value={item.dispatch_quantity || ""}
+                                                                    onChange={(e) => updateItem(originalIndex, "dispatch_quantity", parseFloat(e.target.value) || 0)}
+                                                                    className="text-right w-full font-mono h-7 text-xs border-blue-200 dark:border-blue-800 focus:ring-blue-500/20"
+                                                                />
+                                                            ) : (
+                                                                <Accounting className="text-blue-600 dark:text-blue-400 block text-right">
+                                                                    {item.dispatch_quantity}
+                                                                </Accounting>
+                                                            )}
+                                                        </td>
+                                                        <td className="py-2 px-2 text-right bg-blue-50/5 dark:bg-blue-900/5">
+                                                            <Accounting className="text-blue-600 dark:text-blue-400">{item.remaining_post_dc}</Accounting>
+                                                        </td>
+                                                        <td className="py-2 px-2 text-right">
+                                                            <Accounting className="text-app-fg-muted">{item.received_quantity}</Accounting>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
                 {/* Notes */}
                 {notes.length > 0 && (
-                    <Card className="p-6 border-none shadow-sm bg-app-surface-hover/30">
-                        <H3 className="mb-4 text-app-fg-muted uppercase">
-                            Notes
-                        </H3>
+                    <Card className="p-6 border-none shadow-sm bg-app-surface/30 backdrop-blur-sm">
+                        <Label className="mb-4 block">Additional Notes</Label>
                         <div className="space-y-2">
                             {notes.map((note, idx) => (
-                                <div
-                                    key={`note-${idx}`}
-                                    className="p-3 bg-app-surface/50 rounded-lg shadow-inner italic"
-                                >
-                                    <Body className="text-app-fg-muted">{note}</Body>
+                                <div key={`note-${idx}`} className="p-3 bg-app-overlay/5 rounded-lg border border-app-border/5">
+                                    <Body className="text-app-fg-muted italic">{note}</Body>
                                 </div>
                             ))}
                         </div>
@@ -501,3 +455,4 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
         </DocumentTemplate>
     );
 }
+

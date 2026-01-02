@@ -43,6 +43,7 @@ export interface ListPageTemplateProps<T = any> {
     table_surface_solid?: boolean;
     renderSubRow?: (row: T) => React.ReactNode;
     onRowExpand?: (row: T, isExpanded: boolean) => void;
+    no_subrow_padding?: boolean;
     className?: string;
     children?: React.ReactNode;
 }
@@ -79,6 +80,7 @@ export function ListPageTemplate<T extends Record<string, any>>({
     table_surface_solid,
     renderSubRow,
     onRowExpand,
+    no_subrow_padding,
 }: ListPageTemplateProps<T>) {
     return (
         <DocumentTemplate
@@ -121,6 +123,7 @@ export function ListPageTemplate<T extends Record<string, any>>({
                             table_surface_solid={table_surface_solid}
                             renderSubRow={renderSubRow}
                             onRowExpand={onRowExpand}
+                            no_subrow_padding={no_subrow_padding}
                             density={density}
                         />
                     )}

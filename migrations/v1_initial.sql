@@ -78,12 +78,12 @@ CREATE TABLE IF NOT EXISTS purchase_order_items (
     mtrl_cat INTEGER,              -- MTRL CAT
     unit TEXT,                     -- UNIT
     po_rate NUMERIC,               -- PO RATE
-    ord_qty INTEGER,               -- ORD QTY (total ordered)
-    rcd_qty INTEGER DEFAULT 0,     -- RCD QTY
+    ord_qty REAL,                  -- ORD QTY (total ordered) (Changed from INTEGER)
+    rcd_qty REAL DEFAULT 0,        -- RCD QTY (Changed from INTEGER)
     item_value NUMERIC,            -- ITEM VALUE
     hsn_code TEXT,                 -- HSN CODE
-    delivered_qty INTEGER DEFAULT 0,  -- Auto-calculated from deliveries
-    pending_qty INTEGER,           -- Auto-calculated
+    delivered_qty REAL DEFAULT 0,  -- Auto-calculated from deliveries (Changed from INTEGER)
+    pending_qty REAL,              -- Auto-calculated (Changed from INTEGER)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(po_number, po_item_no)
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS purchase_order_deliveries (
     id TEXT PRIMARY KEY,
     po_item_id TEXT NOT NULL REFERENCES purchase_order_items(id) ON DELETE CASCADE,
     lot_no INTEGER,                -- LOT NO
-    dely_qty INTEGER,              -- DELY QTY
+    dely_qty REAL,                 -- DELY QTY (Changed from INTEGER)
     dely_date DATE,                -- DELY DATE
     entry_allow_date DATE,         -- ENTRY ALLOW DATE
     dest_code INTEGER,             -- DEST CODE
@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS delivery_challan_items (
     id TEXT PRIMARY KEY,
     dc_number TEXT NOT NULL REFERENCES delivery_challans(dc_number) ON DELETE CASCADE,
     po_item_id TEXT NOT NULL REFERENCES purchase_order_items(id) ON DELETE CASCADE,
-    dispatch_qty INTEGER NOT NULL,
+    dispatch_qty REAL NOT NULL,
     hsn_code TEXT,
     hsn_rate NUMERIC,
     CHECK (dispatch_qty > 0)

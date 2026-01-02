@@ -48,6 +48,8 @@ export interface DataTableProps<T = any> {
     className?: string;
     no_borders?: boolean;
     table_surface_solid?: boolean;
+    hideHeader?: boolean;
+    no_subrow_padding?: boolean;
 }
 
 const DataTableComponent = <T extends Record<string, any>>({
@@ -78,6 +80,8 @@ const DataTableComponent = <T extends Record<string, any>>({
     onRowExpand,
     onRowClick,
     density = "normal",
+    hideHeader = false,
+    no_subrow_padding = false,
 }: DataTableProps<T>): React.ReactNode => {
     const [internalSort, setInternalSort] = useState<{
         key: string;
@@ -174,12 +178,12 @@ const DataTableComponent = <T extends Record<string, any>>({
     }
 
     return (
-        <div className={cn("space-y-4", className)}>
+        <div className={cn("w-full", className)}>
             {(exportable || selectable) && (
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                     <div>
                         {selectable && selectedCount > 0 && (
-                            <SmallText className="text-[var(--color-sys-text-secondary)]">
+                            <SmallText className="text-app-fg-muted">
                                 {selectedCount} row{selectedCount !== 1 ? "s" : ""} selected
                             </SmallText>
                         )}
@@ -192,45 +196,44 @@ const DataTableComponent = <T extends Record<string, any>>({
                     )}
                 </div>
             )}
-            <div className={cn(
-                "w-full overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-sm",
-                className
-            )} >
-                <div className="overflow-x-auto hover-scrollbar" style={{ minHeight: "300px", display: "block" }} >
-                    <table className="w-full border-collapse" style={{ display: "table" }} >
-                        <thead>
-                            <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface-elevated)]">
-                                {renderSubRow && <th className="w-10 sticky top-0 z-10 bg-[var(--bg-surface-elevated)]"></th>}
-                                {selectable && (
-                                    <th className={cn("px-4 w-12 sticky top-0 z-10 bg-[var(--bg-surface-elevated)]", density === "compact" ? "h-[40px]" : "h-12")}>
-                                        <Checkbox checked={allSelected} onChange={(e) => handleSelectAll(e.target.checked)} aria-label="Select all rows" />
-                                    </th>
-                                )}
-                                {columns.map((column) => (
-                                    <th
-                                        key={column.key}
-                                        className={cn(
-                                            "sticky top-0 z-10 py-3 px-4 text-[10px] font-semibold text-[var(--app-fg-muted)] uppercase tracking-wider transition-colors bg-[var(--bg-surface-elevated)]",
-                                            (column.isNumeric || column.isCurrency) ? "text-right" :
-                                                column.align === "right" ? "text-right" :
-                                                    column.align === "center" ? "text-center" : "text-left",
-                                            column.sortable && (currentSortKey === column.key ?
-                                                "text-[var(--accent)]" :
-                                                "hover:bg-[var(--bg-overlay)] cursor-pointer")
-                                        )}
-                                        style={{ width: column.width }}
-                                        onClick={column.sortable ? () => handleSort(column.key) : undefined}
-                                    >
-                                        {column.sortable ? (
-                                            <div className={cn("flex items-center gap-1", column.align === 'right' && "justify-end", column.align === 'center' && "justify-center")}>
-                                                {column.label}
-                                                <span className="opacity-40">{currentSortKey === column.key ? (currentSortDirection === "asc" ? "↑" : "↓") : "↕"}</span>
-                                            </div>
-                                        ) : column.label}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
+            <div className="surface-card bg-app-surface/50 backdrop-blur-xl border border-app-border/30 rounded-3xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-app-accent/5">
+                <div className="overflow-x-auto hover-scrollbar" style={{ minHeight: "300px" }}>
+                    <table className="w-full border-collapse">
+                        {!hideHeader && (
+                            <thead>
+                                <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface-elevated)]">
+                                    {renderSubRow && <th className="w-10 sticky top-0 z-10 bg-[var(--bg-surface-elevated)]"></th>}
+                                    {selectable && (
+                                        <th className={cn("px-6 w-12 sticky top-0 z-10 bg-[var(--bg-surface-elevated)]", density === "compact" ? "h-[40px]" : "h-12")}>
+                                            <Checkbox checked={allSelected} onChange={(e) => handleSelectAll(e.target.checked)} aria-label="Select all rows" />
+                                        </th>
+                                    )}
+                                    {columns.map((column) => (
+                                        <th
+                                            key={column.key}
+                                            className={cn(
+                                                "sticky top-0 z-10 py-3 px-6 text-[11px] font-bold font-heading text-app-fg-muted uppercase tracking-wider transition-colors bg-[var(--bg-surface-elevated)]",
+                                                (column.isNumeric || column.isCurrency) ? "text-right" :
+                                                    column.align === "right" ? "text-right" :
+                                                        column.align === "center" ? "text-center" : "text-left",
+                                                column.sortable && (currentSortKey === column.key ?
+                                                    "text-app-accent" :
+                                                    "hover:bg-[var(--bg-overlay)] cursor-pointer")
+                                            )}
+                                            style={{ width: column.width }}
+                                            onClick={column.sortable ? () => handleSort(column.key) : undefined}
+                                        >
+                                            {column.sortable ? (
+                                                <div className={cn("flex items-center gap-1", column.align === 'right' && "justify-end", column.align === 'center' && "justify-center")}>
+                                                    {column.label}
+                                                    <span className="opacity-40">{currentSortKey === column.key ? (currentSortDirection === "asc" ? "↑" : "↓") : "↕"}</span>
+                                                </div>
+                                            ) : column.label}
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                        )}
                         <tbody className="bg-transparent">
                             {loading ? Array.from({ length: pageSize }).map((_, i) => (
                                 <tr key={`skeleton-${i}`}>
@@ -238,37 +241,35 @@ const DataTableComponent = <T extends Record<string, any>>({
                                         <TableRowSkeleton columns={columns.length} />
                                     </td>
                                 </tr>
-                            )) : processedData.map((row) => {
-                                const rowKey = String(row[keyField]);
+                            )) : processedData.map((row, index) => {
+                                const rowKey = (row[keyField] !== undefined && row[keyField] !== null)
+                                    ? String(row[keyField])
+                                    : `row-${index}`;
                                 const isSelected = selectedRows.includes(rowKey);
                                 const isExpanded = expandedRows.includes(rowKey);
                                 return (
                                     <React.Fragment key={rowKey}>
                                         <tr
                                             onClick={(e) => {
-                                                if (onRowClick && !selectable && !renderSubRow) {
-                                                    // Prevent row click if clicking checkbox or expansion
-                                                    // This is a naive check.
-                                                }
                                                 if (onRowClick) {
-                                                    // Check if notification or specific ignored elements were clicked if needed
                                                     onRowClick(row);
                                                 }
                                             }}
                                             className={cn(
-                                                "group border-none transition-all duration-200 relative",
-                                                processedData.indexOf(row) % 2 === 0 ? "table-row-even" : "table-row-odd",
+                                                "group border-b border-[var(--border-subtle)] transition-all duration-150",
+                                                processedData.indexOf(row) % 2 === 0 ? "bg-transparent" : "bg-app-surface-hover/30",
                                                 isSelected && "bg-app-accent/5",
                                                 isExpanded && "bg-app-accent/10",
-                                                onRowClick && "cursor-pointer hover:bg-app-accent/5"
-                                            )} >
+                                                "hover:bg-blue-50/50 dark:hover:bg-white/5",
+                                                onRowClick && "cursor-pointer"
+                                            )}>
                                             {renderSubRow && (
-                                                <td className="w-10 px-0 pl-3">
+                                                <td className="w-10 px-0 pl-4">
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => toggleRowExpansion(rowKey, row)}
-                                                        className="w-6 h-6 p-0 text-[var(--color-sys-text-tertiary)] hover:text-[var(--color-sys-brand-primary)]"
+                                                        className="w-6 h-6 p-0 text-app-fg-muted hover:text-app-accent"
                                                     >
                                                         <ChevronRight
                                                             size={16}
@@ -278,7 +279,7 @@ const DataTableComponent = <T extends Record<string, any>>({
                                                 </td>
                                             )}
                                             {selectable && (
-                                                <td className="px-4 py-2">
+                                                <td className="px-6 py-3">
                                                     <Checkbox checked={isSelected} onChange={(e) => handleSelectRow(rowKey, e.target.checked)} aria-label={`Select row`} />
                                                 </td>
                                             )}
@@ -286,9 +287,9 @@ const DataTableComponent = <T extends Record<string, any>>({
                                                 <td
                                                     key={column.key}
                                                     className={cn(
-                                                        "px-4",
-                                                        density === "compact" ? "h-[40px]" : "h-12",
-                                                        "align-middle",
+                                                        "px-6 py-3",
+                                                        density === "compact" ? "h-[44px]" : "h-14",
+                                                        "align-middle text-[13px] font-medium font-sans",
                                                         (column.isNumeric || column.isCurrency) ? "text-right table-cell-number" :
                                                             typeof column.render === "function" ?
                                                                 (column.align === "right" ? "text-right" :
@@ -306,9 +307,9 @@ const DataTableComponent = <T extends Record<string, any>>({
                                             ))}
                                         </tr>
                                         {renderSubRow && isExpanded && (
-                                            <tr className="bg-[var(--color-sys-brand-primary)]/[0.015]">
+                                            <tr className="bg-app-accent/5 border-b border-[var(--border-subtle)]">
                                                 <td colSpan={columns.length + (selectable ? 1 : 0) + 1} className="p-0">
-                                                    <div className="p-4 pl-12">
+                                                    <div className={cn(!no_subrow_padding && "p-6 pl-12")}>
                                                         {renderSubRow(row)}
                                                     </div>
                                                 </td>
@@ -321,8 +322,8 @@ const DataTableComponent = <T extends Record<string, any>>({
                     </table>
                 </div>
                 {totalPages > 1 && (
-                    <div className="flex items-center justify-between px-4 py-3 bg-[var(--color-sys-bg-tertiary)]/30">
-                        <SmallText className="text-[var(--color-sys-text-secondary)]">
+                    <div className="flex items-center justify-between px-6 py-4 bg-app-surface-hover/20 border-t border-[var(--border-subtle)]">
+                        <SmallText className="text-app-fg-muted">
                             Showing {startIndex + 1} to {endIndex} of {total} results
                         </SmallText>
                         <div className="flex items-center gap-2">

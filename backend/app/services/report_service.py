@@ -254,6 +254,7 @@ def get_reconciliation_lots(po_number: str, db: sqlite3.Connection) -> list:
         poi.drg_no,
         COALESCE(pod.lot_no, 1) as lot_no,
         COALESCE(pod.dely_qty, poi.ord_qty) as lot_ordered_qty,
+        COALESCE(pod.delivered_qty, 0) as manual_dlv_qty,
         COALESCE((
             SELECT SUM(dci.dispatch_qty)
             FROM delivery_challan_items dci
@@ -280,6 +281,11 @@ def get_reconciliation_lots(po_number: str, db: sqlite3.Connection) -> list:
             already_delivered = max(r['lot_dispatched_qty'], r['lot_received_qty'])
             remaining = r['lot_ordered_qty'] - already_delivered
             
+            # Manual Override Delta: 
+            # If manual_dlv_qty > already_delivered, the user wants to dispatch more.
+            # This satisfies the requirement to fetch "only items and quantities where the user has manually updated the DLV"
+            suggested_dispatch = max(0, r['manual_dlv_qty'] - r['lot_dispatched_qty'])
+            
             results.append({
                 "po_item_id": r['po_item_id'],
                 "lot_no": r['lot_no'],
@@ -287,7 +293,8 @@ def get_reconciliation_lots(po_number: str, db: sqlite3.Connection) -> list:
                 "drg_no": r['drg_no'],
                 "ordered_qty": r['lot_ordered_qty'],
                 "received_qty": r['lot_received_qty'],
-                "remaining_qty": max(0, remaining)
+                "remaining_qty": max(0, remaining),
+                "suggested_dispatch_qty": suggested_dispatch
             })
         return results
     except Exception as e:

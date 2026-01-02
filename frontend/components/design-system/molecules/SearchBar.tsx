@@ -20,10 +20,11 @@ export interface SearchBarProps {
     placeholder?: string;
     shortcut?: string;
     className?: string;
+    variant?: "default" | "neumorphic";
 }
 
 const SearchBarInternal = React.forwardRef<HTMLInputElement, SearchBarProps>(
-    ({ id, name, value, onChange, onSearch, placeholder = "Search...", shortcut, className }, ref) => {
+    ({ id, name, value, onChange, onSearch, placeholder = "Search...", shortcut, className, variant = "default" }, ref) => {
         const [localValue, setLocalValue] = useState(value);
         const debouncedValue = useDebounce(localValue, 300);
 
@@ -58,12 +59,16 @@ const SearchBarInternal = React.forwardRef<HTMLInputElement, SearchBarProps>(
                     ref={ref}
                     id={id}
                     name={name}
+                    variant={variant === "neumorphic" ? "neumorphic" : "default"}
                     value={localValue}
                     onChange={(e) => setLocalValue(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={placeholder}
                     icon={<Search size={18} className="text-app-fg/40 group-focus-within:text-app-accent transition-colors" />}
-                    className="pr-20 h-[44px] rounded-full bg-app-surface/50 border border-app-border/30 shadow-sm focus:shadow-xl focus:shadow-app-accent/5 focus:bg-app-surface transition-all duration-300 pl-12"
+                    className={cn(
+                        "pr-20 h-[44px] rounded-full transition-all duration-300 pl-12",
+                        variant === "default" && "bg-app-surface/50 border border-app-border/30 shadow-sm focus:shadow-xl focus:shadow-app-accent/5 focus:bg-app-surface"
+                    )}
                 />
                 {/* Actions Group */}
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">

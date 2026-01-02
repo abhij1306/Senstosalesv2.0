@@ -183,7 +183,7 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
     const handleNewInvoice = useCallback(() => router.push("/invoice/create"), [router]);
 
     return (
-        <Stack gap={8} className="relative z-0">
+        <Stack gap={8} className="relative z-0 min-h-screen">
             <Flex align="center" justify="between" className="mb-2">
                 <Stack gap={1}>
                     <H1 className="text-app-fg">DASHBOARD</H1>
@@ -199,11 +199,11 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
                         {
                             title: "Morning Briefing",
                             value: (
-                                <Stack gap={2} className="mt-1">
-                                    <Body className="text-app-fg font-semibold text-[15px] leading-relaxed">
+                                <Stack gap={2} className="pb-5">
+                                    <Body className="text-app-fg font-semibold text-[13px] leading-relaxed">
                                         {summary?.pending_pos || 0} POs pending
                                     </Body>
-                                    <Body className="text-app-fg font-semibold text-[15px] leading-relaxed">
+                                    <Body className="text-app-fg font-semibold text-[13px] leading-relaxed">
                                         {summary?.active_challans || 0} DCs in transit
                                     </Body>
                                 </Stack>
@@ -242,7 +242,7 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
                     ]}
                     className="lg:grid-cols-2 xl:grid-cols-4"
                 />
-            </Box>
+            </Box >
 
             <Grid cols="1" className="lg:grid-cols-12" gap={8}>
                 <Stack className="lg:col-span-8" gap={4}>
@@ -253,14 +253,12 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
                         </Button>
                     </Flex>
 
-                    <div className="min-h-[400px] surface-card p-2">
-                        <DataTable
-                            columns={activityColumns}
-                            data={activity}
-                            keyField="number"
-                            pageSize={8}
-                        />
-                    </div>
+                    <DataTable
+                        columns={activityColumns}
+                        data={activity}
+                        keyField="number"
+                        pageSize={8}
+                    />
                 </Stack>
 
                 <Stack className="lg:col-span-4" gap={4}>
@@ -292,6 +290,6 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
                     </Stack>
                 </Stack>
             </Grid>
-        </Stack>
+        </Stack >
     );
 }

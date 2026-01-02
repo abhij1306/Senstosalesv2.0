@@ -14,7 +14,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 
-const ReportsCharts = dynamic(() => import("@/components/design-system/organisms/ReportsCharts"), {
+const ReportsCharts = dynamic(() => import("@/components/reports/organisms/ReportsCharts"), {
   loading: () => (
     <div className="h-[400px] w-full bg-app-surface-hover/20 animate-pulse rounded-2xl" />
   ),
@@ -28,13 +28,14 @@ import {
   Accounting,
   Body,
   type Column,
-  ReportNavGrid,
   Flex,
   Box,
   DataTable,
-  ReportsDataCard,
   Badge,
+  DocumentTemplate,
 } from "@/components/design-system";
+import { ReportNavGrid } from "@/components/reports/organisms/ReportNavGrid";
+import { ReportsDataCard } from "@/components/reports/organisms/ReportsDataCard";
 
 type ReportType = "sales" | "dc_register" | "invoice_register" | "pending" | "reconciliation";
 
@@ -439,9 +440,11 @@ export default function ReportsPage() {
   );
 
   return (
-    <>
-      {headerPortal && createPortal(toolbarContent, headerPortal)}
-
+    <DocumentTemplate
+      title="Analytics"
+      description="Multi-dimensional trend analysis and reconciliation"
+      actions={toolbarContent}
+    >
       <div className="space-y-6">
         <ReportNavGrid
           items={[
@@ -485,7 +488,6 @@ export default function ReportsPage() {
           className="w-full"
         />
 
-        {/* --- DYNAMIC CHART SECTION --- */}
         {/* --- DYNAMIC CHART SECTION --- */}
         <AnimatePresence mode="wait">
           {data.length > 0 && (activeTab === "sales" || activeTab === "reconciliation") && (
@@ -542,7 +544,7 @@ export default function ReportsPage() {
           </motion.div>
         </AnimatePresence>
       </div>
-    </>
+    </DocumentTemplate>
   );
 }
 

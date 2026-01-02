@@ -22,13 +22,14 @@ export const InspectionManifest = ({ items, columns }: InspectionManifestProps) 
                     {items.length} Quality Nodes
                 </Badge>
             </Flex>
-            <div className="surface-card bg-app-border/30">
-                <div className="bg-app-surface">
+            <div className="surface-card bg-app-border/30 overflow-hidden">
+                <div className="bg-app-surface overflow-x-auto">
                     <DataTable
                         columns={columns}
                         data={items}
                         keyField="id"
                         density="compact"
+                        className="w-full"
                     />
                 </div>
             </div>

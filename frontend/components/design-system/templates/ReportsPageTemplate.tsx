@@ -3,7 +3,7 @@
 import React from "react";
 import { H1, Body, SmallText } from "../atoms/Typography";
 import { SummaryCards, SummaryCardProps } from "../organisms/SummaryCards";
-import { ReportsToolbar, ReportsToolbarProps } from "../organisms/ReportsToolbar";
+import { ReportsToolbar, ReportsToolbarProps } from "@/components/reports/organisms/ReportsToolbar";
 import { DataTable, Column } from "../organisms/DataTable";
 import { cn } from "@/lib/utils";
 

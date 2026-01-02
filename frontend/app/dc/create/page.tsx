@@ -1,11 +1,12 @@
 "use client";
 
+import React from "react";
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Save, Search, AlertCircle, Loader2, Plus, Trash2, Truck, Calendar } from "lucide-react";
+import { Save, Search, AlertCircle, Loader2, Plus, Trash2, Truck } from "lucide-react";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { DCItemRow, POHeader } from "@/types";
+import { DCItemRow } from "@/types";
 import {
   H3,
   Label,
@@ -21,32 +22,56 @@ import {
   DocumentTemplate,
 } from "@/components/design-system";
 import { CreateDCSkeleton } from "@/components/design-system/molecules/skeletons/CreateDCSkeleton";
+import { useDCStore } from "@/store/dcStore";
 
 function CreateDCPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialPoNumber = searchParams ? searchParams.get("po") : "";
 
+  const {
+    data,
+    poData,
+    notes,
+    isCheckingNumber,
+    isDuplicateNumber,
+    conflictType,
+    updateHeader,
+    setHeader,
+    updateItem,
+    setPOData,
+    setItems,
+    addNote,
+    updateNote,
+    removeNote,
+    setNumberStatus,
+  } = useDCStore();
+
   const [poNumber, setPONumber] = useState(initialPoNumber || "");
-  const [items, setItems] = useState<DCItemRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [poData, setPOData] = useState<POHeader | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [notes, setNotes] = useState<string[]>([]);
-  const [isChecking, setIsChecking] = useState(false);
-  const [isDuplicate, setIsDuplicate] = useState(false);
-  const [conflictType, setConflictType] = useState<string | null>(null);
-  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
 
-  const [formData, setFormData] = useState({
+  const header = data?.header || {
     dc_number: "",
     dc_date: new Date().toISOString().split("T")[0],
     supplier_phone: "0755 – 4247748",
     supplier_gstin: "23AACFS6810L1Z7",
     consignee_name: "",
     consignee_address: "",
-  });
+  };
+
+  const items = data?.items || [];
+
+  // Memoized item grouping to eliminate re-calculation lag
+  const groupedItems = React.useMemo(() => {
+    return Object.values(items.reduce((acc, item) => {
+      const key = item.po_item_id;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(item);
+      return acc;
+    }, {} as Record<string, typeof items>));
+  }, [items]);
 
   useEffect(() => {
     if (initialPoNumber) {
@@ -58,37 +83,53 @@ function CreateDCPageContent() {
     setIsLoading(true);
     setError(null);
     try {
-      const [lots, pod] = await Promise.all([
-        api.getReconciliationLots(po),
-        api.getPODetail(po),
-      ]);
+      const pod = await api.getPODetail(po);
+      const mappedItems: DCItemRow[] = [];
 
-      // Process Lots
-      const lotsData = Array.isArray(lots) ? lots : (lots as any)?.lots || [];
-      const mappedItems: DCItemRow[] = lotsData.map((lot: any) => ({
-        id: `${lot.po_item_id}-${lot.lot_no}`,
-        lot_no: lot.lot_no?.toString() || "",
-        description: lot.material_description || "",
-        drg_no: lot.drg_no || "",
-        ordered_quantity: lot.ordered_qty || 0,
-        remaining_post_dc: lot.remaining_qty || 0,
-        received_quantity: lot.received_qty || 0,
-        dispatch_quantity: 0,
-        po_item_id: lot.po_item_id,
-      }));
+      if (pod?.items) {
+        pod.items.forEach((item: any) => {
+          const deliveries = item.deliveries || [];
+          deliveries.forEach((lot: any) => {
+            const ord = lot.ordered_quantity || 0;
+            const dlv = lot.delivered_quantity || 0;
+            const recd = lot.received_quantity || 0;
+            const currentBal = Math.max(0, ord - dlv);
+
+            mappedItems.push({
+              id: `${item.id}-${lot.lot_no}`,
+              po_item_id: item.id.toString(),
+              po_item_no: item.po_item_no,
+              lot_no: lot.lot_no,
+              material_code: item.material_code || "",
+              description: item.material_description || "",
+              drg_no: item.drg_no || "",
+              unit: item.unit || "NOS",
+              ordered_quantity: ord,
+              delivered_quantity: dlv,
+              received_quantity: recd,
+              dispatch_quantity: 0,
+              remaining_post_dc: currentBal,
+              original_remaining: currentBal
+            });
+          });
+        });
+      }
+
       setItems(mappedItems);
-      if (mappedItems.length === 0) setError("No items available for dispatch");
 
-      // Process PO Data
       if (pod?.header) {
         setPOData(pod.header);
-        setFormData((prev) => ({
-          ...prev,
+        setHeader({
+          ...header,
           consignee_name: (pod.header as any)?.consignee_name || "",
           consignee_address: (pod.header as any)?.consignee_address || "",
           supplier_phone: pod.header?.supplier_phone || "0755 – 4247748",
           supplier_gstin: pod.header?.supplier_gstin || "23AACFS6810L1Z7",
-        }));
+        });
+      }
+
+      if (mappedItems.length === 0) {
+        setError("No items found in this PO.");
       }
     } catch (err: any) {
       setError(err.message || "Failed to load initial data");
@@ -99,23 +140,13 @@ function CreateDCPageContent() {
 
   const checkNumberDuplicate = async (num: string, date: string) => {
     if (!num || num.trim() === "") return;
-    setIsChecking(true);
+    setNumberStatus(true, false, null);
     try {
       const res = await api.checkDuplicateNumber("DC", num, date);
-      setIsDuplicate(res.exists);
-      setConflictType(res.conflict_type || null);
+      setNumberStatus(false, res.exists, res.conflict_type || null);
     } catch {
-      // If check fails, don't block user (fail open)
-      setIsDuplicate(false);
-      setConflictType(null);
-    } finally {
-      setIsChecking(false);
+      setNumberStatus(false, false, null);
     }
-  };
-
-  const handleLoadItems = (po: string) => {
-    if (!po) return;
-    loadInitialData(po);
   };
 
   const handleSubmit = async () => {
@@ -129,26 +160,25 @@ function CreateDCPageContent() {
       setIsSubmitting(false);
       return;
     }
-    // Validation: Check for over-delivery
     const overDeliveryItem = itemsToDispatch.find(
-      (item) => item.dispatch_quantity > (item.remaining_post_dc || 0)
+      (item) => item.dispatch_quantity > (item.original_remaining || 0)
     );
     if (overDeliveryItem) {
       setError(
-        `Cannot dispatch more than remaining quantity (Lot ${overDeliveryItem.lot_no}: ${overDeliveryItem.dispatch_quantity} > ${overDeliveryItem.remaining_post_dc})`
+        `Cannot dispatch more than originally available (Lot ${overDeliveryItem.lot_no}: ${overDeliveryItem.dispatch_quantity} > ${overDeliveryItem.original_remaining})`
       );
       setIsSubmitting(false);
       return;
     }
     try {
       const dcPayload = {
-        dc_number: formData.dc_number,
-        dc_date: formData.dc_date,
+        dc_number: header.dc_number,
+        dc_date: header.dc_date,
         po_number: poNumber || undefined,
-        supplier_phone: formData.supplier_phone,
-        supplier_gstin: formData.supplier_gstin,
-        consignee_name: formData.consignee_name,
-        consignee_address: formData.consignee_address,
+        supplier_phone: header.supplier_phone,
+        supplier_gstin: header.supplier_gstin,
+        consignee_name: header.consignee_name,
+        consignee_address: header.consignee_address,
         remarks: notes.join("\n\n"),
       };
       const itemsPayload = itemsToDispatch.map((item) => ({
@@ -159,9 +189,8 @@ function CreateDCPageContent() {
         hsn_rate: null,
       }));
       const response = (await api.createDC(dcPayload, itemsPayload)) as any;
-      router.push(`/dc/${response.dc_number || formData.dc_number}`);
+      router.push(`/dc/${response.dc_number || header.dc_number}`);
     } catch (err: any) {
-      // Handle Pydantic 422 errors specifically to show something readable
       if (err.status === 422 && Array.isArray(err.data?.detail)) {
         const details = err.data.detail.map((d: any) => `${d.loc.join(".")}: ${d.msg}`).join(", ");
         setError(`Validation Error: ${details}`);
@@ -187,7 +216,7 @@ function CreateDCPageContent() {
         size="sm"
         onClick={handleSubmit}
         disabled={
-          isSubmitting || items.length === 0 || isDuplicate || isChecking || !formData.dc_number
+          isSubmitting || items.length === 0 || isDuplicateNumber || isCheckingNumber || !header.dc_number
         }
       >
         {isSubmitting ? (
@@ -217,7 +246,7 @@ function CreateDCPageContent() {
           <Card className="p-4 bg-app-status-error/10 border-app-status-error/20">
             <div className="flex items-center gap-2 text-app-status-error">
               <AlertCircle size={16} />
-              <SmallText className="font-medium">{error}</SmallText>
+              <SmallText className="font-medium text-app-status-error">{error}</SmallText>
             </div>
           </Card>
         )}
@@ -241,7 +270,7 @@ function CreateDCPageContent() {
               </div>
               <Button
                 variant="secondary"
-                onClick={() => handleLoadItems(poNumber)}
+                onClick={() => loadInitialData(poNumber)}
                 disabled={!poNumber || isLoading}
               >
                 {isLoading ? (
@@ -253,7 +282,7 @@ function CreateDCPageContent() {
               </Button>
             </div>
             {poData && (
-              <div className="mt-4 p-4 bg-slate-50/50 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div className="mt-4 p-4 bg-app-surface/50 rounded-xl border border-app-border/10 flex items-center justify-between">
                 <div className="flex flex-col">
                   <Label className="text-app-fg-muted">
                     Supplier
@@ -272,121 +301,90 @@ function CreateDCPageContent() {
         )}
 
         {/* Challan Details */}
-        <Card className="surface-claymorphic shadow-clay-surface p-6">
-          <H3 className="mb-6 text-app-fg">Challan Information</H3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-            <div className="space-y-1.5">
-              <Label className="text-app-fg-muted">
-                DC Number
-              </Label>
+        <Card className="p-6 shadow-sm border-none bg-app-surface/50">
+          <H3 className="mb-6 font-bold text-app-fg">Challan Information</H3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <Label>DC NUMBER</Label>
               <Input
-                id="dc-number"
-                name="dc-number"
-                value={formData.dc_number}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setFormData({ ...formData, dc_number: val });
-
-                  // Clear existing timer
-                  if (debounceTimer) clearTimeout(debounceTimer);
-
-                  // Debounce the duplicate check (500ms delay)
-                  const timer = setTimeout(() => {
-                    checkNumberDuplicate(val, formData.dc_date);
-                  }, 500);
-
-                  setDebounceTimer(timer);
-                }}
+                value={header.dc_number}
+                onChange={(e) => updateHeader("dc_number", e.target.value)}
+                onBlur={() => checkNumberDuplicate(header.dc_number, header.dc_date)}
+                placeholder="Ex. DC/001/24-25"
                 className={cn(
-                  "font-medium tabular-nums",
-                  isDuplicate
-                    ? "border-app-status-error text-app-status-error focus:ring-app-status-error/10"
-                    : "text-app-fg"
+                  "font-medium transition-all shadow-sm focus:ring-2",
+                  isDuplicateNumber
+                    ? "border-app-status-error focus:ring-app-status-error/20"
+                    : isCheckingNumber
+                      ? "border-app-accent focus:ring-app-accent/20"
+                      : "border-app-border focus:ring-app-accent/10"
                 )}
-                placeholder="DC/001/24-25"
               />
-              {isChecking && (
-                <SmallText className="text-app-fg-muted animate-pulse">
-                  Checking uniqueness...
-                </SmallText>
+              {isCheckingNumber && (
+                <div className="flex items-center gap-2 text-xs text-app-accent mt-1">
+                  <Loader2 className="w-3 h-3 animate-spin" /> Checking availability...
+                </div>
               )}
-              {isDuplicate && (
-                <SmallText className="text-app-status-error font-medium">
-                  {conflictType === "Invoice"
-                    ? `⚠️ Invoice #${formData.dc_number} already exists in this FY`
-                    : `This DC number already exists in this FY`}
-                </SmallText>
+              {isDuplicateNumber && (
+                <div className="flex items-center gap-2 text-xs text-app-status-error mt-1 font-medium">
+                  <AlertCircle className="w-3 h-3" />
+                  {conflictType === "DC"
+                    ? "This DC Number already exists"
+                    : "DC Number conflicts with " + conflictType}
+                </div>
               )}
+            </div>
 
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-app-fg-muted">
-                DC Date
-              </Label>
-              <div className="bg-app-surface-hover/30 backdrop-blur-md px-3 py-1.5 rounded-xl border border-app-border shadow-sm focus-within:ring-2 focus-within:ring-app-accent/10 transition-all flex items-center gap-2">
-                <Calendar size={14} className="text-app-accent" />
-                <Input
-                  id="dc-date"
-                  name="dc-date"
-                  type="date"
-                  value={formData.dc_date}
-                  onChange={(e) => setFormData({ ...formData, dc_date: e.target.value })}
-                  className="text-app-fg bg-transparent border-none p-0 focus:ring-0 cursor-pointer text-sm font-medium"
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-app-fg-muted">
-                Supplier Phone
-              </Label>
+            <div className="space-y-2">
+              <Label>DC DATE</Label>
               <Input
-                id="supplier-phone"
-                name="supplier-phone"
-                value={formData.supplier_phone}
-                onChange={(e) => setFormData({ ...formData, supplier_phone: e.target.value })}
-                className="font-medium text-app-fg"
+                type="date"
+                value={header.dc_date}
+                onChange={(e) => {
+                  const d = e.target.value;
+                  updateHeader("dc_date", d);
+                  if (header.dc_number) checkNumberDuplicate(header.dc_number, d);
+                }}
+                className="font-medium"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-app-fg-muted">
-                Supplier GSTIN
-              </Label>
+
+            <div className="space-y-2">
+              <Label>SUPPLIER PHONE</Label>
               <Input
-                id="supplier-gstin"
-                name="supplier-gstin"
-                value={formData.supplier_gstin}
-                onChange={(e) => setFormData({ ...formData, supplier_gstin: e.target.value })}
-                className="font-medium text-sys-primary"
+                value={header.supplier_phone}
+                onChange={(e) => updateHeader("supplier_phone", e.target.value)}
+                className="font-medium bg-app-surface/50"
+                readOnly
               />
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-app-fg-muted">
-                Consignee Name
-              </Label>
+
+            <div className="space-y-2">
+              <Label>SUPPLIER GSTIN</Label>
               <Input
-                id="consignee-name"
-                name="consignee-name"
-                value={formData.consignee_name}
-                onChange={(e) => setFormData({ ...formData, consignee_name: e.target.value })}
-                className="font-medium text-sys-primary"
+                value={header.supplier_gstin}
+                onChange={(e) => updateHeader("supplier_gstin", e.target.value)}
+                className="font-medium bg-app-surface/50"
+                readOnly
               />
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-app-fg-muted">
-                Consignee Address
-              </Label>
-              <textarea
-                id="consignee-address"
-                name="consignee-address"
-                value={formData.consignee_address}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    consignee_address: e.target.value,
-                  })
-                }
-                className="w-full px-3 py-2 text-sys-primary bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-950/10 focus:border-slate-300 resize-none transition-all"
-                rows={2}
+
+            <div className="space-y-2">
+              <Label>CONSIGNEE NAME</Label>
+              <Input
+                value={header.consignee_name}
+                onChange={(e) => updateHeader("consignee_name", e.target.value)}
+                className="font-medium"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>CONSIGNEE ADDRESS</Label>
+              <Input
+                value={header.consignee_address}
+                onChange={(e) => updateHeader("consignee_address", e.target.value)}
+                className="font-medium truncate"
+                title={header.consignee_address}
               />
             </div>
           </div>
@@ -394,132 +392,152 @@ function CreateDCPageContent() {
 
         {/* Items Table */}
         {items.length > 0 && (
-          <Card className="surface-claymorphic shadow-clay-surface p-0 overflow-hidden border-none">
-            <div className="px-6 py-4 bg-app-surface-hover/30 border-b border-app-border/10 flex items-center justify-between">
-              <H3 className="font-medium text-app-fg text-sm">
-                Dispatch Items ({items.length})
-              </H3>
-            </div>
-            <div className="overflow-x-auto">
+          <div className="space-y-3">
+            <Label className="m-0 mb-1">
+              Dispatch Items ({items.length})
+            </Label>
+            <div className="table-container shadow-premium-hover">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[var(--color-sys-text-tertiary)]/10 bg-[var(--color-sys-bg-tertiary)]/10">
-                    <th className="py-3 px-6 text-left">
-                      <Label className="text-app-fg-muted">
-                        Lot
-                      </Label>
+                  <tr className="border-b border-app-border/10 bg-app-overlay/5">
+                    <th className="py-3 px-2 text-left w-[60px]">
+                      <Label>Lot</Label>
                     </th>
-                    <th className="py-3 px-6 text-left">
-                      <Label className="text-app-fg-muted">
-                        Description
-                      </Label>
+                    <th className="py-3 px-2 text-left w-[120px]">
+                      <Label>Code</Label>
                     </th>
-                    <th className="py-3 px-6 text-right">
-                      <Label className="text-app-fg-muted">
-                        Ord
-                      </Label>
+                    <th className="py-3 px-2 text-left w-[120px]">
+                      <Label>Drawing</Label>
                     </th>
-                    <th className="py-3 px-6 text-right">
-                      <Label className="text-app-fg-muted">
-                        Rec
-                      </Label>
+                    <th className="py-3 px-2 text-left w-[200px]">
+                      <Label>Description</Label>
                     </th>
-                    <th className="py-3 px-6 text-right">
-                      <Label className="text-app-fg-muted">
-                        Bal
-                      </Label>
+                    <th className="py-3 px-2 text-center w-[60px]">
+                      <Label>Unit</Label>
                     </th>
-                    <th className="py-3 px-6 text-right">
-                      <Label className="text-app-fg-muted">
-                        Dlv Qty
-                      </Label>
+                    <th className="py-3 px-2 text-right w-[80px]">
+                      <Label>Ord</Label>
+                    </th>
+                    <th className="py-3 px-2 text-right w-[80px]">
+                      <Label>Dlv</Label>
+                    </th>
+                    <th className="py-3 px-2 text-right w-[100px] bg-blue-50/10 dark:bg-blue-900/10">
+                      <Label className="text-blue-600 dark:text-blue-400">Disp</Label>
+                    </th>
+                    <th className="py-3 px-2 text-right w-[100px] bg-blue-50/10 dark:bg-blue-900/10">
+                      <Label className="text-blue-600 dark:text-blue-400">Bal</Label>
+                    </th>
+                    <th className="py-3 px-2 text-right w-[80px]">
+                      <Label>Recd</Label>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((item, idx) => {
-                    const isCompleted = (item.remaining_post_dc || 0) <= 0;
+                  {groupedItems.map((group, groupIdx) => {
+                    const parentItem = group[0];
+                    const totalOrd = group.reduce((sum, i) => sum + (i.ordered_quantity || 0), 0);
+                    const totalDlv = group.reduce((sum, i) => sum + (i.delivered_quantity || 0), 0);
+                    const totalRec = group.reduce((sum, i) => sum + (i.received_quantity || 0), 0);
+                    const totalBal = group.reduce((sum, i) => sum + (i.remaining_post_dc || 0), 0);
+                    const totalDisp = group.reduce((sum, i) => sum + (i.dispatch_quantity || 0), 0);
+
                     return (
-                      <tr
-                        key={item.id}
-                        className={cn(
-                          "border-b border-[var(--color-sys-text-tertiary)]/5 transition-colors",
-                          isCompleted
-                            ? "bg-slate-50/50 grayscale opacity-60"
-                            : "hover:bg-[var(--color-sys-bg-tertiary)]/5"
-                        )}
-                      >
-                        <td className="py-4 px-6">
-                          <MonoCode className="text-app-fg text-center block">
-                            {item.lot_no}
-                          </MonoCode>
-                        </td>
-                        <td className="py-4 px-6">
-                          <div className="flex flex-col">
-                            <Body className="text-app-fg leading-normal">
-                              {item.description}
+                      <React.Fragment key={parentItem.po_item_id}>
+                        <tr className="bg-app-overlay/5 border-b border-app-border/5">
+                          <td className="py-3 px-2 align-top">
+                            <MonoCode className="text-app-fg-muted/60">
+                              #{parentItem.po_item_no || groupIdx + 1}
+                            </MonoCode>
+                          </td>
+                          <td className="py-3 px-2 align-top">
+                            <Accounting className="text-app-fg-muted/60">{parentItem.material_code || "-"}</Accounting>
+                          </td>
+                          <td className="py-3 px-2 align-top">
+                            <SmallText className="text-app-fg-muted/50">{parentItem.drg_no || "-"}</SmallText>
+                          </td>
+                          <td className="py-3 px-2 align-top">
+                            <Body className="truncate max-w-[200px] text-app-fg-muted/70" title={parentItem.description}>
+                              {parentItem.description}
                             </Body>
-                            {item.drg_no && (
-                              <SmallText className="uppercase text-app-fg-muted mt-0.5">
-                                DRG: {item.drg_no}
-                              </SmallText>
-                            )}
-                            {isCompleted && (
-                              <Badge variant="outline" className="w-fit mt-1 text-xs px-1 py-0 border-green-200 text-green-700 bg-green-50">
-                                COMPLETED
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-4 px-6 text-right">
-                          <Accounting className="text-app-fg-muted text-right block">
-                            {item.ordered_quantity}
-                          </Accounting>
-                        </td>
-                        <td className="py-4 px-6 text-right">
-                          <Accounting className="text-app-fg-muted text-right block">
-                            {item.received_quantity || 0}
-                          </Accounting>
-                        </td>
-                        <td className="py-4 px-6 text-right">
-                          <Accounting className={cn(
-                            "text-right block",
-                            isCompleted ? "text-app-status-success font-medium" : "text-app-fg-muted"
-                          )}>
-                            {item.remaining_post_dc}
-                          </Accounting>
-                        </td>
-                        <td className="py-4 px-6">
-                          <Input
-                            type="number"
-                            disabled={isCompleted}
-                            value={item.dispatch_quantity || ""}
-                            onChange={(e) => {
-                              const newItems = [...items];
-                              newItems[idx].dispatch_quantity = parseFloat(e.target.value) || 0;
-                              setItems(newItems);
-                            }}
-                            className={cn(
-                              "text-right max-w-[100px] ml-auto font-mono h-9",
-                              isCompleted
-                                ? "bg-slate-100 text-slate-400 cursor-not-allowed border-transparent"
-                                : "border-app-fg-muted/20 focus:ring-app-accent/5"
-                            )}
-                            placeholder={isCompleted ? "-" : "0"}
-                          />
-                        </td>
-                      </tr>
+                          </td>
+                          <td className="py-3 px-2 align-top text-center">
+                            <SmallText className="uppercase text-app-fg-muted/50">{parentItem.unit}</SmallText>
+                          </td>
+                          <td className="py-3 px-2 align-top text-right">
+                            <Accounting className="text-app-fg-muted/60">{totalOrd}</Accounting>
+                          </td>
+                          <td className="py-3 px-2 align-top text-right">
+                            <Accounting className="text-app-fg-muted/60">{totalDlv}</Accounting>
+                          </td>
+                          <td className="py-3 px-2 align-top text-right bg-blue-50/5 dark:bg-blue-900/5">
+                            <Accounting className="text-blue-600/60 dark:text-blue-400/60">{totalDisp}</Accounting>
+                          </td>
+                          <td className="py-3 px-2 align-top text-right bg-blue-50/5 dark:bg-blue-900/5">
+                            <Accounting className="text-blue-600/60 dark:text-blue-400/60">{totalBal}</Accounting>
+                          </td>
+                          <td className="py-3 px-2 align-top text-right">
+                            <Accounting className="text-app-fg-muted/60">{totalRec}</Accounting>
+                          </td>
+                        </tr>
+
+                        {group.map((item) => {
+                          const originalIndex = items.findIndex(i => i.id === item.id);
+
+                          return (
+                            <tr key={item.id} className="bg-app-surface transition-colors border-b border-app-border/5">
+                              <td className="py-2 px-0 relative">
+                                {/* Visual Indent Pipe */}
+                                <div className="absolute left-[30px] top-0 bottom-0 w-[2px] bg-app-accent/20" />
+                                <div className="flex items-center gap-2 pl-[38px]">
+                                  <span className="text-app-accent/30" style={{ fontSize: '10px' }}>L</span>
+                                  <MonoCode className="text-app-fg-muted">L-{item.lot_no}</MonoCode>
+                                </div>
+                              </td>
+                              <td colSpan={4} />
+                              <td className="py-2 px-2 text-right">
+                                <Accounting className="text-app-fg-muted">{item.ordered_quantity}</Accounting>
+                              </td>
+                              <td className="py-2 px-2 text-right">
+                                <Accounting className="text-app-fg-muted">{item.delivered_quantity}</Accounting>
+                              </td>
+                              <td className="py-2 px-2 bg-blue-50/5 dark:bg-blue-900/5">
+                                <Input
+                                  type="number"
+                                  value={item.dispatch_quantity || ""}
+                                  onChange={(e) => {
+                                    const val = parseFloat(e.target.value) || 0;
+                                    const originalRem = items[originalIndex].original_remaining ?? items[originalIndex].remaining_post_dc ?? 0;
+                                    const validDispatch = Math.min(Math.max(0, val), originalRem);
+                                    const newBalance = Math.max(0, originalRem - validDispatch);
+
+                                    updateItem(originalIndex, "dispatch_quantity", validDispatch);
+                                    updateItem(originalIndex, "remaining_post_dc", newBalance);
+                                  }}
+                                  className="text-right w-full font-mono h-7 text-xs border-blue-200 dark:border-blue-800 focus:ring-blue-500/20"
+                                  placeholder="0"
+                                />
+                              </td>
+                              <td className="py-2 px-2 text-right bg-blue-50/5 dark:bg-blue-900/5">
+                                <Accounting className="text-blue-600 dark:text-blue-400">{item.remaining_post_dc}</Accounting>
+                              </td>
+                              <td className="py-2 px-2 text-right">
+                                <Accounting className="text-app-fg-muted">{item.received_quantity}</Accounting>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
               </table>
             </div>
-          </Card>
+          </div>
         )}
 
         {/* Notes */}
-        <Card className="surface-claymorphic shadow-clay-surface p-6">
-          <Label className="text-app-fg-muted mb-4 block">
+        <Card className="p-6 border-none bg-app-surface/50">
+          <Label className="mb-4 block">
             Additional Notes
           </Label>
           <div className="space-y-3">
@@ -527,18 +545,14 @@ function CreateDCPageContent() {
               <div key={`lot-${idx}`} className="flex gap-2">
                 <Input
                   value={note}
-                  onChange={(e) => {
-                    const newNotes = [...notes];
-                    newNotes[idx] = e.target.value;
-                    setNotes(newNotes);
-                  }}
+                  onChange={(e) => updateNote(idx, e.target.value)}
                   placeholder="Enter additional information..."
                   className="font-medium text-app-fg"
                 />
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setNotes(notes.filter((_, i) => i !== idx))}
+                  onClick={() => removeNote(idx)}
                   className="text-app-fg-muted hover:text-app-status-error"
                 >
                   <Trash2 size={16} />
@@ -548,8 +562,8 @@ function CreateDCPageContent() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setNotes([...notes, ""])}
-              className="border-dashed border-2 border-app-fg-muted/20 hover:border-app-accent/30"
+              onClick={addNote}
+              className="border-dashed border-2 border-app-border/50 hover:border-app-accent/30"
             >
               <Plus size={16} className="mr-2" />
               Add Line Note
@@ -568,6 +582,3 @@ export default function CreateDCPage() {
     </Suspense>
   );
 }
-
-
-

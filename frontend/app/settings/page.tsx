@@ -154,17 +154,28 @@ export default function SettingsPage() {
 
   const handleSystemReset = async () => {
     setIsResetting(true);
+    setError(null);
     try {
       const response = await fetch(`${api.baseUrl}/api/system/reset-db`, {
         method: "POST",
       });
+      const data = await response.json();
+
       if (response.ok) {
+        const clearedCount = data.tables_cleared?.length || 0;
+        const preservedList = data.preserved?.join(", ") || "None";
+        alert(
+          `✅ ${data.message || "Database reset successfully."}\n\n` +
+          `Business Entities Purged: ${clearedCount}\n` +
+          `Configuration Preserved: ${preservedList}\n\n` +
+          `Returning to dashboard.`
+        );
         window.location.href = "/";
       } else {
-        setError("System reset failed.");
+        setError(data.detail || "System reset failed. Database might be locked by another process.");
       }
-    } catch {
-      setError("Network error during reset.");
+    } catch (err: any) {
+      setError(`Network error: ${err.message || "Could not reach server"}`);
     } finally {
       setIsResetting(false);
       setShowResetConfirm(false);

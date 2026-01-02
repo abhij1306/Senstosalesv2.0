@@ -287,6 +287,9 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
                 if override_rate is not None:
                     rate = float(override_rate)
 
+            if qty <= 0:
+                continue
+
             taxable_value = round(qty * rate, 2)
 
             tax_calc = calculate_tax(taxable_value)
@@ -391,8 +394,8 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
                 INSERT INTO gst_invoice_items (
                     id, invoice_number, description, quantity, unit, rate, 
                     taxable_value, cgst_amount, sgst_amount, 
-                    igst_amount, total_amount
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    igst_amount, total_amount, po_sl_no, hsn_sac
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 (
                     str(uuid.uuid4()),
@@ -405,7 +408,9 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
                     item["cgst_amount"],
                     item["sgst_amount"],
                     item["igst_amount"],
-                    item["total_amount"]
+                    item["total_amount"],
+                    item["po_sl_no"],  # CRITICAL: Required for PO linking
+                    item["hsn_sac"]    # CRITICAL: Required for Tax
                 ),
             )
 

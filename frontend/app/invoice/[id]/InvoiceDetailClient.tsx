@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import { Printer, FileDown, Receipt } from "lucide-react";
+import { Printer, FileDown, Receipt, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { API_BASE_URL } from "@/lib/api";
-import { formatDate, formatIndianCurrency, amountInWords } from "@/lib/utils";
+import { formatDate, formatIndianCurrency, cn, amountInWords } from "@/lib/utils";
 import { dcRoute } from "@/lib/routes";
 import {
+    H3,
     Body,
     SmallText,
     Label,
@@ -18,23 +19,12 @@ import {
     TabsTrigger,
     TabsContent,
     DocumentTemplate,
-    type Column,
+    MonoCode,
 } from "@/components/design-system";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
-
-const DataTable = dynamic(
-    () =>
-        import("@/components/design-system/organisms/DataTable").then(
-            (mod) => mod.DataTable,
-        ),
-    {
-        loading: () => (
-            <div className="h-64 w-full bg-app-surface-hover rounded-xl animate-pulse" />
-        ),
-        ssr: false,
-    },
-);
+import { useInvoiceStore } from "@/store/invoiceStore";
+import { InvoiceDetail } from "@/types";
 
 const DocumentJourney = dynamic(
     () =>
@@ -48,14 +38,49 @@ const DocumentJourney = dynamic(
 );
 
 interface InvoiceDetailClientProps {
-    data: any;
+    data: InvoiceDetail;
 }
 
-export default function InvoiceDetailClient({ data }: InvoiceDetailClientProps) {
+export default function InvoiceDetailClient({ data: initialData }: InvoiceDetailClientProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState("buyer");
+    const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
-    if (!data || !data.header) return null;
+    const {
+        data,
+        setInvoice,
+    } = useInvoiceStore();
+
+    useEffect(() => {
+        if (initialData) {
+            setInvoice(initialData);
+        }
+    }, [initialData, setInvoice]);
+
+    // Group items for Parent-Lot hierarchy
+    const groupedItems = useMemo(() => {
+        if (!data?.items) return [];
+        const items = data.items;
+        return Object.values(items.reduce((acc, item) => {
+            const key = item.description || "item";
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(item);
+            return acc;
+        }, {} as Record<string, typeof items>));
+    }, [data?.items]);
+
+    const toggleItem = (key: string) => {
+        const newSet = new Set(expandedItems);
+        if (newSet.has(key)) newSet.delete(key);
+        else newSet.add(key);
+        setExpandedItems(newSet);
+    };
+
+    if (!data || !data.header) return (
+        <div className="flex items-center justify-center min-h-[400px]">
+            <Loader2 className="animate-spin text-app-accent" size={32} />
+        </div>
+    );
 
     const { header, items = [] } = data;
 
@@ -65,7 +90,7 @@ export default function InvoiceDetailClient({ data }: InvoiceDetailClientProps) 
                 variant="secondary"
                 size="sm"
                 asChild
-                className="bg-app-status-success/10 text-app-status-success hover:bg-app-status-success/20"
+                className="bg-app-status-success/10 text-app-status-success hover:bg-app-status-success/20 border-app-status-success/20"
             >
                 <a
                     href={`${API_BASE_URL}/api/invoice/${encodeURIComponent(header.invoice_number)}/download`}
@@ -75,107 +100,11 @@ export default function InvoiceDetailClient({ data }: InvoiceDetailClientProps) 
                     <FileDown size={16} className="mr-2" /> Excel
                 </a>
             </Button>
-            <Button variant="secondary" size="sm" onClick={useCallback(() => window.print(), [])}>
-                <Printer size={16} /> Print
+            <Button variant="secondary" size="sm" onClick={() => window.print()} className="border-app-border/20">
+                <Printer size={16} className="mr-2" /> Print
             </Button>
         </div>
     );
-
-    const itemColumns: Column<any>[] = [
-        {
-            key: "material_code",
-            label: "Code",
-            width: "12%",
-            render: (v) => <Accounting className="text-app-fg-muted">{v}</Accounting>,
-        },
-        {
-            key: "description",
-            label: "Description",
-            width: "32%",
-            render: (_v, row) => (
-                <div className="space-y-0.5">
-                    <Body className="text-app-fg">
-                        {row.material_description || row.description}
-                    </Body>
-                    {row.drg_no && (
-                        <SmallText className="text-app-accent">
-                            DRG: {row.drg_no}
-                        </SmallText>
-                    )}
-                </div>
-            ),
-        },
-        {
-            key: "ordered_quantity",
-            label: "Ord",
-            align: "right",
-            width: "8%",
-            isNumeric: true,
-            render: (v: any) => (
-                <Accounting className="table-cell-number text-right block">
-                    {v}
-                </Accounting>
-            ),
-        },
-        {
-            key: "dispatched_quantity",
-            label: "Dlv",
-            align: "right",
-            width: "8%",
-            isNumeric: true,
-            render: (v: any) => (
-                <Accounting className="table-cell-number text-right block">
-                    {v}
-                </Accounting>
-            ),
-        },
-        {
-            key: "quantity",
-            label: "Inv",
-            align: "right",
-            width: "8%",
-            isNumeric: true,
-            render: (v) => (
-                <Accounting variant="success" className="text-right block">
-                    {v || 0}
-                </Accounting>
-            ),
-        },
-        {
-            key: "unit",
-            label: "Unit",
-            width: "6%",
-            render: (v) => (
-                <SmallText className="text-app-fg-muted uppercase font-bold tracking-[0.1em]">
-                    {v}
-                </SmallText>
-            ),
-        },
-        {
-            key: "rate",
-            label: "Rate",
-            align: "right",
-            width: "10%",
-            isCurrency: true,
-            render: (v: any) => (
-                <Accounting className="table-cell-number text-right block">
-                    {formatIndianCurrency(v)}
-                </Accounting>
-            ),
-        },
-        {
-            key: "amount",
-            label: "Amount",
-            align: "right",
-            width: "10%",
-            isCurrency: true,
-            render: (v: any) => (
-                <Accounting className="table-cell-number text-right block">
-                    {formatIndianCurrency(v)}
-                </Accounting>
-            ),
-        },
-    ];
 
     return (
         <DocumentTemplate
@@ -190,132 +119,60 @@ export default function InvoiceDetailClient({ data }: InvoiceDetailClientProps) 
             <div className="space-y-6">
                 <DocumentJourney currentStage="Invoice" className="mb-2" />
 
-                {/* Invoice Info Tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="mb-4 bg-transparent p-0 border-none shadow-none">
+                    <TabsList className="mb-4 bg-app-overlay/5 p-1 border border-app-border/10 rounded-xl inline-flex">
                         <TabsTrigger value="buyer">Buyer</TabsTrigger>
-                        <TabsTrigger value="references">Order Refs</TabsTrigger>
+                        <TabsTrigger value="references">References</TabsTrigger>
                         <TabsTrigger value="logistics">Logistics</TabsTrigger>
                     </TabsList>
+
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={activeTab}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -5 }}
                             transition={{ duration: 0.15 }}
                         >
-                            <Card className="p-6 mt-0 border-none shadow-sm bg-app-surface/50 backdrop-blur-sm relative top-[-1px]">
+                            <Card className="p-6 mt-0 border-none shadow-sm bg-app-surface/50 backdrop-blur-md">
                                 <TabsContent value="buyer" className="mt-0">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-1.5">
-                                            <Label>Buyer Name</Label>
-                                            <Body className="text-app-fg font-medium">
+                                            <Label className="uppercase tracking-widest text-app-fg-muted">Buyer Name</Label>
+                                            <H3 className="text-app-fg text-xl leading-none">
                                                 {header.buyer_name || "-"}
-                                            </Body>
+                                            </H3>
                                         </div>
                                         <div className="space-y-1.5">
-                                            <Label>Buyer GSTIN</Label>
-                                            <Accounting>{header.buyer_gstin || "-"}</Accounting>
+                                            <Label className="uppercase tracking-widest text-app-fg-muted">Buyer GSTIN</Label>
+                                            <Accounting className="text-app-accent text-xl leading-none">{header.buyer_gstin || "-"}</Accounting>
                                         </div>
-                                        <div className="space-y-1.5 col-span-2">
-                                            <Label>Buyer Address</Label>
-                                            <Body className="text-app-fg font-medium">
+                                        <div className="space-y-1.5 col-span-2 pt-4 border-t border-app-border/5">
+                                            <Label className="uppercase tracking-widest text-app-fg-muted">Billing Address</Label>
+                                            <Body className="text-app-fg leading-relaxed max-w-3xl">
                                                 {header.buyer_address || "-"}
                                             </Body>
                                         </div>
                                     </div>
                                 </TabsContent>
+
                                 <TabsContent value="references" className="mt-0">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div className="space-y-1.5">
-                                            <Label>Buyer&apos;s Order No</Label>
-                                            <Accounting>{header.buyers_order_no || "-"}</Accounting>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label>Order Date</Label>
-                                            <Body className="text-app-fg font-medium">
-                                                {header.buyers_order_date
-                                                    ? formatDate(header.buyers_order_date)
-                                                    : "-"}
-                                            </Body>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label>Challan Number</Label>
-                                            <Accounting
-                                                className="text-app-accent cursor-pointer hover:underline"
-                                                onClick={() => router.push(dcRoute(header.dc_number))}
-                                            >
-                                                {header.dc_number || "-"}
-                                            </Accounting>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label>GEMC Number</Label>
-                                            <Body className="text-app-fg font-medium">
-                                                {header.gemc_number || "-"}
-                                            </Body>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label>GEMC Date</Label>
-                                            <Body className="text-app-fg font-medium">
-                                                {header.gemc_date
-                                                    ? formatDate(header.gemc_date)
-                                                    : "-"}
-                                            </Body>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            {/* Spacer */}
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label>SRV Number</Label>
-                                            <Body className="text-app-fg font-medium">
-                                                {header.srv_no || "-"}
-                                            </Body>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label>SRV Date</Label>
-                                            <Body className="text-app-fg font-medium">
-                                                {header.srv_date
-                                                    ? formatDate(header.srv_date)
-                                                    : "-"}
-                                            </Body>
-                                        </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">Order Number</Label><Accounting className="text-app-fg">{header.buyers_order_no || "-"}</Accounting></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">Order Date</Label><Body className="text-app-fg">{header.buyers_order_date ? formatDate(header.buyers_order_date) : "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">Linked DC</Label><Accounting className="text-app-accent cursor-pointer hover:underline" onClick={() => router.push(header.dc_number ? dcRoute(header.dc_number) : "#")}>{header.dc_number || "-"}</Accounting></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">Challan Date</Label><Body className="text-app-fg">{header.dc_date ? formatDate(header.dc_date) : "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">GEMC Number</Label><Body className="text-app-fg">{header.gemc_number || "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">SRV Number</Label><Body className="text-app-fg">{header.srv_no || "-"}</Body></div>
                                     </div>
                                 </TabsContent>
+
                                 <TabsContent value="logistics" className="mt-0">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-1.5">
-                                            <Label>Dispatch Through</Label>
-                                            <Body className="text-app-fg font-medium">
-                                                {header.dispatch_through || "-"}
-                                            </Body>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label>Destination</Label>
-                                            <Body className="text-app-fg font-medium">
-                                                {header.destination || "-"}
-                                            </Body>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label>Terms of Delivery</Label>
-                                            <Body className="text-app-fg font-medium">
-                                                {header.terms_of_delivery || "-"}
-                                            </Body>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label>Despatch Document No</Label>
-                                            <Body className="text-app-fg font-medium">
-                                                {header.despatch_doc_no || "-"}
-                                            </Body>
-                                        </div>
-                                        <div className="space-y-1.5 col-span-2">
-                                            <Label>Payment Terms</Label>
-                                            <Body className="text-app-fg font-medium">
-                                                {header.payment_terms ||
-                                                    header.mode_of_payment ||
-                                                    "45 Days"}
-                                            </Body>
-                                        </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">Vehicle No</Label><Body className="text-app-fg">{header.vehicle_no || "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">LR Number</Label><Body className="text-app-fg">{header.lr_no || "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">Transporter</Label><Body className="text-app-fg">{header.transporter || "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">Payment Terms</Label><Body className="text-app-fg text-app-accent">{header.payment_terms || "45 Days"}</Body></div>
                                     </div>
                                 </TabsContent>
                             </Card>
@@ -324,61 +181,107 @@ export default function InvoiceDetailClient({ data }: InvoiceDetailClientProps) 
                 </Tabs>
 
                 {/* Items Table */}
-                <div className="space-y-3">
-                    <SmallText className="m-0 mb-3 text-app-fg-muted uppercase tracking-wider font-bold block">
-                        Invoice Items ({items.length})
-                    </SmallText>
-                    <div className="surface-card bg-app-border/30">
-                        <div className="bg-app-surface">
-                            <DataTable
-                                columns={itemColumns}
-                                data={items.map((item: any, idx: number) => ({
-                                    ...item,
-                                    _uniqueKey: `item-${idx}-${item.id || idx}`,
-                                }))}
-                                keyField="_uniqueKey"
-                                density="compact"
-                            />
-                        </div>
+                <div className="space-y-4">
+                    <Label className="m-0 text-app-fg-muted uppercase tracking-widest">
+                        Billing Structure ({items.length} Items)
+                    </Label>
+                    <div className="table-container shadow-premium-hover border-none bg-app-surface/30">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="border-b border-app-border/10 bg-app-overlay/10">
+                                    <th className="py-3 px-4 w-[60px]"><Label>#</Label></th>
+                                    <th className="py-3 px-4"><Label>Description</Label></th>
+                                    <th className="py-3 px-4 w-[120px]"><Label>HSN/SAC</Label></th>
+                                    <th className="py-3 px-4 text-right w-[100px]"><Label>Qty</Label></th>
+                                    <th className="py-3 px-4 text-right w-[120px]"><Label>Rate</Label></th>
+                                    <th className="py-3 px-4 text-right w-[140px] bg-blue-50/10 dark:bg-blue-900/10"><Label className="text-blue-600 dark:text-blue-400">Taxable</Label></th>
+                                    <th className="py-3 px-4 text-right w-[100px]"><Label>Recd</Label></th>
+                                    <th className="py-3 px-4 w-[50px]"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {groupedItems.map((group, groupIdx) => {
+                                    const parent = group[0];
+                                    const parentKey = parent.description || `item-${groupIdx}`;
+                                    const isExpanded = expandedItems.has(parentKey);
+                                    const tQty = group.reduce((sum, i) => sum + (i.quantity || 0), 0);
+                                    const tVal = group.reduce((sum, i) => sum + (i.taxable_value || i.amount || 0), 0);
+                                    const tRec = group.reduce((sum, i) => sum + (i.received_qty || 0), 0);
+
+                                    return (
+                                        <React.Fragment key={parentKey}>
+                                            <tr className={cn("transition-colors border-b border-app-border/5", isExpanded ? "bg-app-overlay/10" : "bg-app-overlay/5")}>
+                                                <td className="py-3 px-4"><MonoCode className="text-app-accent/60">#S</MonoCode></td>
+                                                <td className="py-3 px-4">
+                                                    <Body className="text-app-fg-muted/90">{parent.description}</Body>
+                                                    {parent.material_code && <SmallText className="text-app-fg-muted/40 uppercase tracking-tighter">Code: {parent.material_code}</SmallText>}
+                                                </td>
+                                                <td className="py-3 px-4"><SmallText className="text-app-fg-muted/40 uppercase tracking-widest">{parent.hsn_sac || "-"}</SmallText></td>
+                                                <td className="py-3 px-4 text-right"><Accounting className="text-app-fg-muted/70">{tQty}</Accounting></td>
+                                                <td className="py-3 px-4 text-right"><Accounting className="text-app-fg-muted/40">{parent.rate}</Accounting></td>
+                                                <td className="py-3 px-4 text-right bg-blue-50/5 dark:bg-blue-900/5"><Accounting className="text-blue-600/60 dark:text-blue-400/60">{tVal}</Accounting></td>
+                                                <td className="py-3 px-4 text-right"><Accounting className="text-app-fg-muted/70">{tRec}</Accounting></td>
+                                                <td className="py-3 px-4 text-center">
+                                                    <button onClick={() => toggleItem(parentKey)} className="p-1.5 rounded-md hover:bg-app-accent/10 hover:text-app-accent transition-all text-app-fg-muted/30">
+                                                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {isExpanded && group.map((item, idx) => (
+                                                <tr key={idx} className="bg-app-surface border-b border-app-border/5">
+                                                    <td className="py-2 px-0 relative">
+                                                        <div className="absolute left-[30px] top-0 bottom-0 w-[2px] bg-app-accent/20" />
+                                                        <div className="flex items-center gap-2 pl-[38px]">
+                                                            <span className="text-app-accent/30" style={{ fontSize: '10px' }}>L</span>
+                                                            <MonoCode className="text-app-fg-muted">L-{item.po_sl_no}</MonoCode>
+                                                        </div>
+                                                    </td>
+                                                    <td colSpan={2} />
+                                                    <td className="py-2 px-4 text-right"><Accounting className="text-app-fg-muted">{item.quantity}</Accounting></td>
+                                                    <td className="py-2 px-4 text-right" />
+                                                    <td className="py-2 px-4 text-right bg-blue-50/5 dark:bg-blue-900/5">
+                                                        <Accounting className="text-blue-600 dark:text-blue-400">{item.taxable_value || item.amount}</Accounting>
+                                                    </td>
+                                                    <td className="py-2 px-4 text-right"><Accounting className="text-app-fg-muted">{item.received_qty || 0}</Accounting></td>
+                                                    <td />
+                                                </tr>
+                                            ))}
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
                 {/* Totals */}
-                <Card className="p-6 bg-[var(--color-sys-bg-secondary)]/50 border-none shadow-sm">
-                    <div className="grid grid-cols-2 gap-4 max-w-sm ml-auto">
-                        <Label className="uppercase tracking-widest text-app-fg-muted flex items-center">
-                            Taxable Value:
-                        </Label>
-                        <Accounting className="text-right">
-                            {formatIndianCurrency(header.total_taxable_value)}
-                        </Accounting>
-                        <Label className="uppercase tracking-widest text-app-fg-muted flex items-center">
-                            CGST @ 9%:
-                        </Label>
-                        <Accounting className="text-right">
-                            {formatIndianCurrency(header.cgst_total)}
-                        </Accounting>
-                        <Label className="uppercase tracking-widest text-app-fg-muted flex items-center">
-                            SGST @ 9%:
-                        </Label>
-                        <Accounting className="text-right">
-                            {formatIndianCurrency(header.sgst_total)}
-                        </Accounting>
-                        <div className="col-span-2 shadow-inner my-2 h-px bg-app-border/20" />
-                        <Label className="text-sys-secondary flex items-center">
-                            Grand Total:
-                        </Label>
-                        <Accounting className="text-right text-app-fg">
-                            {formatIndianCurrency(header.total_invoice_value)}
-                        </Accounting>
-                        <div className="col-span-2 mt-4 space-y-1 bg-[var(--color-sys-bg-surface)]/50 p-3 rounded-lg shadow-sm">
-                            <Label className="text-sys-tertiary"> Amount in words </Label>
-                            <Body className="text-app-fg-muted italic lowercase first-letter:uppercase">
-                                {amountInWords(header.total_invoice_value)} Only
-                            </Body>
-                        </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
+                    <div className="lg:col-start-2">
+                        <Card className="p-8 bg-app-surface/50 border-none shadow-premium-hover backdrop-blur-xl">
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center pb-2 border-b border-app-border/10">
+                                    <Label className="uppercase tracking-widest text-app-fg-muted">Net Taxable Value</Label>
+                                    <Accounting className="text-xl text-app-fg">{header.total_taxable_value || header.taxable_value}</Accounting>
+                                </div>
+                                <div className="flex justify-between items-center text-app-fg-muted">
+                                    <Label className="uppercase tracking-widest">Total GST (CGST + SGST)</Label>
+                                    <Accounting className="text-sm">{((header.cgst_total || header.cgst || 0) + (header.sgst_total || header.sgst || 0)).toFixed(2)}</Accounting>
+                                </div>
+                                <div className="pt-6 mt-4 border-t border-app-border/20 flex justify-between items-end">
+                                    <div className="space-y-2">
+                                        <Label className="uppercase text-app-accent tracking-widest">Grand Total</Label>
+                                        <SmallText className="text-app-fg-muted block max-w-[280px] leading-snug italic lowercase first-letter:uppercase">
+                                            {amountInWords(header.total_invoice_value || 0)} Only
+                                        </SmallText>
+                                    </div>
+                                    <Accounting className="text-4xl text-app-fg tracking-tighter leading-none">
+                                        {header.total_invoice_value || 0}
+                                    </Accounting>
+                                </div>
+                            </div>
+                        </Card>
                     </div>
-                </Card>
+                </div>
             </div>
         </DocumentTemplate>
     );

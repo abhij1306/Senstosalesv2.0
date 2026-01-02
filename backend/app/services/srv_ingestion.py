@@ -190,20 +190,40 @@ def ingest_srv_to_db(
             db.execute(
                 """
                 INSERT INTO srv_items 
-                (srv_number, po_number, po_item_no, lot_no, received_qty, rejected_qty, 
-                 challan_no, created_at)
+                (srv_number, po_number, po_item_no, lot_no, srv_item_no, rev_no, 
+                 received_qty, rejected_qty, accepted_qty, order_qty, challan_qty, unit,
+                 challan_no, challan_date, invoice_no, invoice_date, 
+                 div_code, pmir_no, finance_date, cnote_no, cnote_date,
+                 created_at)
                 VALUES 
-                (:srv_number, :po_number, :po_item_no, :lot_no, :received_qty, :rejected_qty,
-                 :challan_no, :created_at)
+                (:srv_number, :po_number, :po_item_no, :lot_no, :srv_item_no, :rev_no,
+                 :received_qty, :rejected_qty, :accepted_qty, :order_qty, :challan_qty, :unit,
+                 :challan_no, :challan_date, :invoice_no, :invoice_date,
+                 :div_code, :pmir_no, :finance_date, :cnote_no, :cnote_date,
+                 :created_at)
             """,
                 {
                     "srv_number": header["srv_number"],
                     "po_number": header["po_number"],
                     "po_item_no": item["po_item_no"],
                     "lot_no": item.get("lot_no"),
+                    "srv_item_no": item.get("srv_item_no"),
+                    "rev_no": item.get("rev_no"),
                     "received_qty": received_qty,
                     "rejected_qty": rejected_qty,
+                    "accepted_qty": accepted_qty,
+                    "order_qty": item.get("order_qty", 0),
+                    "challan_qty": item.get("challan_qty", 0),
+                    "unit": item.get("unit"),
                     "challan_no": item.get("challan_no"),
+                    "challan_date": item.get("challan_date"),
+                    "invoice_no": item.get("invoice_no"),
+                    "invoice_date": item.get("invoice_date"),
+                    "div_code": item.get("div_code"),
+                    "pmir_no": item.get("pmir_no"),
+                    "finance_date": item.get("finance_date"),
+                    "cnote_no": item.get("cnote_no"),
+                    "cnote_date": item.get("cnote_date"),
                     "created_at": datetime.now().isoformat(),
                 },
             )
@@ -212,16 +232,12 @@ def ingest_srv_to_db(
         # 3. ATOMIC SYNC: Reconciliation Service
         from app.services.reconciliation_service import ReconciliationService
         
-        # We process all items for reconciliation
-        # Note: reconcile_srv_ingestion handles:
-        # 1. Update DC Item (received/accepted/rejected)
-        # 2. Update Lot Level (purchase_order_deliveries: received_qty)
-        # 3. Update Item Level (purchase_order_items: rcd_qty, rejected_qty) - replacing the manual update below
-        
         if po_found:
             ReconciliationService.reconcile_srv_ingestion(
                 db, items, header["srv_number"], header["po_number"]
             )
+            # Update PO status after receipt
+            ReconciliationService.sync_po_status(db, header["po_number"])
 
         # 4. Commit transaction
         db.commit()

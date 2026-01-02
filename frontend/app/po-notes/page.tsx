@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { api } from "@/lib/api";
 import { PONoteListClient } from "@/components/po-notes/PONoteListClient";
-import { PONotesSkeleton } from "@/components/design-system";
+import { PONotesSkeleton } from "@/components/po-notes/organisms/PONotesSkeleton";
 
 async function getTemplates() {
     try {

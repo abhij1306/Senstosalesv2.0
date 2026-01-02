@@ -1,0 +1,1 @@
+export { SRVDetailCard } from "./SRVDetailCard";

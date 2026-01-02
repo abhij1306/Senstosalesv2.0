@@ -68,7 +68,7 @@ export const Pagination = memo(({
     return (
         <div className={cn("flex flex-col sm:flex-row items-center justify-between gap-6 px-4 py-8 mt-12", className)}>
             <div className="flex-1">
-                <SmallText className="text-[12px] font-black uppercase tracking-[0.2em] opacity-40">
+                <SmallText className="text-[12px] font-bold uppercase tracking-[0.2em] opacity-40">
                     Showing <span className="text-app-fg opacity-100">{startItem}</span> to <span className="text-app-fg opacity-100">{endItem}</span> of <span className="text-app-accent opacity-100">{totalItems}</span> entries
                 </SmallText>
             </div>
@@ -77,7 +77,7 @@ export const Pagination = memo(({
                 <button
                     onClick={handlePrevious}
                     disabled={currentPage === 1}
-                    className="h-10 px-4 flex items-center gap-2 rounded-xl bg-app-surface border border-app-border/30 text-app-fg font-black text-[11px] uppercase tracking-widest transition-all hover:bg-app-fg/5 disabled:opacity-30 disabled:pointer-events-none active:scale-95"
+                    className="h-10 px-4 flex items-center gap-2 rounded-xl bg-app-surface border border-app-border/30 text-app-fg font-bold text-[11px] uppercase tracking-widest transition-all hover:bg-app-fg/5 disabled:opacity-30 disabled:pointer-events-none active:scale-95"
                 >
                     <ChevronLeft className="w-4 h-4" />
                     <SmallText className="hidden sm:inline font-bold">Prev</SmallText>
@@ -90,7 +90,7 @@ export const Pagination = memo(({
                             onClick={() => typeof page === "number" && onPageChange(page)}
                             disabled={typeof page !== "number"}
                             className={cn(
-                                "w-10 h-10 flex items-center justify-center rounded-xl font-black text-[11px] transition-all duration-300",
+                                "w-10 h-10 flex items-center justify-center rounded-xl font-bold text-[11px] transition-all duration-300",
                                 typeof page !== "number" && "pointer-events-none text-app-fg/20",
                                 typeof page === "number" && currentPage === page
                                     ? "active-glow text-white scale-110 shadow-lg shadow-app-accent/20"

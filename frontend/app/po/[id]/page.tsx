@@ -9,14 +9,19 @@ async function getPOData(id: string) {
     const poId = id;
     if (!poId) throw new Error("Invalid PO ID");
 
-    // Parallel Data Fetching (Zero Waterfall)
-    const [poData, dcCheck, srvData] = await Promise.all([
-        api.getPODetail(poId),
-        api.checkPOHasDC(poId).catch(() => null),
-        api.listSRVs(poId).catch(() => []),
-    ]);
-
-    return { poData, dcCheck, srvData };
+    // Parallel Data Fetching with Graceful Error Handling
+    try {
+        const [poData, dcCheck, srvData] = await Promise.all([
+            api.getPODetail(poId),
+            api.checkPOHasDC(poId).catch(() => null),
+            api.listSRVs(poId).catch(() => []),
+        ]);
+        return { poData, dcCheck, srvData };
+    } catch (error) {
+        console.error("Failed to fetch PO data:", error);
+        // Return null data so client component can render "Not Found" state
+        return { poData: null, dcCheck: null, srvData: [] };
+    }
 }
 
 // POContent component fetches its own data to enable Suspense
