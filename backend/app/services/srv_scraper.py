@@ -54,9 +54,7 @@ def scrape_srv_html(html_content: str) -> List[Dict]:
 
             for row in rows:
                 cells = row.find_all("td")
-                if len(cells) < 5 or (
-                    len(cells) == 1 and cells[0].get_text(strip=True) == ""
-                ):
+                if len(cells) < 5 or (len(cells) == 1 and cells[0].get_text(strip=True) == ""):
                     continue
 
                 # Parse the row
@@ -84,9 +82,7 @@ def scrape_srv_html(html_content: str) -> List[Dict]:
                 # Initialize group if not exists
                 if srv_number not in srv_groups:
                     # Extract Header Info from this row
-                    po_number_raw = get_cell_val(
-                        ["PO NO", "PURCHASE ORDER", "PO_NO", "PO NUMBER"]
-                    )
+                    po_number_raw = get_cell_val(["PO NO", "PURCHASE ORDER", "PO_NO", "PO NUMBER"])
                     # Keep as TEXT - do NOT convert to int (database schema changed to TEXT)
                     po_number = str(po_number_raw) if po_number_raw else None
                     srv_date = parse_date(get_cell_val(["SRV DATE", "DATE"]))
@@ -178,9 +174,7 @@ def parse_srv_item_row(cells: List, headers: List[str]) -> Optional[Dict]:
         )
 
         # Extract Rejected Quantity
-        item["rejected_qty"] = parse_decimal(
-            get_val(["REJ QTY", "REJECTED QTY", "REJECTED"])
-        )
+        item["rejected_qty"] = parse_decimal(get_val(["REJ QTY", "REJECTED QTY", "REJECTED"]))
 
         # Extract Accepted Quantity
         item["accepted_qty"] = parse_decimal(
@@ -198,8 +192,7 @@ def parse_srv_item_row(cells: List, headers: List[str]) -> Optional[Dict]:
 
         # Extract Challan Number
         item["challan_no"] = (
-            get_val(["CHALLAN NO", "CHALLAN", "DC NO", "DC NUMBER", "CHALLAN NUMBER"])
-            or None
+            get_val(["CHALLAN NO", "CHALLAN", "DC NO", "DC NUMBER", "CHALLAN NUMBER"]) or None
         )
 
         # Extract Challan Date
@@ -240,9 +233,7 @@ def parse_srv_item_row(cells: List, headers: List[str]) -> Optional[Dict]:
 
         # Extract Quantities
         item["order_qty"] = parse_decimal(
-            get_val(
-                ["ORDER QTY", "PO QTY", "ORDERED QTY", "PO QUANTITY", "ORDER QUANTITY"]
-            )
+            get_val(["ORDER QTY", "PO QTY", "ORDERED QTY", "PO QUANTITY", "ORDER QUANTITY"])
         )
         item["challan_qty"] = parse_decimal(
             get_val(["CHALLAN QTY", "DC QTY", "DC QUANTITY", "CHALLAN QUANTITY"])

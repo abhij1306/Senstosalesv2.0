@@ -18,7 +18,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { api, SearchResult } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { StatusBadge } from "./StatusBadge";
+import { StatusBadge } from "../atoms/StatusBadge";
 import { H3, Body, SmallText, Label, MonoCode, Accounting } from "../atoms/Typography";
 
 // --- Types ---
@@ -306,20 +306,20 @@ export default function GlobalSearch() {
 
           {/* Initial Empty State */}
           {!query && allItems.length === 0 && (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8 text-center">
+            <div className="flex-1 flex flex-col items-center justify-center text-app-fg-muted/40 p-8 text-center">
               <Search className="w-8 h-8 opacity-20 mb-4" />
-              <Body className="font-medium text-app-fg">
+              <Body className="font-bold text-app-fg uppercase tracking-wider">
                 Type to search...
               </Body>
-              <SmallText className="mt-1 text-app-fg-muted">
+              <SmallText className="mt-1 text-app-fg-muted font-bold">
                 Find POs, Invoices, or jump to pages
               </SmallText>
 
               {/* Show Recents if any within empty state */}
               {recentSearches.length > 0 && (
                 <div className="mt-8 w-full">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-sys-text-tertiary)] mb-2">
-                    Recent
+                  <div className="text-[10px] font-black uppercase tracking-widest text-app-fg-muted mb-4 text-left px-4">
+                    Recent Activity
                   </div>
                   {recentSearches.map((term) => (
                     <button
@@ -328,7 +328,7 @@ export default function GlobalSearch() {
                         setQuery(term);
                         inputRef.current?.focus();
                       }}
-                      className="block w-full text-left px-3 py-1.5 text-sm text-[var(--color-sys-text-secondary)] hover:text-[var(--color-sys-brand-primary)] hover:bg-[var(--color-sys-bg-tertiary)] rounded"
+                      className="block w-full text-left px-4 py-3 text-xs font-bold text-app-fg-muted hover:text-app-accent hover:bg-app-accent/5 rounded-xl transition-all"
                     >
                       {term}
                     </button>
@@ -489,13 +489,13 @@ export default function GlobalSearch() {
       <div className="bg-app-surface px-4 py-2.5 flex items-center justify-between text-[10px] text-app-fg/40 border-t border-app-border">
         <div className="flex gap-4">
           <span className="flex items-center gap-1.5">
-            <kbd className="bg-[var(--color-sys-bg-surface)] shadow-sm rounded px-1.5 py-0.5 font-sans min-w-[20px] text-center">
+            <kbd className="bg-app-surface shadow-sm rounded px-1.5 py-0.5 font-sans min-w-[20px] text-center">
               ↵
             </kbd>{" "}
             Select
           </span>
           <span className="flex items-center gap-1.5">
-            <kbd className="bg-[var(--color-sys-bg-surface)] shadow-sm rounded px-1.5 py-0.5 font-sans min-w-[20px] text-center">
+            <kbd className="bg-app-surface shadow-sm rounded px-1.5 py-0.5 font-sans min-w-[20px] text-center">
               ↓
             </kbd>{" "}
             Navigate
@@ -511,11 +511,11 @@ export default function GlobalSearch() {
       <div ref={searchRef} className="relative max-w-[700px] w-full group z-50">
         <div
           className={cn(
-            "flex items-center gap-4 px-6 py-2.5 border border-app-border/30 rounded-full transition-all duration-300 ease-out",
-            "bg-app-bg/50 backdrop-blur-2xl shadow-lg",
+            "flex items-center gap-4 px-6 py-2.5 transition-all duration-300 ease-out",
+            "input-glass",
             isOpen
-              ? "shadow-2xl ring-1 ring-app-accent bg-app-surface/90 scale-[1.01]"
-              : "hover:bg-app-surface/80 hover:scale-[1.005]",
+              ? "shadow-sm ring-1 ring-system-blue/30 bg-white/20 dark:bg-white/10 scale-[1.01]"
+              : "hover:bg-black/5 dark:hover:bg-white/10 hover:scale-[1.005]",
           )}
         >
           {loading ? (
@@ -548,14 +548,14 @@ export default function GlobalSearch() {
                 setQuery("");
                 inputRef.current?.focus();
               }}
-              className="p-1 hover:bg-[var(--color-sys-bg-tertiary)] rounded-lg transition-colors"
+              className="p-1 hover:bg-app-overlay rounded-lg transition-colors"
             >
-              <X size={14} className="text-[var(--color-sys-text-tertiary)]" />
+              <X size={14} className="text-app-fg-muted" />
             </button>
           )}
 
-          <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 bg-[var(--color-sys-bg-header)]/50 rounded-lg shadow-sm pointer-events-none select-none">
-            <kbd className="font-mono text-[9px] font-bold text-[var(--color-sys-text-tertiary)]">
+          <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 bg-app-surface-elevated/50 rounded-lg shadow-sm pointer-events-none select-none">
+            <kbd className="font-mono text-[9px] font-bold text-app-fg-muted">
               CTRL K
             </kbd>
           </div>

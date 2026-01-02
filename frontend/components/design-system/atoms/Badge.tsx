@@ -1,38 +1,46 @@
 "use client";
 
 import React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /**
- * Badge Atom - Atomic Design System v5.0
- * High-density, professional indicators.
- * Font: 10px, Semibold, Uppercase.
+ * Badge Atom - MacOS Tahoe Edition
+ * Subtle semantic indicators using system colors.
  */
-export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
-    variant?: "default" | "secondary" | "success" | "warning" | "error" | "outline" | "accent";
-}
+const badgeVariants = cva(
+    "inline-flex items-center px-2.5 py-0.5 rounded-full text-caption-1 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border border-transparent",
+    {
+        variants: {
+            variant: {
+                default: "bg-system-gray/15 text-text-secondary hover:bg-system-gray/25",
+                secondary: "bg-surface-secondary text-text-secondary border-border-quaternary",
+                destructive: "bg-system-red/15 text-system-red hover:bg-system-red/25",
+                outline: "text-text-primary border-border-tertiary",
+                success: "bg-system-green/15 text-system-green hover:bg-system-green/25",
+                warning: "bg-system-orange/15 text-system-orange hover:bg-system-orange/25",
+                info: "bg-system-blue/15 text-system-blue hover:bg-system-blue/25",
+                accent: "bg-system-blue/15 text-system-blue hover:bg-system-blue/25",
+                glass: "bg-surface-primary/50 backdrop-blur-md border-white/20 text-text-primary shadow-sm",
+                error: "bg-system-red/15 text-system-red hover:bg-system-red/25", // Alias for destructive
+            },
+        },
+        defaultVariants: {
+            variant: "default",
+        },
+    }
+);
+
+export interface BadgeProps
+    extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> { }
 
 const BadgeInternal = React.forwardRef<HTMLDivElement, BadgeProps>(
-    ({ className, variant = "default", ...props }, ref) => {
-        const variants = {
-            // Updated to Glass Style
-            default: "status-badge-delivered drop-shadow-[0_0_8px_rgba(0,113,227,0.1)]",
-            secondary: "status-badge-closed",
-            success: "status-badge-closed",
-            warning: "status-badge-pending",
-            error: "bg-rose-500/12 text-rose-500",
-            outline: "bg-transparent text-app-fg/40 border border-app-border/50",
-            accent: "bg-app-accent/10 text-app-accent border border-app-accent/20 hover:bg-app-accent/20 transition-all",
-        };
-
+    ({ className, variant, ...props }, ref) => {
         return (
             <div
                 ref={ref}
-                className={cn(
-                    "status-badge tabular-nums truncate",
-                    variants[variant],
-                    className
-                )}
+                className={cn(badgeVariants({ variant, className }))}
                 {...props}
             />
         );
@@ -42,3 +50,4 @@ const BadgeInternal = React.forwardRef<HTMLDivElement, BadgeProps>(
 BadgeInternal.displayName = "Badge";
 
 export const Badge = React.memo(BadgeInternal);
+export { badgeVariants };

@@ -10,6 +10,7 @@ from app.db import get_db
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+
 class BuyerBase(BaseModel):
     name: str
     gstin: str
@@ -21,11 +22,14 @@ class BuyerBase(BaseModel):
     is_default: bool = False
     is_active: bool = True
 
+
 class BuyerCreate(BuyerBase):
     pass
 
+
 class Buyer(BuyerBase):
     id: int
+
 
 @router.get("/", response_model=List[Buyer])
 def list_buyers(db: sqlite3.Connection = Depends(get_db)):
@@ -36,6 +40,7 @@ def list_buyers(db: sqlite3.Connection = Depends(get_db)):
         return [dict(row) for row in rows]
     except sqlite3.OperationalError:
         return []  # Return empty list if table doesn't exist
+
 
 @router.post("/", response_model=Buyer)
 def create_buyer(buyer: BuyerCreate, db: sqlite3.Connection = Depends(get_db)):
@@ -58,8 +63,17 @@ def create_buyer(buyer: BuyerCreate, db: sqlite3.Connection = Depends(get_db)):
             """INSERT INTO buyers 
                (name, gstin, billing_address, shipping_address, place_of_supply, state, state_code, is_default, is_active)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (buyer.name, buyer.gstin, buyer.billing_address, buyer.shipping_address, 
-             buyer.place_of_supply, buyer.state, buyer.state_code, is_default, 1)
+            (
+                buyer.name,
+                buyer.gstin,
+                buyer.billing_address,
+                buyer.shipping_address,
+                buyer.place_of_supply,
+                buyer.state,
+                buyer.state_code,
+                is_default,
+                1,
+            ),
         )
         db.commit()
         new_id = cursor.lastrowid
@@ -67,7 +81,8 @@ def create_buyer(buyer: BuyerCreate, db: sqlite3.Connection = Depends(get_db)):
     except Exception as e:
         db.rollback()
         logger.error(f"Failed to create buyer: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
 
 @router.put("/{id}", response_model=Buyer)
 def update_buyer(id: int, buyer: BuyerCreate, db: sqlite3.Connection = Depends(get_db)):
@@ -77,14 +92,24 @@ def update_buyer(id: int, buyer: BuyerCreate, db: sqlite3.Connection = Depends(g
                name = ?, gstin = ?, billing_address = ?, shipping_address = ?, 
                place_of_supply = ?, state = ?, state_code = ?, is_active = ?
                WHERE id = ?""",
-            (buyer.name, buyer.gstin, buyer.billing_address, buyer.shipping_address, 
-             buyer.place_of_supply, buyer.state, buyer.state_code, 1 if buyer.is_active else 0, id)
+            (
+                buyer.name,
+                buyer.gstin,
+                buyer.billing_address,
+                buyer.shipping_address,
+                buyer.place_of_supply,
+                buyer.state,
+                buyer.state_code,
+                1 if buyer.is_active else 0,
+                id,
+            ),
         )
         db.commit()
         return {**buyer.dict(), "id": id}
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
 
 @router.put("/{id}/default")
 def set_buyer_default(id: int, db: sqlite3.Connection = Depends(get_db)):
@@ -95,7 +120,8 @@ def set_buyer_default(id: int, db: sqlite3.Connection = Depends(get_db)):
         return {"success": True}
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
 
 @router.delete("/{id}")
 def delete_buyer(id: int, db: sqlite3.Connection = Depends(get_db)):
@@ -106,4 +132,4 @@ def delete_buyer(id: int, db: sqlite3.Connection = Depends(get_db)):
         return {"success": True}
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

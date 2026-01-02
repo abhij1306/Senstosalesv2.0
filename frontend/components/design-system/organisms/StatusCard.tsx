@@ -3,6 +3,7 @@
 import React from "react";
 import { Card } from "@/components/design-system/atoms/Card";
 import { Badge } from "@/components/design-system/atoms/Badge";
+import { Title3 } from "@/components/design-system/atoms/Typography";
 import { cn } from "@/lib/utils";
 
 export interface StatusCardProps {
@@ -26,7 +27,7 @@ export function StatusCard({
         <Card className={cn("p-6", className)}>
             {(title || status) && (
                 <div className="flex items-center justify-between mb-4">
-                    {title && <h3 className="font-medium text-sys-primary">{title}</h3>}
+                    {title && <Title3>{title}</Title3>}
                     {status && showBadge && <Badge variant={variant}>{status}</Badge>}
                 </div>
             )}

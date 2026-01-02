@@ -6,7 +6,6 @@ Routes requests to report_service and handles file exports.
 import io
 import logging
 import sqlite3
-from datetime import datetime, timedelta
 from typing import Optional
 
 import pandas as pd
@@ -116,7 +115,7 @@ def get_dc_register(
     if export:
         return export_df_to_excel(df, f"DC_Register_{start_date}_{end_date}.xlsx")
     # Drop rows where dc_number is null to prevent phantom rows
-    df_clean = df.dropna(subset=['dc_number'])
+    df_clean = df.dropna(subset=["dc_number"])
     return df_clean.fillna("").to_dict(orient="records")
 
 
@@ -140,7 +139,7 @@ def get_invoice_register(
     if export:
         return export_df_to_excel(df, f"Invoice_Register_{start_date}_{end_date}.xlsx")
     # Drop rows where invoice_number is null to prevent phantom rows
-    df_clean = df.dropna(subset=['invoice_number'])
+    df_clean = df.dropna(subset=["invoice_number"])
     return df_clean.fillna("").to_dict(orient="records")
 
 
@@ -154,6 +153,8 @@ def download_po_summary(
     try:
         # Default to last 30 days if not provided
         if not start_date or not end_date:
+            from datetime import datetime, timedelta
+
             end = datetime.now()
             start = end - timedelta(days=30)
             start_date = start.strftime("%Y-%m-%d")
@@ -169,7 +170,7 @@ def download_po_summary(
         )  # Assuming generate_dispatch_summary can handle this data
     except Exception as e:
         logger.error(f"Failed to generate PO Register: {e}")
-        raise internal_error(str(e), e)
+        raise internal_error(str(e), e) from e
 
 
 @router.get("/pending")
@@ -181,14 +182,12 @@ def get_pending_items(export: bool = False, db: sqlite3.Connection = Depends(get
             from app.services.excel_service import ExcelService
 
             # Assuming ExcelService has a method for pending items report
-            return ExcelService.generate_pending_items_report(
-                df, "Pending_PO_Items.xlsx", db
-            )
+            return ExcelService.generate_pending_items_report(df, "Pending_PO_Items.xlsx", db)
         except Exception as e:
             logger.error(f"Failed to generate Pending PO Items report: {e}")
-            raise internal_error(str(e), e)
+            raise internal_error(str(e), e) from e
     # Drop rows where po_number or material_description is null
-    df_clean = df.dropna(subset=['po_number', 'material_description'])
+    df_clean = df.dropna(subset=["po_number", "material_description"])
     return df_clean.fillna("").to_dict(orient="records")
 
 
@@ -256,7 +255,7 @@ def get_daily_dispatch_report(
 
             return ExcelService.generate_dispatch_summary(date, results)
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}") from e
 
     return results
 

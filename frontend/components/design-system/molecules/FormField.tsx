@@ -29,8 +29,8 @@ export const FormField = React.forwardRef<HTMLInputElement, FormFieldProps>(
                         error={error}
                         required={required}
                         className={cn(
-                            "peer pt-6 pb-2 h-14 bg-sys-bg-white/50 border-sys-tertiary/20/60 focus:bg-sys-bg-white placeholder:text-transparent",
-                            error && "border-sys-error"
+                            "peer pt-6 pb-2 h-14 bg-app-surface/50 border-app-border/20 focus:bg-app-surface placeholder:text-transparent",
+                            error && "border-app-status-error"
                         )}
                         placeholder="" // Required for peer-placeholder-shown
                         {...inputProps}
@@ -39,18 +39,18 @@ export const FormField = React.forwardRef<HTMLInputElement, FormFieldProps>(
                         <Label
                             htmlFor={inputProps.id}
                             className={cn(
-                                "absolute left-3 top-4 z-10 origin-[0] -translate-y-2.5 scale-75 transform text-sys-secondary duration-200",
-                                "peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-sys-secondary",
-                                "peer-focus:-translate-y-2.5 peer-focus:scale-75 peer-focus:text-sys-brand",
-                                error && "text-sys-error peer-focus:text-sys-error"
+                                "absolute left-3 top-4 z-10 origin-[0] -translate-y-2.5 scale-75 transform text-app-fg-muted duration-200",
+                                "peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-app-fg-muted",
+                                "peer-focus:-translate-y-2.5 peer-focus:scale-75 peer-focus:text-app-accent",
+                                error && "text-app-status-error peer-focus:text-app-status-error"
                             )}
                         >
                             {label}{" "}
-                            {required && <span className="ml-1 text-sys-error">*</span>}
+                            {required && <span className="ml-1 text-app-status-error">*</span>}
                         </Label>
                     )}
                     {helperText && !error && (
-                        <p className="mt-1 text-[11px] text-sys-tertiary pl-1">
+                        <p className="mt-1 text-[11px] text-app-fg-muted pl-1">
                             {helperText}
                         </p>
                     )}
@@ -62,12 +62,12 @@ export const FormField = React.forwardRef<HTMLInputElement, FormFieldProps>(
             <div className={cn("space-y-1.5", className)}>
                 {label && (
                     <Label htmlFor={inputProps.id} className="block">
-                        {label} {required && <span className="text-[#DC2626] ml-1">*</span>}
+                        {label} {required && <span className="text-app-status-error ml-1">*</span>}
                     </Label>
                 )}
                 <Input ref={ref} error={error} required={required} {...inputProps} />
                 {helperText && !error && (
-                    <p className="text-[12px] text-[#6B7280]">{helperText}</p>
+                    <p className="text-[12px] text-app-fg-muted">{helperText}</p>
                 )}
             </div>
         );

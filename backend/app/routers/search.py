@@ -1,17 +1,20 @@
-import sqlite3
 import logging
+import sqlite3
+
 from fastapi import APIRouter, Depends, HTTPException
+
 from app.db import get_db
 from app.services.status_service import calculate_entity_status
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+
 @router.get("/", response_model=dict)
 def global_search(q: str, db: sqlite3.Connection = Depends(get_db)):
     """Search across POs, DCs, and Invoices using deterministic logic"""
     results = []
-    
+
     if not q:
         return {"results": []}
 
@@ -29,20 +32,22 @@ def global_search(q: str, db: sqlite3.Connection = Depends(get_db)):
             WHERE CAST(po_number AS TEXT) LIKE ? OR supplier_name LIKE ?
             LIMIT 5
             """,
-            (search_term, search_term)
+            (search_term, search_term),
         )
         for row in cursor.fetchall():
             d = dict(row)
-            results.append({
-                "id": str(d["po_number"]),
-                "type": "PO",
-                "type_label": "Purchase Order",
-                "number": str(d["po_number"]),
-                "date": d["date"] or "",
-                "party": d["party"] or "Unknown",
-                "amount": d["amount"] or 0,
-                "status": calculate_entity_status(d["t_ord"], d["t_del"], d["t_recd"])
-            })
+            results.append(
+                {
+                    "id": str(d["po_number"]),
+                    "type": "PO",
+                    "type_label": "Purchase Order",
+                    "number": str(d["po_number"]),
+                    "date": d["date"] or "",
+                    "party": d["party"] or "Unknown",
+                    "amount": d["amount"] or 0,
+                    "status": calculate_entity_status(d["t_ord"], d["t_del"], d["t_recd"]),
+                }
+            )
 
         # 2. Search DCs - Use dc_number as unique ID
         cursor = db.execute(
@@ -56,20 +61,22 @@ def global_search(q: str, db: sqlite3.Connection = Depends(get_db)):
             WHERE CAST(dc_number AS TEXT) LIKE ? OR consignee_name LIKE ?
             LIMIT 5
             """,
-            (search_term, search_term)
+            (search_term, search_term),
         )
         for row in cursor.fetchall():
             d = dict(row)
-            results.append({
-                "id": str(d["dc_number"]),
-                "type": "DC",
-                "type_label": "Delivery Challan",
-                "number": str(d["dc_number"]),
-                "date": d["date"] or "",
-                "party": d["party"] or "Unknown",
-                "amount": 0,
-                "status": calculate_entity_status(d["t_ord"], d["t_del"], d["t_recd"])
-            })
+            results.append(
+                {
+                    "id": str(d["dc_number"]),
+                    "type": "DC",
+                    "type_label": "Delivery Challan",
+                    "number": str(d["dc_number"]),
+                    "date": d["date"] or "",
+                    "party": d["party"] or "Unknown",
+                    "amount": 0,
+                    "status": calculate_entity_status(d["t_ord"], d["t_del"], d["t_recd"]),
+                }
+            )
 
         # 3. Search Invoices - Use invoice_number as unique ID
         cursor = db.execute(
@@ -83,26 +90,28 @@ def global_search(q: str, db: sqlite3.Connection = Depends(get_db)):
             WHERE CAST(invoice_number AS TEXT) LIKE ?
             LIMIT 5
             """,
-            (search_term,)
+            (search_term,),
         )
         for row in cursor.fetchall():
             d = dict(row)
-            results.append({
-                "id": str(d["invoice_number"]),
-                "type": "Invoice",
-                "type_label": "Tax Invoice",
-                "number": str(d["invoice_number"]),
-                "date": d["date"] or "",
-                "party": "Client",
-                "amount": d["amount"] or 0,
-                "status": calculate_entity_status(d["t_ord"], d["t_del"], d["t_recd"])
-            })
+            results.append(
+                {
+                    "id": str(d["invoice_number"]),
+                    "type": "Invoice",
+                    "type_label": "Tax Invoice",
+                    "number": str(d["invoice_number"]),
+                    "date": d["date"] or "",
+                    "party": "Client",
+                    "amount": d["amount"] or 0,
+                    "status": calculate_entity_status(d["t_ord"], d["t_del"], d["t_recd"]),
+                }
+            )
 
         return {"results": results}
-        
+
     except Exception as e:
         logger.error(f"Global Search Error: {e}")
         # Return partial results if some succeeded, or raise 500
         if results:
             return {"results": results}
-        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}") from e

@@ -52,7 +52,7 @@ def validate_dc_items(
                 "item_index": ve.item_index,
             }
             logger.warning(f"Validation failed: {error_detail}")
-            raise bad_request(ve.message)
+            raise bad_request(ve.message) from ve
 
 
 def validate_single_dc_item(
@@ -103,9 +103,7 @@ def validate_single_dc_item(
     # Get ordered quantity and already dispatched quantity
     if lot_no:
         # Lot-wise validation
-        ordered_qty, already_dispatched = _get_lot_quantities(
-            db, po_item_id, lot_no, exclude_dc
-        )
+        ordered_qty, already_dispatched = _get_lot_quantities(db, po_item_id, lot_no, exclude_dc)
 
         if ordered_qty is None:
             raise ValidationError(
@@ -115,9 +113,7 @@ def validate_single_dc_item(
             )
     else:
         # Item-level validation (no lot)
-        ordered_qty, already_dispatched = _get_item_quantities(
-            db, po_item_id, exclude_dc
-        )
+        ordered_qty, already_dispatched = _get_item_quantities(db, po_item_id, exclude_dc)
 
         if ordered_qty is None:
             raise ValidationError(

@@ -69,30 +69,34 @@ export function WebVitalsReporter() {
     if (!hasMetrics) return null;
 
     return (
-        <div className="web-vitals-panel bg-app-overlay backdrop-blur-lg shadow-2xl p-4 fixed bottom-4 right-4 z-[9999] min-w-[240px] rounded-2xl">
+        <div className="web-vitals-panel bg-app-surface/95 backdrop-blur-xl shadow-app-spotlight p-4 fixed bottom-6 right-6 z-[9999] min-w-[260px] rounded-2xl border border-app-border/50 ring-1 ring-app-accent/5">
             <div className="web-vitals-header flex justify-between items-center mb-4">
-                <Label className="high-contrast-header text-[10px] m-0">⚡ System Vitals</Label>
+                <Label className="high-contrast-header text-[10px] m-0 font-black">⚡ System Vitals</Label>
                 <button
                     onClick={() => setIsVisible(false)}
-                    className="h-6 w-6 flex items-center justify-center rounded-full hover:bg-app-fg/10 text-app-fg/50 transition-colors"
+                    className="h-6 w-6 flex items-center justify-center rounded-full hover:bg-app-fg/10 text-app-fg/40 transition-colors"
                     aria-label="Close"
                 >
-                    <X size={16} />
+                    <X size={14} />
                 </button>
             </div>
-            <div className="web-vitals-grid grid grid-cols-1 gap-2">
+            <div className="web-vitals-grid grid grid-cols-1 gap-1.5">
                 {Object.entries(metrics).map(([name, value]) => {
                     if (value === null) return null;
                     const status = getVitalStatus(name as keyof WebVitalsMetrics, value);
                     const displayValue = name === "CLS" ? value.toFixed(3) : `${Math.round(value)}ms`;
 
                     return (
-                        <div key={name} className={cn("web-vital-item flex items-center justify-between p-2 rounded-lg bg-app-fg/5", status)}>
-                            <SmallText className="web-vital-name text-[10px] font-bold uppercase tracking-wider text-app-fg/60">{name}</SmallText>
-                            <SmallText className="web-vital-value text-xs font-mono font-bold text-app-fg">{displayValue}</SmallText>
-                            <div className={cn("web-vital-indicator w-1.5 h-1.5 rounded-full ml-2",
-                                status === "good" ? "bg-emerald-500" : status === "needs-improvement" ? "bg-amber-500" : "bg-rose-500"
-                            )} />
+                        <div key={name} className={cn("web-vital-item flex items-center justify-between px-3 py-2 rounded-xl transition-all",
+                            "bg-app-overlay/5 hover:bg-app-overlay/10 border border-transparent hover:border-app-border/20"
+                        )}>
+                            <SmallText className="web-vital-name text-[9px] font-black uppercase tracking-widest text-app-fg-muted">{name}</SmallText>
+                            <div className="flex items-center gap-2">
+                                <SmallText className="web-vital-value text-xs font-mono font-bold text-app-fg">{displayValue}</SmallText>
+                                <div className={cn("web-vital-indicator w-1.5 h-1.5 rounded-full",
+                                    status === "good" ? "bg-app-status-success animate-pulse" : status === "needs-improvement" ? "bg-app-status-warning" : "bg-app-status-error"
+                                )} />
+                            </div>
                         </div>
                     );
                 })}

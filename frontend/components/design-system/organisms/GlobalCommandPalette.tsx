@@ -226,7 +226,7 @@ export const GlobalCommandPalette = () => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.15 }}
-                        className="fixed inset-0 bg-sys-primary/20 backdrop-blur-[2px] z-[100]" // Light dimming
+                        className="fixed inset-0 bg-app-overlay/20 backdrop-blur-[2px] z-[100]" // Light dimming
                         onClick={() => setIsOpen(false)}
                     />
                     <div className="fixed inset-0 z-[101] flex items-start justify-center pt-[15vh] pointer-events-none">
@@ -237,27 +237,27 @@ export const GlobalCommandPalette = () => {
                             transition={{ duration: 0.2, type: "spring", damping: 25, stiffness: 300 }}
                             className="w-full max-w-2xl px-4 pointer-events-auto"
                         >
-                            <Card className="flex flex-col overflow-hidden shadow-2xl border-sys-bg-tertiary/50 bg-white/95 backdrop-blur-xl ring-1 ring-black/5">
-                                <div className="flex items-center px-4 py-3 border-b border-sys-bg-tertiary/50">
-                                    <Search className="w-5 h-5 text-sys-tertiary mr-3" />
+                            <Card className="flex flex-col overflow-hidden shadow-app-spotlight border-app-border/50 bg-app-surface/95 backdrop-blur-xl ring-1 ring-app-accent/5">
+                                <div className="flex items-center px-4 py-3 border-b border-app-border/50">
+                                    <Search className="w-5 h-5 text-app-fg-muted mr-3" />
                                     <input
                                         ref={inputRef}
                                         value={query}
                                         onChange={(e) => setQuery(e.target.value)}
                                         onKeyDown={handleKeyDown}
                                         placeholder="Type a command or search..."
-                                        className="flex-1 bg-transparent border-none outline-none text-[16px] text-sys-primary placeholder:text-sys-secondary"
+                                        className="flex-1 bg-transparent border-none outline-none text-[16px] text-app-fg placeholder:text-app-fg-muted/60"
                                     />
-                                    {loading && <Loader2 className="w-4 h-4 animate-spin text-sys-tertiary ml-2" />}
+                                    {loading && <Loader2 className="w-4 h-4 animate-spin text-app-fg-muted ml-2" />}
                                     <div className="flex items-center gap-2 ml-4">
                                         <kbd className="hidden sm:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
                                             <span className="text-xs">ESC</span>
                                         </kbd>
                                     </div>
                                 </div>
-                                <div className="max-h-[300px] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-sys-tertiary/20">
+                                <div className="max-h-[300px] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-app-overlay/20">
                                     {allItems.length === 0 ? (
-                                        <div className="py-6 text-center text-sys-tertiary">
+                                        <div className="py-6 text-center text-app-fg-muted">
                                             <p className="text-sm">No results found.</p>
                                         </div>
                                     ) : (
@@ -269,37 +269,37 @@ export const GlobalCommandPalette = () => {
                                                 className={cn(
                                                     "w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-colors duration-100",
                                                     selectedIndex === idx
-                                                        ? "bg-sys-brand-primary/10 text-sys-primary"
-                                                        : "text-sys-secondary hover:bg-sys-bg-tertiary"
+                                                        ? "bg-app-accent/10 text-app-fg"
+                                                        : "text-app-fg-muted hover:bg-app-overlay"
                                                 )}
                                             >
                                                 <div
                                                     className={cn(
                                                         "flex h-8 w-8 items-center justify-center rounded-md border shadow-sm",
                                                         selectedIndex === idx
-                                                            ? "bg-white border-sys-brand-primary/20 text-sys-brand-primary"
-                                                            : "bg-sys-bg-white border-sys-bg-tertiary text-sys-tertiary"
+                                                            ? "bg-app-surface border-app-accent/20 text-app-accent"
+                                                            : "bg-app-surface border-app-border text-app-fg-muted"
                                                     )}
                                                 >
                                                     {renderIcon(item)}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2">
-                                                        <span className={cn("text-sm font-medium", selectedIndex === idx ? "text-sys-brand-primary" : "")}>
+                                                        <span className={cn("text-sm font-medium", selectedIndex === idx ? "text-app-accent" : "")}>
                                                             {item.type === "NAV" ? item.label : item.number}
                                                         </span>
                                                         {item.type !== "NAV" && (
-                                                            <span className="text-[10px] uppercase tracking-wider text-sys-tertiary border border-sys-bg-tertiary px-1 rounded-sm">
+                                                            <span className="text-[10px] uppercase tracking-wider text-app-fg-muted border border-app-border px-1 rounded-sm">
                                                                 {item.type}
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <div className="text-xs text-sys-tertiary truncate">
+                                                    <div className="text-xs text-app-fg-muted truncate">
                                                         {item.type === "NAV" ? item.subLabel : item.party}
                                                     </div>
                                                 </div>
                                                 {selectedIndex === idx && (
-                                                    <div className="text-xs text-sys-tertiary/50">
+                                                    <div className="text-xs text-app-fg-muted/50">
                                                         Jump to
                                                     </div>
                                                 )}
@@ -307,7 +307,7 @@ export const GlobalCommandPalette = () => {
                                         ))
                                     )}
                                 </div>
-                                <div className="px-4 py-2 bg-sys-bg-tertiary/30 border-t border-sys-bg-tertiary/50 flex items-center justify-between text-[10px] text-sys-tertiary">
+                                <div className="px-4 py-2 bg-app-overlay/30 border-t border-app-border/50 flex items-center justify-between text-[10px] text-app-fg-muted">
                                     <div className="flex gap-2">
                                         <span>Protip: Press <kbd className="font-bold">Ctrl K</kbd> anywhere</span>
                                     </div>

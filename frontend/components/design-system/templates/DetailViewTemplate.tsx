@@ -67,21 +67,21 @@ export const DetailViewTemplate: React.FC<DetailViewTemplateProps> = ({
         <div className={cn("space-y-6", className)}>
             {/* Breadcrumbs */}
             {breadcrumbs && breadcrumbs.length > 0 && (
-                <nav className="flex items-center gap-2 text-[14px]">
+                <nav className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-widest">
                     {breadcrumbs.map((crumb, index) => (
                         <React.Fragment key={index}>
                             {crumb.href ? (
                                 <a
                                     href={crumb.href}
-                                    className="text-[#6B7280] hover:text-[#1A3D7C] transition-colors"
+                                    className="text-app-fg-muted hover:text-app-accent transition-colors"
                                 >
                                     {crumb.label}
                                 </a>
                             ) : (
-                                <span className="text-[#111827] font-medium">{crumb.label}</span>
+                                <span className="text-app-fg">{crumb.label}</span>
                             )}
                             {index < breadcrumbs.length - 1 && (
-                                <ChevronRight size={16} className="text-[#9CA3AF]" />
+                                <ChevronRight size={12} className="text-app-fg-muted/40" />
                             )}
                         </React.Fragment>
                     ))}
@@ -92,11 +92,11 @@ export const DetailViewTemplate: React.FC<DetailViewTemplateProps> = ({
             <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-3">
-                        <H1 className="uppercase tracking-tight">{title}</H1>
+                        <H1 className="uppercase tracking-tight text-app-fg">{title}</H1>
                         {badge}
                     </div>
                     {subtitle && (
-                        <Body className="text-sys-secondary font-medium">{subtitle}</Body>
+                        <Body className="text-app-fg-muted font-bold tracking-tight">{subtitle}</Body>
                     )}
                 </div>
                 {actions && actions.length > 0 && (
@@ -118,18 +118,18 @@ export const DetailViewTemplate: React.FC<DetailViewTemplateProps> = ({
             {tabs && tabs.length > 0 ? (
                 <div className="space-y-4">
                     {/* Tab Headers */}
-                    <div className="border-b border-[#E5E7EB]">
+                    <div className="border-b border-app-border">
                         <div className="flex items-center gap-1">
                             {tabs.map((tab) => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={cn(
-                                        "flex items-center gap-2 px-4 py-3 text-[11px] font-semibold uppercase tracking-widest transition-all",
+                                        "flex items-center gap-2 px-6 py-4 text-[11px] font-black uppercase tracking-[0.2em] transition-all",
                                         "border-b-2 -mb-px",
                                         activeTab === tab.id
-                                            ? "border-sys-brand text-sys-brand"
-                                            : "border-transparent text-sys-secondary hover:text-sys-primary"
+                                            ? "border-app-accent text-app-accent"
+                                            : "border-transparent text-app-fg-muted hover:text-app-fg"
                                     )}
                                 >
                                     {tab.icon}

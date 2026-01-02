@@ -4,12 +4,13 @@ Provides shared functionality across modules
 """
 
 import logging
-from fastapi import APIRouter, Depends, Query
-from typing import Literal
 import sqlite3
+from typing import Literal
 
-from app.db import get_db
+from fastapi import APIRouter, Depends, Query
+
 from app.core.utils import get_financial_year
+from app.db import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -25,19 +26,19 @@ def check_duplicate_number(
 ):
     """
     Check if a DC or Invoice number already exists within the same financial year.
-    
+
     CRITICAL BUSINESS RULE:
     - DC and Invoice numbers must be unique ACROSS both document types in the same FY
     - e.g., If DC "333" exists, Invoice "333" cannot be created in same FY
     - This prevents confusion and ensures clear document identification
-    
+
     This is used by the frontend for real-time duplicate validation during data entry.
-    
+
     Args:
         type: "DC" or "Invoice"
         number: Document number to check
         date: Document date (used to determine FY)
-        
+
     Returns:
         {
             "exists": bool,
@@ -48,16 +49,16 @@ def check_duplicate_number(
     try:
         # Get financial year from date
         fy = get_financial_year(date)
-        
+
         # Calculate FY boundaries
         year_start = fy.split("-")[0]
         full_year_start = f"{year_start}-04-01"
         year_end = f"20{fy.split('-')[1]}"
         full_year_end = f"{year_end}-03-31"
-        
+
         exists = False
         conflict_type = None
-        
+
         if type == "DC":
             # Check delivery_challans table (same type)
             dc_result = db.execute(
@@ -69,7 +70,7 @@ def check_duplicate_number(
                 """,
                 (number, full_year_start, full_year_end),
             ).fetchone()
-            
+
             if dc_result:
                 exists = True
                 conflict_type = "DC"
@@ -84,11 +85,11 @@ def check_duplicate_number(
                     """,
                     (number, full_year_start, full_year_end),
                 ).fetchone()
-                
+
                 if invoice_result:
                     exists = True
                     conflict_type = "Invoice"
-            
+
         elif type == "Invoice":
             # Check gst_invoices table (same type)
             invoice_result = db.execute(
@@ -100,7 +101,7 @@ def check_duplicate_number(
                 """,
                 (number, full_year_start, full_year_end),
             ).fetchone()
-            
+
             if invoice_result:
                 exists = True
                 conflict_type = "Invoice"
@@ -115,27 +116,19 @@ def check_duplicate_number(
                     """,
                     (number, full_year_start, full_year_end),
                 ).fetchone()
-                
+
                 if dc_result:
                     exists = True
                     conflict_type = "DC"
-        
+
         logger.debug(
             f"Duplicate check for {type} #{number} in FY {fy}: "
             f"{'CONFLICT with ' + conflict_type if exists else 'OK'}"
         )
-        
-        return {
-            "exists": exists,
-            "financial_year": fy,
-            "conflict_type": conflict_type
-        }
-        
+
+        return {"exists": exists, "financial_year": fy, "conflict_type": conflict_type}
+
     except Exception as e:
         logger.error(f"Error checking duplicate: {e}", exc_info=True)
         # Return False to allow creation (fail open for better UX)
-        return {
-            "exists": False,
-            "financial_year": get_financial_year(date),
-            "conflict_type": None
-        }
+        return {"exists": False, "financial_year": get_financial_year(date), "conflict_type": None}

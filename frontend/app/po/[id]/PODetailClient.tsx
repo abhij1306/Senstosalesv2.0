@@ -132,7 +132,7 @@ export default function PODetailClient({
                         <X className="w-4 h-4 mr-2" /> DISCARD
                     </Button>
                     <Button
-                        variant="default"
+                        variant="primary"
                         size="sm"
                         onClick={handleSave}
                         className="bg-app-accent hover:brightness-110 text-white shadow-sm text-xs"
@@ -180,7 +180,7 @@ export default function PODetailClient({
                 </Button>
                 <Box className="w-[1px] h-6 bg-app-border/10 mx-1" />
                 <Button
-                    variant="default"
+                    variant="primary"
                     size="sm"
                     onClick={() => setEditMode(true)}
                     className="bg-app-accent text-white hover:brightness-110 shadow-lg text-xs"

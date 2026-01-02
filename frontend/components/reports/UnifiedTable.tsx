@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, ArrowRight, Truck } from "lucide-react";
-import Pagination from "@/components/Pagination";
+import { FileText, ArrowRight, Truck, Info, Settings } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ActionButtonGroup } from "@/components/design-system/molecules/ActionButtonGroup";
+import { Pagination } from "@/components/design-system/molecules/Pagination";
+import { H3, Label, Body, Accounting, Badge, Card, Stack, Flex, SmallText, Button } from "@/components/design-system";
 
 export interface SmartTableRow {
     po_number: number;
@@ -30,32 +33,46 @@ export function UnifiedTable({ data, loading }: UnifiedTableProps) {
 
     if (loading) {
         return (
-            <div className="p-8 text-center text-sys-secondary">
-                Loading operational data...
+            <div className="p-8 text-center text-app-fg-muted font-bold text-xs uppercase tracking-widest italic animate-pulse">
+                Loading operational data lifecycle...
             </div>
         );
     }
 
     return (
-        <div className="bg-sys-bg-white rounded-2xl border border-sys-tertiary/20 shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-sys-bg-tertiary flex justify-between items-center bg-sys-bg-tertiary/30">
-                <h3 className="font-semibold text-sys-primary">Operational Deep Dive</h3>
-                <div className="text-sys-secondary">Showing {data.length} records</div>
-            </div>
+        <Card className="rounded-2xl border border-app-border overflow-hidden bg-app-surface shadow-sm">
+            <Flex justify="between" align="center" className="p-4 border-b border-app-border bg-app-overlay/5">
+                <H3 className="text-sm">Operational Deep Dive</H3>
+                <div className="text-[11px] font-bold text-app-fg-muted uppercase tracking-widest">
+                    {data.length} RECORDS
+                </div>
+            </Flex>
 
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-sys-bg-tertiary/50 text-sys-secondary border-b border-sys-bg-tertiary text-[11px] uppercase tracking-wider font-semibold">
-                            <th className="px-6 py-4">Status</th>
-                            <th className="px-6 py-4">PO Details</th>
-                            <th className="px-6 py-4 max-w-xs">Material</th>
-                            <th className="px-6 py-4 text-center">Progress</th>
-                            <th className="px-6 py-4 text-right">Age</th>
-                            <th className="px-6 py-4 text-right">Action</th>
+                        <tr className="bg-app-overlay/10 text-app-fg-muted border-b border-app-border/30">
+                            <th className="px-6 py-3">
+                                <Label className="m-0">Status</Label>
+                            </th>
+                            <th className="px-6 py-3">
+                                <Label className="m-0">PO Details</Label>
+                            </th>
+                            <th className="px-6 py-3">
+                                <Label className="m-0">Material Specification</Label>
+                            </th>
+                            <th className="px-6 py-3 text-center">
+                                <Label className="m-0">Progress</Label>
+                            </th>
+                            <th className="px-6 py-3 text-right">
+                                <Label className="m-0">Cycle Time</Label>
+                            </th>
+                            <th className="px-6 py-3 text-right">
+                                <Label className="m-0">Action</Label>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-sys-bg-tertiary">
+                    <tbody className="divide-y divide-app-border/50">
                         {paginatedData.map((row) => {
                             // Smart Highlighting logic
                             const isUrgent = row.pending_qty > 0 && row.age_days > 14;
@@ -64,86 +81,67 @@ export function UnifiedTable({ data, loading }: UnifiedTableProps) {
                             return (
                                 <tr
                                     key={`${row.po_number}-${row.po_item_no}`}
-                                    className={`
-                    group hover:bg-sys-bg-tertiary transition-colors
-                    ${isUrgent ? "bg-sys-error-subtle/30" : ""}
-                  `}
+                                    className={cn(
+                                        "group hover:bg-app-overlay/5 transition-colors",
+                                        isUrgent && "bg-app-status-error/5"
+                                    )}
                                 >
-                                    <td className="px-6 py-4">
-                                        <span
-                                            className={`
-                        inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide
-                        ${row.pending_qty === 0
-                                                    ? "bg-sys-success-subtle text-green-700"
-                                                    : isUrgent
-                                                        ? "bg-sys-error-subtle text-sys-error animate-pulse"
-                                                        : "bg-amber-100 text-amber-700"
-                                                }
-                      `}
+                                    <td className="px-6 py-3">
+                                        <Badge
+                                            variant={row.pending_qty === 0 ? "success" : isUrgent ? "error" : "accent"}
+                                            className={cn("uppercase tracking-widest text-[9px]", isUrgent && "animate-pulse")}
                                         >
-                                            {row.pending_qty === 0 ? "Done" : "Pending"}
-                                        </span>
+                                            {row.pending_qty === 0 ? "Fulfilled" : "Awaiting"}
+                                        </Badge>
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <div className="font-semibold text-sys-primary">
+                                    <td className="px-6 py-3">
+                                        <Body className="font-bold text-xs">
                                             PO #{row.po_number}
-                                        </div>
-                                        <div className="text-sys-secondary">{row.po_date}</div>
+                                        </Body>
+                                        <SmallText className="text-[10px] opacity-60">{row.po_date}</SmallText>
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-6 py-3">
                                         <div
-                                            className="text-sys-primary max-w-[240px] truncate"
+                                            className="text-xs font-medium text-app-fg max-w-[240px] truncate"
                                             title={row.material_description}
                                         >
                                             {row.material_description}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <div className="flex flex-col items-center gap-1">
-                                            <div className="font-medium text-sys-secondary">
+                                    <td className="px-6 py-3 text-center">
+                                        <Stack align="center" gap={1.5}>
+                                            <Accounting className="text-[11px] font-bold">
                                                 {row.dispatched_qty} / {row.ord_qty}
-                                            </div>
-                                            <div className="w-24 h-1.5 bg-sys-bg-tertiary rounded-full overflow-hidden">
+                                            </Accounting>
+                                            <div className="w-20 h-1 bg-app-border/30 rounded-full overflow-hidden">
                                                 <div
-                                                    className={`h-full rounded-full ${row.pending_qty === 0
-                                                            ? "bg-sys-success"
-                                                            : "bg-sys-brand"
-                                                        }`}
+                                                    className={cn("h-full rounded-full transition-all duration-700",
+                                                        row.pending_qty === 0 ? "bg-app-status-success" : "bg-app-accent"
+                                                    )}
                                                     style={{
-                                                        width: `${Math.min(
-                                                            (row.dispatched_qty / row.ord_qty) * 100,
-                                                            100
-                                                        )}%`,
+                                                        width: `${Math.min((row.dispatched_qty / row.ord_qty) * 100, 100)}%`,
                                                     }}
-                                                ></div>
+                                                />
                                             </div>
-                                        </div>
+                                        </Stack>
                                     </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <span
-                                            className={`
-                        font-medium
-                        ${isUrgent ? "text-sys-error" : "text-sys-secondary"}
-                      `}
-                                        >
-                                            {row.age_days} days
+                                    <td className="px-6 py-3 text-right">
+                                        <span className={cn("font-bold text-xs font-mono", isUrgent ? "text-app-status-error" : "text-app-fg-muted")}>
+                                            {row.age_days}d
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right">
+                                    <td className="px-6 py-3 text-right">
                                         {row.pending_qty > 0 ? (
-                                            <button
-                                                onClick={() =>
-                                                    router.push(`/dc/create?po=${row.po_number}`)
-                                                }
-                                                className="inline-flex items-center gap-1 px-3 py-1.5 font-medium text-sys-bg-white bg-sys-brand hover:bg-sys-brand rounded-lg transition-colors shadow-sm opacity-0 group-hover:opacity-100"
+                                            <Button
+                                                onClick={() => router.push(`/dc/create?po=${row.po_number}`)}
+                                                className="h-8 px-4 text-[10px] font-black uppercase tracking-widest active-glow rounded-xl opacity-0 group-hover:opacity-100 transition-all shadow-sm shadow-app-accent/20"
                                             >
-                                                <Truck className="w-3 h-3" />
                                                 Dispatch
-                                            </button>
+                                            </Button>
                                         ) : (
-                                            <div className="text-sys-tertiary font-medium">
-                                                Completed
-                                            </div>
+                                            <SmallText className="font-bold text-[9px] uppercase tracking-widest opacity-30 text-app-status-success">
+                                                FULFILLED
+                                            </SmallText>
                                         )}
                                     </td>
                                 </tr>
@@ -153,15 +151,15 @@ export function UnifiedTable({ data, loading }: UnifiedTableProps) {
                 </table>
             </div>
 
-            <div className="p-4 border-t border-sys-bg-tertiary">
+            <div className="p-4 bg-app-overlay/5">
                 <Pagination
                     currentPage={currentPage}
                     totalItems={data.length}
-                    itemsPerPage={itemsPerPage}
+                    pageSize={itemsPerPage}
                     onPageChange={setCurrentPage}
+                    onPageSizeChange={() => { }} // Static size for now
                 />
             </div>
-        </div>
+        </Card>
     );
 }
-

@@ -1,193 +1,337 @@
-"use client";
+import { cn } from '@/lib/utils';
+import { type HTMLAttributes, type ReactNode } from 'react';
 
-import React, { memo } from "react";
-import { cn, formatIndianCurrency } from "@/lib/utils";
+/* ============================================
+   TYPOGRAPHY COMPONENT SYSTEM
+   macOS Semantic Text Styles
+   ============================================ */
 
-/**
- * Typography Atoms - Enterprise UI Standardization (Google M3)
- * Strict Weight Enforcement: 400 (Regular), 500 (Medium), 600 (SemiBold), 700 (Bold)
- * Strict Size Scale: text-xs to text-3xl
- */
-
-interface TypographyProps extends React.HTMLAttributes<HTMLElement> {
-    children?: React.ReactNode;
+interface TypographyProps extends HTMLAttributes<HTMLElement> {
+    children: ReactNode;
+    className?: string;
 }
 
-// Heading (H1): Page Title (text-2xl, font-black, tracking-tight)
-export const H1 = memo(React.forwardRef<HTMLHeadingElement, TypographyProps>(
-    ({ className, children, ...props }, ref) => (
+/* ==========================================
+   DISPLAY TYPOGRAPHY
+   ========================================== */
+
+/**
+ * LargeTitle - Hero sections, main navigation (34px, Bold)
+ * Usage: Primary app title, hero headers
+ */
+export function LargeTitle({ children, className, ...props }: TypographyProps) {
+    return (
         <h1
-            ref={ref}
             className={cn(
-                "text-2xl font-black font-heading leading-tight text-app-fg tracking-tight",
+                'font-display text-large-title font-semibold tracking-tight text-text-primary text-vibrancy',
                 className
             )}
             {...props}
         >
             {children}
         </h1>
-    )
-));
-H1.displayName = "H1";
+    );
+}
 
-// Subheading (H2): Section Title (text-lg, font-bold)
-export const H2 = memo(React.forwardRef<HTMLHeadingElement, TypographyProps>(
-    ({ className, children, ...props }, ref) => (
-        <h2
-            ref={ref}
+/**
+ * Title1 - Page titles (28px, Semibold)
+ * Usage: "Purchase Orders", "Dashboard", "Invoice #1222"
+ */
+export function Title1({ children, className, ...props }: TypographyProps) {
+    return (
+        <h1
             className={cn(
-                "text-lg font-bold font-heading leading-tight text-app-fg",
+                'font-display text-title-1 font-semibold tracking-tight text-text-primary text-vibrancy',
+                className
+            )}
+            {...props}
+        >
+            {children}
+        </h1>
+    );
+}
+
+/**
+ * Title2 - Section headers (22px, Medium)
+ * Usage: "Transaction Ledger", "Execution Center", major sections
+ */
+export function Title2({ children, className, ...props }: TypographyProps) {
+    return (
+        <h2
+            className={cn(
+                'font-display text-title-2 font-medium text-text-primary text-vibrancy',
                 className
             )}
             {...props}
         >
             {children}
         </h2>
-    )
-));
-H2.displayName = "H2";
+    );
+}
 
-// Section heading (H3): text-lg (18px), font-semibold (600)
-export const H3 = memo(React.forwardRef<HTMLHeadingElement, TypographyProps>(
-    ({ className, children, ...props }, ref) => (
+/**
+ * Title3 - Subsection titles (20px, Medium)
+ * Usage: Card titles, widget headers, "Basic Info", "Financial Details"
+ */
+export function Title3({ children, className, ...props }: TypographyProps) {
+    return (
         <h3
-            ref={ref}
             className={cn(
-                "text-lg font-bold font-heading leading-normal text-app-fg",
+                'font-text text-title-3 font-medium text-text-primary text-vibrancy',
                 className
             )}
             {...props}
         >
             {children}
         </h3>
-    )
-));
-H3.displayName = "H3";
+    );
+}
 
-// Sub-section heading (H4): text-[10px], font-semibold (600), uppercase (Used for table headers/labels)
-export const H4 = memo(React.forwardRef<HTMLHeadingElement, TypographyProps>(
-    ({ className, children, ...props }, ref) => (
-        <h4
-            ref={ref}
-            className={cn(
-                "text-[11px] font-medium font-heading uppercase tracking-widest text-app-fg-muted",
-                className
-            )}
-            {...props}
-        >
-            {children}
-        </h4>
-    )
-));
-H4.displayName = "H4";
-
-// Body text: text-sm (14px), font-normal (400)
-export const Body = memo(React.forwardRef<HTMLParagraphElement, TypographyProps>(
-    ({ className, children, ...props }, ref) => (
+/**
+ * Headline - Emphasized body text (17px, Medium)
+ * Usage: List item titles, emphasized content
+ */
+export function Headline({ children, className, ...props }: TypographyProps) {
+    return (
         <p
-            ref={ref}
             className={cn(
-                "text-sm font-normal font-sans leading-relaxed text-app-fg",
+                'font-text text-headline font-medium text-text-primary text-vibrancy',
                 className
             )}
             {...props}
         >
             {children}
         </p>
-    )
-));
-Body.displayName = "Body";
+    );
+}
 
-// Label text: Metadata (text-[10px], font-black, uppercase, tracking-[0.2em])
-export const Label = memo(React.forwardRef<HTMLLabelElement, React.LabelHTMLAttributes<HTMLLabelElement>>(
-    ({ className, children, ...props }, ref) => (
-        <label
-            ref={ref}
+/* ==========================================
+   BODY TEXT
+   ========================================== */
+
+/**
+ * Body - PRIMARY text style (17px, Regular)
+ * Usage: Paragraphs, descriptions, most content
+ * THIS IS THE MOST COMMON TEXT STYLE
+ */
+export function Body({ children, className, ...props }: TypographyProps) {
+    return (
+        <p
             className={cn(
-                "text-[10px] font-medium text-app-fg-muted uppercase tracking-[0.2em] block mb-1.5",
+                'font-text text-body font-regular text-text-primary text-vibrancy',
                 className
             )}
             {...props}
         >
             {children}
-        </label>
-    )
-));
-Label.displayName = "Label";
+        </p>
+    );
+}
 
-// Small text: Secondary details (text-[11px], font-medium)
-export const SmallText = memo(({ className, children, ...props }: TypographyProps) => (
-    <small
-        className={cn("text-[11px] font-medium text-app-fg-muted leading-tight block", className)}
+/**
+ * Callout - Slightly smaller (16px, Regular)
+ * Usage: Secondary content, button labels, form values
+ */
+export function Callout({ children, className, ...props }: TypographyProps) {
+    return (
+        <p
+            className={cn(
+                'font-text text-callout font-regular text-text-primary text-vibrancy',
+                className
+            )}
+            {...props}
+        >
+            {children}
+        </p>
+    );
+}
+
+/**
+ * Subhead - Tertiary content (15px, Regular)
+ * Usage: Subtitles, less important descriptions
+ */
+export function Subhead({ children, className, ...props }: TypographyProps) {
+    return (
+        <p
+            className={cn(
+                'font-text text-subhead font-regular text-text-secondary text-vibrancy',
+                className
+            )}
+            {...props}
+        >
+            {children}
+        </p>
+    );
+}
+
+/* ==========================================
+   SMALL TEXT / METADATA
+   ========================================== */
+
+/**
+ * Footnote - Small text (13px, Regular)
+ * Usage: Timestamps, helper text, metadata, "10-Sep-2020"
+ */
+export function Footnote({ children, className, ...props }: TypographyProps) {
+    return (
+        <p
+            className={cn(
+                'font-text text-footnote font-regular text-text-secondary text-vibrancy',
+                className
+            )}
+            {...props}
+        >
+            {children}
+        </p>
+    );
+}
+
+/**
+ * Caption1 - Tiny labels (12px, Medium)
+ * Usage: Badge text, small labels, card headers
+ */
+export function Caption1({ children, className, ...props }: TypographyProps) {
+    return (
+        <p
+            className={cn(
+                'font-text text-caption-1 font-medium text-text-tertiary text-vibrancy tracking-loose',
+                className
+            )}
+            {...props}
+        >
+            {children}
+        </p>
+    );
+}
+
+/**
+ * Caption2 - Ultra-tiny (11px, Medium)
+ * Usage: Very small metadata, legal text
+ */
+export function Caption2({ children, className, ...props }: TypographyProps) {
+    return (
+        <p
+            className={cn(
+                'font-text text-caption-2 font-medium text-text-tertiary text-vibrancy tracking-looser',
+                className
+            )}
+            {...props}
+        >
+            {children}
+        </p>
+    );
+}
+
+/* ==========================================
+   SPECIALIZED COMPONENTS
+   ========================================== */
+
+interface MonospacedProps extends TypographyProps {
+    size?: 'small' | 'body' | 'large';
+}
+
+/**
+ * Monospaced - Numbers, dates, codes (SF Mono)
+ * Usage: Financial figures, quantities, dates
+ * ALWAYS use for numbers in tables/cards
+ */
+export function Monospaced({ children, className, size = 'body', ...props }: MonospacedProps) {
+    return (
+        <span
+            className={cn(
+                'font-mono tabular-nums text-text-primary text-vibrancy',
+                size === 'small' && 'text-footnote',
+                size === 'body' && 'text-callout',
+                size === 'large' && 'text-title-3',
+                className
+            )}
+            {...props}
+        >
+            {children}
+        </span>
+    );
+}
+
+/* ============================================
+   LEGACY ALIASES (Transition Support)
+   ============================================ */
+
+export const Label = ({ className, children, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) => (
+    <label
+        className={cn(
+            'font-text text-subhead font-medium text-text-secondary text-vibrancy',
+            className
+        )}
         {...props}
     >
         {children}
-    </small>
-));
-SmallText.displayName = "SmallText";
+    </label>
+);
 
+export const H1 = Title1;
+export const H2 = Title2;
+export const H3 = Title3;
+export const H4 = ({ className, children, ...props }: TypographyProps) => (
+    <Caption2 className={cn("uppercase tracking-widest font-bold", className)} {...props}>
+        {children}
+    </Caption2>
+);
+export const SmallText = Caption1;
+export const TableText = Body;
+export const Mono = Monospaced;
+export const MonoCode = ({ className, children, ...props }: TypographyProps) => (
+    <code
+        className={cn(
+            "text-xs font-mono font-bold bg-surface-secondary border border-border-tertiary px-1.5 py-0.5 rounded text-text-primary",
+            className
+        )}
+        {...props}
+    >
+        {children}
+    </code>
+);
 
-// Accounting/Numeric: text-sm (14px), font-mono, tabular-nums
 export interface AccountingProps extends TypographyProps {
     isCurrency?: boolean;
     short?: boolean;
     precision?: number;
     variant?: "default" | "highlight" | "success" | "warning" | "error";
+    size?: any;
+    value?: number;
 }
 
-export const Accounting = memo(({ className, children, isCurrency, short, precision, variant = "default", ...props }: AccountingProps) => {
-    let content = children;
-    if (isCurrency && typeof children === "number") {
-        content = formatIndianCurrency(children);
-    } else if (typeof children === "number") {
-        content = children.toLocaleString("en-IN", {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: precision ?? 3,
-        });
+export const Accounting = ({ className, children, value, isCurrency, short, precision, variant = "default", ...props }: AccountingProps) => {
+    const rawValue = value !== undefined ? value : children;
+
+    let content = rawValue;
+    if (typeof rawValue === "number") {
+        if (isCurrency) {
+            content = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(rawValue);
+        } else {
+            content = rawValue.toLocaleString("en-IN", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: precision ?? 3,
+            });
+        }
     }
 
     const variantStyles = {
-        default: "text-app-fg",
-        highlight: "text-app-accent",
-        success: "text-app-status-success",
-        warning: "text-app-status-warning",
-        error: "text-app-status-error",
+        default: "text-text-primary",
+        highlight: "text-text-link font-bold",
+        success: "text-app-success",
+        warning: "text-app-warning",
+        error: "text-app-error",
     };
 
     return (
-        <span
+        <Monospaced
             className={cn(
-                "font-mono font-medium text-right leading-none tabular-nums text-[13px]",
-                variantStyles[variant],
+                variantStyles[variant as keyof typeof variantStyles] || "text-text-primary",
                 className
             )}
-            style={{ fontFeatureSettings: '"tnum"' }}
-            suppressHydrationWarning
             {...props}
         >
-            {content}
-        </span>
+            {content as ReactNode}
+        </Monospaced>
     );
-});
-Accounting.displayName = "Accounting";
-
-// Mono/Code text: text-xs (12px)
-export const MonoCode = memo(React.forwardRef<HTMLElement, TypographyProps>(
-    ({ className, children, ...props }, ref) => (
-        <code
-            ref={ref}
-            className={cn(
-                "text-xs font-mono font-medium bg-app-fg/5 px-1.5 py-0.5 rounded text-app-fg",
-                className
-            )}
-            {...props}
-        >
-            {children}
-        </code>
-    )
-));
-MonoCode.displayName = "MonoCode";
-
-// ALIASES for backward compatibility or different naming preferences
-export const Mono = MonoCode;
-export const TableText = Body;
+};

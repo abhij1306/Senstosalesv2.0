@@ -18,7 +18,7 @@ import { useDebouncedValue } from "@/lib/hooks/useDebounce";
 
 import { Button } from "@/components/design-system/atoms/Button";
 import { Body, Accounting, Label, SmallText } from "@/components/design-system/atoms/Typography";
-import { StatusBadge } from "@/components/design-system/organisms/StatusBadge";
+import { StatusBadge } from "@/components/design-system/atoms/StatusBadge";
 import { useUpload } from "@/components/providers/UploadContext";
 import { SearchBar } from "@/components/design-system/molecules/SearchBar";
 import { ListPageTemplate } from "@/components/design-system/templates/ListPageTemplate";
@@ -33,7 +33,7 @@ const columns: Column<POListItem>[] = [
         width: "12%",
         render: (_value, po) => (
             <Link href={`/po/${po.po_number}`} className="block group">
-                <Accounting className="text-app-fg tracking-tight group-hover:text-app-accent transition-colors">
+                <Accounting className="tracking-tight group-hover:text-app-accent transition-colors font-black">
                     #{po.po_number}
                 </Accounting>
             </Link>
@@ -44,7 +44,7 @@ const columns: Column<POListItem>[] = [
         label: "Date",
         width: "12%",
         render: (v) => (
-            <Body className="text-app-fg-muted">
+            <Body className="text-app-fg-secondary font-bold">
                 {formatDate(String(v))}
             </Body>
         ),
@@ -55,7 +55,7 @@ const columns: Column<POListItem>[] = [
         width: "6%",
         align: "center",
         render: (v) => (
-            <Body className="text-app-fg-muted">{v || 1}</Body>
+            <Body className="text-app-fg-secondary font-bold">{v || 1}</Body>
         )
     },
     {
@@ -65,7 +65,7 @@ const columns: Column<POListItem>[] = [
         align: "right",
         isNumeric: true,
         render: (v) => (
-            <Accounting className="text-app-fg-muted pr-2">
+            <Accounting className="text-app-fg-secondary pr-2 font-bold">
                 {v}
             </Accounting>
         ),
@@ -77,7 +77,7 @@ const columns: Column<POListItem>[] = [
         align: "right",
         isNumeric: true,
         render: (v) => (
-            <Accounting className="text-emerald-600 dark:text-emerald-400 pr-2">
+            <Accounting className="text-app-success pr-2 font-black">
                 {v}
             </Accounting>
         ),
@@ -104,7 +104,7 @@ const columns: Column<POListItem>[] = [
         align: "right",
         isNumeric: true,
         render: (v) => (
-            <Accounting className="text-app-fg-muted pr-2">
+            <Accounting className="text-app-fg-secondary pr-2 font-bold">
                 {v}
             </Accounting>
         ),
@@ -116,7 +116,7 @@ const columns: Column<POListItem>[] = [
         align: "center",
         render: (v) => (
             <div className="flex justify-center pr-4">
-                <StatusBadge status={String(v).toUpperCase()} className="shadow-none uppercase" />
+                <StatusBadge status={String(v).toUpperCase()} icon={String(v).toLowerCase() === 'closed' ? 'CheckCircle2' : 'Clock'} />
             </div>
         ),
     },
@@ -193,7 +193,7 @@ export function POListClient({ initialPOs, initialStats }: POListClientProps) {
                 value: formatIndianCurrency(initialStats?.total_value_ytd || 0),
                 icon: <IndianRupee size={20} />,
                 variant: "primary",
-                progress: 75, // Target visualization
+                progress: 75,
             },
         ],
         [initialPOs.length, initialStats]
@@ -224,22 +224,21 @@ export function POListClient({ initialPOs, initialStats }: POListClientProps) {
                 />
 
                 <Button
-                    variant="secondary"
+                    variant="glass"
                     onClick={handleUploadClick}
-                    className="min-w-[140px] shadow-sm bg-white dark:bg-white/10 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/20"
+                    className="min-w-[140px] shadow-app-sm"
                 >
-                    <Upload size={16} className="mr-2 text-app-fg" />
-                    <Body className="text-app-fg">Upload PO</Body>
+                    <Upload size={16} className="mr-2" />
+                    <Body className="font-semibold">Upload PO</Body>
                 </Button>
 
                 <Button
-                    color="primary"
-                    size="sm"
+                    variant="primary"
                     onClick={() => router.push("/po/create")}
-                    className="min-w-[180px] shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-all py-2 bg-primary hover:bg-blue-600"
+                    className="min-w-[180px]"
                 >
                     <Plus size={18} className="mr-2" />
-                    <Body className="text-app-fg-inverse">New Purchase Order</Body>
+                    <Body className="text-white font-semibold">New Purchase Order</Body>
                 </Button>
             </Flex>
         </Flex>

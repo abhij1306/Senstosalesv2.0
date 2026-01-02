@@ -18,6 +18,7 @@ from app.core.exceptions import (
 from app.db import get_db
 from app.errors import internal_error, not_found
 from app.models import DCCreate, DCListItem, DCStats
+from app.services import report_service
 from app.services.dc import (
     check_dc_has_invoice,
 )
@@ -28,7 +29,6 @@ from app.services.dc import (
     update_dc as service_update_dc,
 )
 from app.services.status_service import calculate_entity_status, calculate_pending_quantity
-from app.services import report_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -51,9 +51,7 @@ def get_dc_stats(db: sqlite3.Connection = Depends(get_db)):
     """Get DC Page Statistics"""
     try:
         # Total Challans
-        total_challans = db.execute(
-            "SELECT COUNT(*) FROM delivery_challans"
-        ).fetchone()[0]
+        total_challans = db.execute("SELECT COUNT(*) FROM delivery_challans").fetchone()[0]
 
         # Completed (Linked to Invoice)
         completed = db.execute("""
@@ -80,7 +78,7 @@ def get_dc_stats(db: sqlite3.Connection = Depends(get_db)):
         }
     except Exception as e:
         logger.error(f"Failed to fetch DC stats: {e}", exc_info=e)
-        raise internal_error("Failed to fetch DC statistics", e)
+        raise internal_error("Failed to fetch DC statistics", e) from e
 
 
 @router.get("/", response_model=List[DCListItem])
@@ -143,12 +141,14 @@ def list_dcs(po: Optional[str] = None, db: sqlite3.Connection = Depends(get_db))
         total_dispatched_this_dc = row["total_dispatched_quantity"] or 0
         total_received_this_dc = row["total_received_quantity"] or 0
         global_dispatched = row["global_dispatched_quantity"] or 0
-        
+
         # Balance = Total Ordered - Total Dispatched Globally
         total_pending = max(0, total_ordered - global_dispatched)
 
         # Status logic: For a DC, 'Ordered' target for its own lifecycle is its dispatched qty
-        status = calculate_entity_status(total_dispatched_this_dc, total_dispatched_this_dc, total_received_this_dc)
+        status = calculate_entity_status(
+            total_dispatched_this_dc, total_dispatched_this_dc, total_received_this_dc
+        )
 
         results.append(
             DCListItem(
@@ -169,11 +169,8 @@ def list_dcs(po: Optional[str] = None, db: sqlite3.Connection = Depends(get_db))
     return results
 
 
-
 @router.get("/{dc_number}/invoice")
-def check_dc_has_invoice_endpoint(
-    dc_number: str, db: sqlite3.Connection = Depends(get_db)
-):
+def check_dc_has_invoice_endpoint(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
     """Check if DC has an associated GST Invoice"""
     invoice_number = check_dc_has_invoice(dc_number, db)
 
@@ -195,12 +192,10 @@ def download_dc_excel(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
         from app.services.excel_service import ExcelService
 
         # Use exact generator
-        return ExcelService.generate_exact_dc_excel(
-            dc_data["header"], dc_data["items"], db
-        )
+        return ExcelService.generate_exact_dc_excel(dc_data["header"], dc_data["items"], db)
 
     except Exception as e:
-        raise internal_error(f"Failed to generate Excel: {str(e)}", e)
+        raise internal_error(f"Failed to generate Excel: {str(e)}", e) from e
 
 
 @router.get("/{dc_number}")
@@ -232,15 +227,23 @@ def get_dc_detail(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
         settings = {row["key"]: row["value"] for row in settings_rows}
 
         if not header_dict.get("consignee_name"):
-             # Try Default Buyer first, then Settings
+            # Try Default Buyer first, then Settings
             default_buyer = db.execute("SELECT name FROM buyers WHERE is_default = 1").fetchone()
-            header_dict["consignee_name"] = default_buyer["name"] if default_buyer else settings.get("buyer_name", "")
-        
+            header_dict["consignee_name"] = (
+                default_buyer["name"] if default_buyer else settings.get("buyer_name", "")
+            )
+
         if not header_dict.get("consignee_address"):
-             # Try Default Buyer first, then Settings
-            default_buyer_addr = db.execute("SELECT billing_address FROM buyers WHERE is_default = 1").fetchone()
-            header_dict["consignee_address"] = default_buyer_addr["billing_address"] if default_buyer_addr else settings.get("buyer_address", "")
-            
+            # Try Default Buyer first, then Settings
+            default_buyer_addr = db.execute(
+                "SELECT billing_address FROM buyers WHERE is_default = 1"
+            ).fetchone()
+            header_dict["consignee_address"] = (
+                default_buyer_addr["billing_address"]
+                if default_buyer_addr
+                else settings.get("buyer_address", "")
+            )
+
         # Also populate Supplier details unconditionally (User's Company)
         # These are not usually stored in the DC record but are needed for the UI
         # Check if they exist in header_dict first (unlikely) or just overwrite/fill from settings
@@ -250,12 +253,13 @@ def get_dc_detail(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
             header_dict["supplier_phone"] = settings.get("supplier_contact", "")
         if not header_dict.get("supplier_gstin"):
             header_dict["supplier_gstin"] = settings.get("supplier_gstin", "")
-        
+
     except Exception as e:
         logger.warning(f"Failed to populate DC defaults from settings: {e}")
 
     # Calculate status per DC
-    agg = db.execute("""
+    agg = db.execute(
+        """
         SELECT 
             SUM(pod.dely_qty) as total_ord,
             SUM(dci.dispatch_qty) as total_del,
@@ -269,7 +273,9 @@ def get_dc_detail(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
         FROM delivery_challan_items dci
         LEFT JOIN purchase_order_deliveries pod ON dci.po_item_id = pod.po_item_id AND dci.lot_no = pod.lot_no
         WHERE dci.dc_number = ?
-    """, (dc_number, dc_number)).fetchone()
+    """,
+        (dc_number, dc_number),
+    ).fetchone()
 
     if agg:
         t_ord = agg["total_ord"] or 0
@@ -333,8 +339,8 @@ def get_dc_detail(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
         ).fetchone()[0]
 
         # DLV is High Water Mark: MAX(DISP, RECD for this item/lot)
-        # Note: received_quantity here is per this DC. For a true balance, 
-        # normally we should use global received. 
+        # Note: received_quantity here is per this DC. For a true balance,
+        # normally we should use global received.
         # But per-DC detail usually shows status relative to its own cycle.
         # Balancing with global disp for accuracy.
         item_received = item_dict.get("received_quantity", 0)
@@ -346,9 +352,7 @@ def get_dc_detail(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
 
 
 @router.post("/")
-def create_dc(
-    dc: DCCreate, items: List[dict], db: sqlite3.Connection = Depends(get_db)
-):
+def create_dc(dc: DCCreate, items: List[dict], db: sqlite3.Connection = Depends(get_db)):
     print(f"DEBUG: Endpoint create_dc called with dc_number={dc.dc_number}")
     sys.stdout.flush()
     """
@@ -367,7 +371,6 @@ def create_dc(
     # fy = get_financial_year(dc.dc_date)
     # validate_unique_number(...)
 
-
     # Use service layer with transaction protection
     try:
         # CRITICAL: Use BEGIN IMMEDIATE for SQLite concurrency protection
@@ -382,9 +385,7 @@ def create_dc(
                 return result.data
             else:
                 # Should not happen if service raises DomainError
-                raise HTTPException(
-                    status_code=500, detail=result.message or "Unknown error"
-                )
+                raise HTTPException(status_code=500, detail=result.message or "Unknown error")
 
         except DomainError as e:
             # Convert domain error to HTTP response
@@ -397,14 +398,14 @@ def create_dc(
                     "error_code": e.error_code.value,
                     "details": e.details,
                 },
-            )
+            ) from e
         except Exception:
             db.rollback()
             raise
 
     except sqlite3.IntegrityError as e:
         logger.error(f"DC creation failed due to integrity error: {e}", exc_info=e)
-        raise internal_error(f"Database integrity error: {str(e)}", e)
+        raise internal_error(f"Database integrity error: {str(e)}", e) from e
 
 
 @router.put("/{dc_number}")
@@ -430,9 +431,7 @@ def update_dc(
                 return result.data
             else:
                 # Should not happen if service raises DomainError
-                raise HTTPException(
-                    status_code=500, detail=result.message or "Unknown error"
-                )
+                raise HTTPException(status_code=500, detail=result.message or "Unknown error")
 
         except DomainError as e:
             # Convert domain error to HTTP response
@@ -445,14 +444,14 @@ def update_dc(
                     "error_code": e.error_code.value,
                     "details": e.details,
                 },
-            )
+            ) from e
         except Exception:
             db.rollback()
             raise
 
     except sqlite3.IntegrityError as e:
         logger.error(f"DC update failed due to integrity error: {e}", exc_info=e)
-        raise internal_error(f"Database integrity error: {str(e)}", e)
+        raise internal_error(f"Database integrity error: {str(e)}", e) from e
 
 
 @router.delete("/{dc_number}")
@@ -478,8 +477,8 @@ def delete_dc(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
         raise HTTPException(
             status_code=status_code,
             detail={"message": e.message, "error_code": e.error_code.value},
-        )
+        ) from e
     except Exception as e:
         db.rollback()
         logger.error(f"Error deleting DC {dc_number}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

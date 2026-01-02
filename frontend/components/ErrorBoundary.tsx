@@ -2,6 +2,7 @@
 
 import React, { Component, ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
+import { Card, H3, Body } from "@/components/design-system";
 
 interface Props {
     children: ReactNode;
@@ -51,50 +52,50 @@ export class ErrorBoundary extends Component<Props, State> {
 
             // Default error UI
             return (
-                <div className="flex items-center justify-center min-h-screen bg-sys-bg-tertiary">
-                    <div className="max-w-md w-full bg-sys-bg-white rounded-lg shadow-lg p-8">
-                        <div className="flex items-center gap-3 mb-4">
-                            <AlertTriangle className="w-8 h-8 text-sys-error" />
-                            <h1 className="font-bold text-sys-primary">
-                                Something went wrong
-                            </h1>
+                <div className="flex items-center justify-center min-h-screen bg-app-surface">
+                    <Card className="max-w-md w-full p-8 shadow-app-spotlight border border-app-border/50 bg-app-surface/50 backdrop-blur-xl">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 rounded-2xl bg-app-status-error/10 flex items-center justify-center text-app-status-error shadow-sm">
+                                <AlertTriangle className="w-6 h-6" />
+                            </div>
+                            <H3 className="text-xl">System Exception</H3>
                         </div>
-                        <p className="text-sys-secondary mb-4">
-                            We encountered an unexpected error. Please try again.
-                        </p>
+                        <Body className="text-app-fg-muted mb-6">
+                            We encountered an unexpected error while processing your request. Please attempt to retry or return home.
+                        </Body>
                         {this.state.error && (
-                            <div className="bg-sys-error-subtle border border-sys-error/20 rounded p-3 mb-4">
-                                <p className="font-mono text-sys-error">
+                            <div className="bg-app-overlay/5 border border-app-status-error/20 rounded-xl p-4 mb-6">
+                                <p className="font-mono text-xs text-app-status-error break-all">
                                     {this.state.error.message}
                                 </p>
                             </div>
                         )}
                         {process.env.NODE_ENV === "development" &&
                             this.state.errorInfo && (
-                                <details className="mb-4">
-                                    <summary className="text-sys-secondary cursor-pointer hover:text-sys-primary">
-                                        Error Details (Development Only)
+                                <details className="mb-6 group">
+                                    <summary className="text-[10px] font-black uppercase tracking-widest text-app-fg-muted cursor-pointer hover:text-app-fg transition-colors">
+                                        Stack Trace (Dev Only)
                                     </summary>
-                                    <pre className="mt-2 bg-sys-bg-tertiary p-3 rounded overflow-auto max-h-48">
+                                    <pre className="mt-3 bg-app-overlay/10 p-4 rounded-xl overflow-auto max-h-48 text-[10px] font-mono text-app-fg/80 border border-app-border/20">
                                         {this.state.errorInfo.componentStack}
                                     </pre>
                                 </details>
                             )}
-                        <div className="flex gap-3">
+                        <div className="flex gap-4">
                             <button
                                 onClick={this.handleReset}
-                                className="flex-1 px-4 py-2 bg-primary text-sys-bg-white rounded hover:bg-primary/90 transition-colors"
+                                className="flex-1 h-10 flex items-center justify-center rounded-xl bg-app-accent text-white font-black text-[11px] uppercase tracking-widest shadow-md hover:shadow-lg transition-all active:scale-95 active-glow"
                             >
-                                Try again
+                                Retry Action
                             </button>
                             <button
                                 onClick={() => (window.location.href = "/")}
-                                className="flex-1 px-4 py-2 bg-sys-tertiary/20 text-sys-primary rounded hover:bg-sys-tertiary transition-colors"
+                                className="flex-1 h-10 flex items-center justify-center rounded-xl bg-app-overlay/10 text-app-fg font-black text-[11px] uppercase tracking-widest border border-app-border/20 hover:bg-app-overlay/20 transition-all active:scale-95"
                             >
-                                Go home
+                                Back to Home
                             </button>
                         </div>
-                    </div>
+                    </Card>
                 </div>
             );
         }

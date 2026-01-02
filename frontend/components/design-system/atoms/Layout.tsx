@@ -105,7 +105,7 @@ export const Grid = React.memo(GridInternal);
 // Box is a generic container atom
 const BoxInternal = React.forwardRef<HTMLDivElement, LayoutProps>(
     ({ className, children, ...props }, ref) => (
-        <div ref={ref} className={cn("will-change-[transform,opacity,filter]", className)} {...props}>
+        <div ref={ref} className={className} {...props}>
             {children}
         </div>
     )

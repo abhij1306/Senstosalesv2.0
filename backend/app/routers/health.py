@@ -120,9 +120,7 @@ def liveness_check() -> Dict[str, Any]:
         }
     except Exception as e:
         logger.error(f"Liveness check failed: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=503, detail={"status": "not_alive", "error": str(e)}
-        )
+        raise HTTPException(status_code=503, detail={"status": "not_alive", "error": str(e)}) from e
 
 
 @router.get("/health/metrics")
@@ -140,15 +138,15 @@ def metrics() -> Dict[str, Any]:
             return {
                 "timestamp": datetime.utcnow().isoformat() + "Z",
                 "uptime_seconds": round((datetime.utcnow() - START_TIME).total_seconds(), 2),
-                "system": "Metrics unavailable (psutil not installed)"
+                "system": "Metrics unavailable (psutil not installed)",
             }
 
         # Get process info
         process = psutil.Process(os.getpid())
-        
+
         # Calculate uptime
         uptime_seconds = (datetime.utcnow() - START_TIME).total_seconds()
-        
+
         # Get memory info
         memory_info = process.memory_info()
 
@@ -165,7 +163,9 @@ def metrics() -> Dict[str, Any]:
                 "cpu_count": psutil.cpu_count(),
                 "cpu_percent": psutil.cpu_percent(interval=0.1),
                 "memory_percent": psutil.virtual_memory().percent,
-                "disk_percent": psutil.disk_usage("/").percent if os.name != 'nt' else psutil.disk_usage("C:\\").percent,
+                "disk_percent": psutil.disk_usage("/").percent
+                if os.name != "nt"
+                else psutil.disk_usage("C:\\").percent,
             },
         }
     except Exception as e:

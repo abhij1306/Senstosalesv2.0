@@ -8,10 +8,13 @@ import logging
 import sqlite3
 from typing import List
 
-from app.db import get_db
 from app.core.exceptions import ResourceNotFoundError
 from app.models import PODetail, POHeader, POItem, POListItem, POStats
-from app.services.status_service import calculate_entity_status, calculate_pending_quantity, translate_raw_status
+from app.services.status_service import (
+    calculate_entity_status,
+    calculate_pending_quantity,
+    translate_raw_status,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +36,7 @@ class POService:
             ).fetchone()[0]
 
             # Total Value YTD (All POs for now)
-            value_row = db.execute(
-                "SELECT SUM(po_value) FROM purchase_orders"
-            ).fetchone()
+            value_row = db.execute("SELECT SUM(po_value) FROM purchase_orders").fetchone()
             total_value = value_row[0] if value_row and value_row[0] else 0.0
 
             return POStats(
@@ -98,7 +99,7 @@ class POService:
             FROM purchase_orders po
             ORDER BY po.created_at DESC
         """
-        
+
         rows = db.execute(query).fetchall()
 
         results = []
@@ -107,21 +108,21 @@ class POService:
             t_delivered_hwm = row["total_delivered_hwm"]
             t_dispatched_raw = row["total_dispatched_raw"]
             t_received = row["total_received"]
-            
+
             # Pending calculated after Received (Global Invariant)
             t_pending = calculate_pending_quantity(t_ordered, t_delivered_hwm)
 
             # Determine Status using centralized service
             status = calculate_entity_status(t_ordered, t_dispatched_raw, t_received)
             raw_db_status = translate_raw_status(row["po_status"])
-            
+
             # ERP/Manual Override Logic
-            if t_pending > 0.1: 
+            if t_pending > 0.1:
                 status = "Pending"
                 if raw_db_status == "Draft":
                     status = "Draft"
             elif raw_db_status == "Closed":
-                 status = "Closed"
+                status = "Closed"
             elif status == "Pending" and t_dispatched_raw == 0 and t_ordered > 0:
                 status = raw_db_status if raw_db_status != "Draft" else "Draft"
 
@@ -170,14 +171,17 @@ class POService:
         header_dict = dict(header_row)
 
         # Calculate live status based on aggregates
-        agg = db.execute("""
+        agg = db.execute(
+            """
             SELECT 
                 SUM(poi.ord_qty) as total_ord,
                 (SELECT SUM(dci.dispatch_qty) FROM delivery_challan_items dci JOIN purchase_order_items poi2 ON dci.po_item_id = poi2.id WHERE poi2.po_number = ?) as total_del,
                 (SELECT SUM(si.received_qty) FROM srv_items si WHERE si.po_number = ?) as total_recd
             FROM purchase_order_items poi
             WHERE poi.po_number = ?
-        """, (po_number, po_number, po_number)).fetchone()
+        """,
+            (po_number, po_number, po_number),
+        ).fetchone()
 
         if agg and agg["total_ord"] is not None:
             t_ord = agg["total_ord"] or 0
@@ -186,7 +190,7 @@ class POService:
             header_dict["po_status"] = calculate_entity_status(t_ord, t_del, t_recd)
         else:
             header_dict["po_status"] = "Draft"
-        
+
         # Inject Consignee Details (Derived)
         # BHEL is the standard client, so we default to it if not explicit
         header_dict["consignee_name"] = "BHEL, Bhopal"
@@ -227,9 +231,9 @@ class POService:
                 WHERE po_item_id IN ({placeholders}) 
                 ORDER BY lot_no
                 """,
-                item_ids
+                item_ids,
             ).fetchall()
-        
+
         # 2. Process each item and its lots
         items_with_deliveries = []
         for item_row in item_rows:
@@ -246,27 +250,27 @@ class POService:
             for d in all_deliveries:
                 if d["po_item_id"] == item_id:
                     d_dict = dict(d)
-                    
+
                     # Logic: Lot DLV = MAX(DSP, RECD)
                     # Rule: Manual overrides are only applicable in case ord > recd.
                     dsp = d_dict["dispatched_qty"] or 0.0
                     recd = d_dict["rcd_qty"] or 0.0
                     lot_ord = d_dict["scheduled_qty"] or 0.0
                     manual = d_dict.get("manual_override_qty") or 0.0
-                    
+
                     base_dlv = max(dsp, recd)
                     if lot_ord > recd:
                         lot_dlv = max(base_dlv, manual)
                     else:
                         lot_dlv = base_dlv
-                    
-                    d_dict["delivered_quantity"] = lot_dlv # This maps to 'DLV' in UI
-                    d_dict["received_quantity"] = recd     # This maps to 'RECD' in UI
-                    d_dict["ordered_quantity"] = lot_ord    # This maps to 'ORD' in UI
+
+                    d_dict["delivered_quantity"] = lot_dlv  # This maps to 'DLV' in UI
+                    d_dict["received_quantity"] = recd  # This maps to 'RECD' in UI
+                    d_dict["ordered_quantity"] = lot_ord  # This maps to 'ORD' in UI
                     d_dict["manual_override_qty"] = manual
-                    
+
                     item_deliveries.append(d_dict)
-                    
+
                     total_lot_ord += lot_ord
                     total_lot_dlv += lot_dlv
                     total_lot_recd += recd
@@ -275,9 +279,11 @@ class POService:
             item_dict["ordered_quantity"] = total_lot_ord or item_dict.get("ordered_quantity", 0)
             item_dict["delivered_quantity"] = total_lot_dlv
             item_dict["received_quantity"] = total_lot_recd
-            
+
             # Calculate pending: ORD - DLV
-            item_dict["pending_quantity"] = max(0.0, item_dict["ordered_quantity"] - item_dict["delivered_quantity"])
+            item_dict["pending_quantity"] = max(
+                0.0, item_dict["ordered_quantity"] - item_dict["delivered_quantity"]
+            )
 
             item_with_deliveries = {**item_dict, "deliveries": item_deliveries}
             items_with_deliveries.append(POItem(**item_with_deliveries))

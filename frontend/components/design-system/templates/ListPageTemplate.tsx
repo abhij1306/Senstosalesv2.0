@@ -89,13 +89,13 @@ export function ListPageTemplate<T extends Record<string, any>>({
             actions={toolbar}
             className={className}
         >
-            <div className="space-y-6">
+            <div className="space-y-10">
                 {/* Summary Cards */}
                 {summaryCards && summaryCards.length > 0 && (
                     <SummaryCards cards={summaryCards} loading={loading} />
                 )}
 
-                <div className="pb-6 min-h-[500px]">
+                <div className="pb-10 min-h-[500px]">
                     {children ? (
                         <div className="min-h-[400px]">{children}</div>
                     ) : (
@@ -119,8 +119,6 @@ export function ListPageTemplate<T extends Record<string, any>>({
                             error={error}
                             emptyMessage={emptyMessage}
                             emptyIcon={null}
-                            no_borders={no_borders}
-                            table_surface_solid={table_surface_solid}
                             renderSubRow={renderSubRow}
                             onRowExpand={onRowExpand}
                             no_subrow_padding={no_subrow_padding}

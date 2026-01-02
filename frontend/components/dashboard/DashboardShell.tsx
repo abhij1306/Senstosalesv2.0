@@ -27,6 +27,10 @@ import {
     Stack,
     Grid,
     Box,
+    Card,           // Added
+    LargeTitle,     // Added
+    Title2,         // Added
+    Caption1        // Added
 } from "@/components/design-system";
 import { type Column } from "@/components/design-system";
 // import { SummaryCardSkeleton, TableRowSkeleton } from "@/components/design-system/atoms/Skeleton";
@@ -66,10 +70,10 @@ const createActivityColumns = (router: AppRouterInstance): Column<ActivityItem>[
                     className={cn(
                         "p-2 rounded-lg transition-colors shrink-0",
                         item.type === "Invoice"
-                            ? "bg-[var(--color-sys-brand-primary)]/10 text-[var(--color-sys-brand-primary)]"
+                            ? "bg-app-accent/10 text-app-accent"
                             : item.type === "PO"
-                                ? "bg-[var(--color-sys-bg-tertiary)]/50 text-[var(--color-sys-text-secondary)]"
-                                : "bg-[var(--color-sys-status-success)]/10 text-[var(--color-sys-status-success)]"
+                                ? "bg-app-overlay/50 text-app-fg-muted"
+                                : "bg-app-status-success/10 text-app-status-success"
                     )}
                 >
                     {item.type === "Invoice" ? (
@@ -80,7 +84,7 @@ const createActivityColumns = (router: AppRouterInstance): Column<ActivityItem>[
                         <Truck size={16} />
                     )}
                 </motion.div>
-                <div className="text-h3 font-semibold text-app-fg group-hover:text-app-accent transition-colors whitespace-nowrap">
+                <div className="text-h3 font-medium text-app-fg group-hover:text-app-accent transition-colors whitespace-nowrap">
                     {item.number}
                 </div>
             </Flex>
@@ -119,52 +123,44 @@ const createActivityColumns = (router: AppRouterInstance): Column<ActivityItem>[
     },
 ];
 
+interface QuickActionCardProps {
+    title: string;
+    description: string;
+    icon: React.ReactNode;
+    onClick: () => void;
+}
+
 function QuickActionCard({
     title,
     description,
     icon,
     onClick,
-    // layoutId,
-}: {
-    title: string;
-    description: string;
-    icon: React.ReactNode;
-    onClick: () => void;
-    // layoutId?: string;
-}) {
+}: QuickActionCardProps) {
     return (
-        <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        <div
+            className="tahoe-glass-card cursor-pointer group relative overflow-hidden transition-all duration-300 hover:bg-white/60 dark:hover:bg-white/10 active:scale-[0.98] p-0"
+            onClick={onClick}
         >
-            <div
-                className="surface-card cursor-pointer group relative overflow-hidden"
-                onClick={onClick}
-            >
-                <div className="p-5">
-                    <Flex align="center" gap={4}>
-                        <div className="p-3 rounded-2xl bg-app-accent/10 text-app-accent group-hover:scale-110 transition-transform duration-300">
-                            {icon}
-                        </div>
+            <div className="flex items-center gap-4 p-4">
+                <div className="p-3 rounded-[14px] bg-gradient-to-br from-system-blue to-system-cyan text-white shadow-sm ring-1 ring-white/20 transition-transform duration-300 group-hover:scale-110">
+                    {icon}
+                </div>
 
-                        <Stack className="flex-1 min-w-0">
-                            <Body className="text-app-fg leading-none font-bold">
-                                {title}
-                            </Body>
-                            <SmallText className="text-app-fg/60 mt-1.5">{description}</SmallText>
-                        </Stack>
+                <div className="flex-1 min-w-0">
+                    <Body className="font-medium text-text-primary leading-tight text-vibrancy">
+                        {title}
+                    </Body>
+                    <Caption1 className="text-text-secondary mt-1">{description}</Caption1>
+                </div>
 
-                        <div className="w-8 h-8 rounded-full bg-app-fg/5 flex items-center justify-center">
-                            <ArrowRight
-                                size={14}
-                                className="text-app-accent transition-transform group-hover:translate-x-1"
-                            />
-                        </div>
-                    </Flex>
+                <div className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center transition-colors group-hover:bg-system-blue/10">
+                    <ArrowRight
+                        size={14}
+                        className="text-text-tertiary transition-transform group-hover:translate-x-1 group-hover:text-system-blue"
+                    />
                 </div>
             </div>
-        </motion.div>
+        </div>
     );
 }
 
@@ -183,14 +179,13 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
     const handleNewInvoice = useCallback(() => router.push("/invoice/create"), [router]);
 
     return (
-        <Stack gap={8} className="relative z-0 min-h-screen">
-            <Flex align="center" justify="between" className="mb-2">
-                <Stack gap={1}>
-                    <H1 className="text-app-fg">DASHBOARD</H1>
-                    <Body className="text-app-fg-muted">Business intelligence overview</Body>
-                </Stack>
-
-            </Flex>
+        <div className="relative z-0 min-h-screen space-y-8">
+            <div className="flex items-center justify-between mb-8">
+                <div className="space-y-1">
+                    <LargeTitle className="text-text-primary">DASHBOARD</LargeTitle>
+                    <Body className="text-text-secondary">Business intelligence overview</Body>
+                </div>
+            </div>
 
             <Box className="min-h-[140px]">
                 <SummaryCards
@@ -244,52 +239,51 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
                 />
             </Box >
 
-            <Grid cols="1" className="lg:grid-cols-12" gap={8}>
-                <Stack className="lg:col-span-8" gap={4}>
-                    <Flex align="center" justify="between">
-                        <H3>Transaction Ledger</H3>
-                        <Button variant="ghost" size="sm" onClick={handleAnalytics}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="flex items-center gap-4">
+                        <Title2>Transaction Ledger</Title2>
+                        <Button variant="ghost" size="compact" onClick={handleAnalytics}>
                             View All
                         </Button>
-                    </Flex>
+                    </div>
 
-                    <DataTable
-                        columns={activityColumns}
-                        data={activity}
-                        keyField="number"
-                        pageSize={8}
-                    />
-                </Stack>
+                    <div className="rounded-[20px] overflow-hidden">
+                        <DataTable
+                            columns={activityColumns}
+                            data={activity}
+                            keyField="number"
+                            pageSize={8}
+                            className="h-full border-none shadow-none bg-transparent"
+                            density="compact"
+                        />
+                    </div>
+                </div>
 
-                <Stack className="lg:col-span-4" gap={4}>
-                    <Flex align="center" justify="between">
-                        <H3>Execution Center</H3>
-                    </Flex>
-                    <Stack gap={4}>
+                <div className="space-y-6">
+                    <Title2>Execution Center</Title2>
+                    <div className="space-y-4">
                         <QuickActionCard
                             title="New Purchase Order"
                             description="Initiate procurement lifecycle"
                             icon={<Plus size={20} />}
                             onClick={handleNewPO}
-                        // layoutId="create-po-icon"
                         />
                         <QuickActionCard
                             title="Issue Delivery Challan"
                             description="Commit inventory to logistics"
                             icon={<Truck size={20} />}
                             onClick={handleNewDC}
-                        // layoutId="create-dc-icon"
                         />
                         <QuickActionCard
                             title="Generate Invoice"
                             description="Finalize financial reconciliation"
                             icon={<Receipt size={20} />}
                             onClick={handleNewInvoice}
-                        // layoutId="create-invoice-icon"
                         />
-                    </Stack>
-                </Stack>
-            </Grid>
-        </Stack >
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }

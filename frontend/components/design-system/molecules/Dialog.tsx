@@ -60,7 +60,7 @@ export const Dialog = ({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 bg-sys-primary/40 backdrop-blur-sm z-50"
+                        className="fixed inset-0 bg-app-overlay/40 backdrop-blur-sm z-50"
                         onClick={onClose}
                     />
                     {/* Dialog Content */}
@@ -84,22 +84,22 @@ export const Dialog = ({
                         >
                             <Card
                                 className={cn(
-                                    "overflow-hidden shadow-2xl border border-sys-bg-white/20",
-                                    "bg-sys-bg-white/90 backdrop-blur-xl",
+                                    "overflow-hidden shadow-app-spotlight border border-app-border/30",
+                                    "bg-app-surface/90 backdrop-blur-xl",
                                     className
                                 )}
                             >
                                 {/* Header - Draggable Handle */}
                                 <div
                                     onPointerDown={(e) => dragControls.start(e)}
-                                    className="flex items-center justify-between px-6 py-4 border-b border-sys-bg-tertiary cursor-grab active:cursor-grabbing select-none"
+                                    className="flex items-center justify-between px-6 py-4 border-b border-app-border cursor-grab active:cursor-grabbing select-none"
                                 >
-                                    <H3>{title || "Dialog"}</H3>
+                                    <H3 className="text-app-fg uppercase tracking-tight">{title || "Dialog"}</H3>
                                     <Button
                                         variant="ghost"
                                         size="sm"
                                         onClick={onClose}
-                                        className="h-8 w-8 p-0 rounded-full hover:bg-sys-bg-tertiary text-sys-secondary"
+                                        className="h-8 w-8 p-0 rounded-full hover:bg-app-overlay text-app-fg-muted"
                                     >
                                         <X size={18} />
                                     </Button>
@@ -108,7 +108,7 @@ export const Dialog = ({
                                 <div className="p-6">{children}</div>
                                 {/* Footer */}
                                 {footer && (
-                                    <div className="px-6 py-4 bg-sys-bg-tertiary/50 border-t border-sys-bg-tertiary flex justify-end gap-3">
+                                    <div className="px-6 py-4 bg-app-overlay/50 border-t border-app-border flex justify-end gap-3">
                                         {footer}
                                     </div>
                                 )}
@@ -128,7 +128,7 @@ export const DialogContent = ({ children, className }: { children: React.ReactNo
 );
 
 export const DialogHeader = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div className={cn("flex items-center justify-between px-6 py-4 border-b border-sys-bg-tertiary", className)}>
+    <div className={cn("flex items-center justify-between px-6 py-4 border-b border-app-border", className)}>
         {children}
     </div>
 );

@@ -20,7 +20,7 @@ const InputInternal = React.forwardRef<HTMLInputElement, InputProps>(
             <div className="w-full">
                 <div className="relative group">
                     {icon && (
-                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-app-fg/30 group-focus-within:text-app-accent transition-colors duration-300 pointer-events-none">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-app-fg-muted group-focus-within:text-app-accent transition-colors duration-300 pointer-events-none">
                             {icon}
                         </div>
                     )}
@@ -28,14 +28,14 @@ const InputInternal = React.forwardRef<HTMLInputElement, InputProps>(
                         type={type}
                         className={cn(
                             "flex w-full transition-all duration-300 border-none outline-none",
-                            "text-[13px] font-semibold text-app-fg placeholder:text-app-fg/30",
+                            "text-[14px] font-medium text-app-fg placeholder:text-gray-500/80",
                             // Variant mappings
-                            variant === "default" && "h-[38px] rounded-xl bg-app-surface border border-app-border/30 focus:shadow-lg focus:ring-1 focus:ring-app-accent/20 px-3.5",
-                            variant === "glass" && "h-[38px] rounded-xl bg-app-overlay backdrop-blur-xl border border-app-border/40 px-3.5",
+                            variant === "default" && "glass-input h-11 rounded-2xl px-4 focus:ring-2 focus:ring-primary/40 focus:bg-white/60 dark:focus:bg-gray-800/60 shadow-sm",
+                            variant === "glass" && "glass-input h-11 rounded-2xl px-4 focus:ring-2 focus:ring-primary/40",
                             variant === "ghost" && "bg-transparent h-auto p-0",
-                            variant === "neumorphic" && "h-[38px] rounded-xl neumorphic-inset px-3.5 focus:shadow-none focus:ring-2 focus:ring-app-accent/10 focus:border-app-accent/30",
+                            variant === "neumorphic" && "h-11 rounded-2xl neumorphic-inset px-4 focus:ring-2 focus:ring-primary/20",
                             icon && variant !== "ghost" && "pl-11",
-                            error && "ring-1 ring-rose-500/50",
+                            error && "ring-1 ring-app-status-error/50",
                             className
                         )}
                         ref={ref}
@@ -44,7 +44,7 @@ const InputInternal = React.forwardRef<HTMLInputElement, InputProps>(
                         value={props.value ?? ""}
                     />
                 </div>
-                {error && <p className="mt-1 text-[11px] font-bold text-rose-500 uppercase tracking-wider">{error}</p>}
+                {error && <p className="mt-1 text-[11px] font-bold text-app-status-error uppercase tracking-wider">{error}</p>}
             </div>
         );
     }

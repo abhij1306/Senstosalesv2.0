@@ -8,7 +8,6 @@ import logging
 import sqlite3
 import uuid
 from typing import Dict, List, Optional
-from app.core.number_utils import to_float, to_int, to_qty
 
 from app.core.exceptions import (
     ConflictError,
@@ -16,6 +15,7 @@ from app.core.exceptions import (
     ResourceNotFoundError,
     ValidationError,
 )
+from app.core.number_utils import to_qty
 from app.core.result import ServiceResult
 
 logger = logging.getLogger(__name__)
@@ -23,14 +23,10 @@ logger = logging.getLogger(__name__)
 
 def generate_invoice_number(db: sqlite3.Connection) -> str:
     """DISABLED - Manual numbering now required"""
-    raise NotImplementedError(
-        "Manual numbering is now required. Auto-generation is disabled."
-    )
+    raise NotImplementedError("Manual numbering is now required. Auto-generation is disabled.")
 
 
-def calculate_tax(
-    taxable_value: float, cgst_rate: float = 9.0, sgst_rate: float = 9.0
-) -> dict:
+def calculate_tax(taxable_value: float, cgst_rate: float = 9.0, sgst_rate: float = 9.0) -> dict:
     """
     Calculate CGST and SGST amounts
     INVARIANT: INV-2 - Backend is the source of truth for all monetary calculations
@@ -51,18 +47,12 @@ def validate_invoice_header(invoice_data: dict) -> None:
     Validate invoice header fields
     Raises ValidationError if validation fails
     """
-    if (
-        not invoice_data.get("invoice_number")
-        or invoice_data["invoice_number"].strip() == ""
-    ):
+    if not invoice_data.get("invoice_number") or invoice_data["invoice_number"].strip() == "":
         raise ValidationError("Invoice number is required")
     if not invoice_data.get("dc_number") or invoice_data["dc_number"].strip() == "":
         raise ValidationError("DC number is required")
 
-    if (
-        not invoice_data.get("invoice_date")
-        or invoice_data["invoice_date"].strip() == ""
-    ):
+    if not invoice_data.get("invoice_date") or invoice_data["invoice_date"].strip() == "":
         raise ValidationError("Invoice date is required")
 
     if not invoice_data.get("buyer_name") or invoice_data["buyer_name"].strip() == "":
@@ -128,11 +118,11 @@ def fetch_dc_items(dc_number: str, db: sqlite3.Connection) -> List[Dict]:
     """,
         (dc_number,),
     ).fetchall()
-    
+
     # Also fetch DC header info to map to Invoice if needed
     dc_header = db.execute(
         "SELECT consignee_name, consignee_gstin, consignee_address, vehicle_no, transporter, lr_no, po_number FROM delivery_challans WHERE dc_number = ?",
-        (dc_number,)
+        (dc_number,),
     ).fetchone()
 
     return [dict(item) for item in dc_items], dict(dc_header) if dc_header else {}
@@ -333,8 +323,11 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
         inv_header = {
             "buyer_name": invoice_data.get("buyer_name") or dc_header.get("consignee_name"),
             "buyer_gstin": invoice_data.get("buyer_gstin") or dc_header.get("consignee_gstin"),
-            "buyer_address": invoice_data.get("buyer_address") or dc_header.get("consignee_address"),
-            "po_numbers": str(invoice_data.get("buyers_order_no") or dc_header.get("po_number", "")),
+            "buyer_address": invoice_data.get("buyer_address")
+            or dc_header.get("consignee_address"),
+            "po_numbers": str(
+                invoice_data.get("buyers_order_no") or dc_header.get("po_number", "")
+            ),
             "buyers_order_date": invoice_data.get("buyers_order_date") or actual_po_date,
             "vehicle_no": invoice_data.get("vehicle_no") or dc_header.get("vehicle_no"),
             "transporter": invoice_data.get("transporter") or dc_header.get("transporter"),
@@ -383,7 +376,7 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
                 total_cgst,
                 total_sgst,
                 0.0,
-                total_amount
+                total_amount,
             ),
         )
 
@@ -410,7 +403,7 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
                     item["igst_amount"],
                     item["total_amount"],
                     item["po_sl_no"],  # CRITICAL: Required for PO linking
-                    item["hsn_sac"]    # CRITICAL: Required for Tax
+                    item["hsn_sac"],  # CRITICAL: Required for Tax
                 ),
             )
 

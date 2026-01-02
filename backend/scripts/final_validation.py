@@ -3,10 +3,10 @@ Final System Validation Script
 Runs comprehensive checks across all 9 audit categories
 """
 
-import sqlite3
-from pathlib import Path
-import sys
 import json
+import sqlite3
+import sys
+from pathlib import Path
 
 
 # Color codes for terminal output
@@ -62,9 +62,7 @@ def check_migrations_applied():
             print(f"{Colors.GREEN}✓ {count} migrations applied{Colors.END}")
             return True
         else:
-            print(
-                f"{Colors.YELLOW}⚠  Only {count} migrations found (expected 4+){Colors.END}"
-            )
+            print(f"{Colors.YELLOW}⚠  Only {count} migrations found (expected 4+){Colors.END}")
             return False
     except Exception as e:
         print(f"{Colors.RED}✗ Error checking migrations: {e}{Colors.END}")
@@ -82,14 +80,10 @@ def check_backend_routes():
             print(f"{Colors.GREEN}✓ Backend is running and healthy{Colors.END}")
             return True
         else:
-            print(
-                f"{Colors.YELLOW}⚠  Backend returned status {response.status_code}{Colors.END}"
-            )
+            print(f"{Colors.YELLOW}⚠  Backend returned status {response.status_code}{Colors.END}")
             return False
     except ImportError:
-        print(
-            f"{Colors.YELLOW}⚠  requests library not installed, skipping HTTP check{Colors.END}"
-        )
+        print(f"{Colors.YELLOW}⚠  requests library not installed, skipping HTTP check{Colors.END}")
         return True  # Non-blocking
     except Exception as e:
         print(f"{Colors.RED}✗ Backend not accessible: {e}{Colors.END}")
@@ -108,9 +102,7 @@ def check_frontend_build():
 
     # Check if node_modules exists
     if not (frontend_path / "node_modules").exists():
-        print(
-            f"{Colors.YELLOW}⚠  node_modules not found, run 'npm install'{Colors.END}"
-        )
+        print(f"{Colors.YELLOW}⚠  node_modules not found, run 'npm install'{Colors.END}")
         return False
 
     print(f"{Colors.GREEN}✓ Frontend structure looks good{Colors.END}")
@@ -123,9 +115,7 @@ def check_no_duplicate_files():
 
     # Check if old utils/ folder still exists
     if Path("utils").exists():
-        print(
-            f"{Colors.RED}✗ Old utils/ folder still exists (should be archived){Colors.END}"
-        )
+        print(f"{Colors.RED}✗ Old utils/ folder still exists (should be archived){Colors.END}")
         return False
 
     # Check if backend/app/utils/number_utils.py exists
@@ -196,9 +186,7 @@ def check_error_handling():
 
     missing = [exc for exc in required_exceptions if exc not in content]
     if missing:
-        print(
-            f"{Colors.YELLOW}⚠  Missing exception classes: {', '.join(missing)}{Colors.END}"
-        )
+        print(f"{Colors.YELLOW}⚠  Missing exception classes: {', '.join(missing)}{Colors.END}")
         return False
 
     print(f"{Colors.GREEN}✓ Exception handling classes present{Colors.END}")
@@ -264,9 +252,7 @@ def main():
 
     for name, result in results.items():
         status = (
-            f"{Colors.GREEN}✓ PASS{Colors.END}"
-            if result
-            else f"{Colors.RED}✗ FAIL{Colors.END}"
+            f"{Colors.GREEN}✓ PASS{Colors.END}" if result else f"{Colors.RED}✗ FAIL{Colors.END}"
         )
         print(f"  {name:30s} {status}")
 
@@ -279,9 +265,7 @@ def main():
     elif percentage >= 90:
         grade = "A-"
         color = Colors.GREEN
-        print(
-            f"{color}GRADE: {grade} - PRODUCTION READY (with minor notes){Colors.END}"
-        )
+        print(f"{color}GRADE: {grade} - PRODUCTION READY (with minor notes){Colors.END}")
     elif percentage >= 80:
         grade = "B"
         color = Colors.YELLOW

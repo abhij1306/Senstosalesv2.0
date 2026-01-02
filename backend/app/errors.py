@@ -50,9 +50,7 @@ def conflict(message: str, log_details: Optional[str] = None) -> HTTPException:
     return HTTPException(status_code=409, detail=message)
 
 
-def internal_error(
-    message: str, exception: Optional[Exception] = None
-) -> HTTPException:
+def internal_error(message: str, exception: Optional[Exception] = None) -> HTTPException:
     """
     500 Internal Server Error - Unexpected server error
     Use for: database errors, unexpected exceptions

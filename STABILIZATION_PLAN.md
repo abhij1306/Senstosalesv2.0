@@ -10,7 +10,7 @@ Standardize components, eliminate redundancy, optimize performance, and ensure b
 ### **Structure Refactor**
 - **[GLOBAL] `frontend/components/design-system/`**: Strictly for generic components (Atoms, Molecules, and purely generic Organisms like `DataTable`).
 - **[LOCAL] `frontend/components/[feature]/organisms/`**: Feature-specific logic (e.g., `PODetailItems`) moves here to prevent global bloat.
-- **[PURGE]**: All remaining `Tahoe`, `Legacy`, or duplicate components outside the Atomic Design flow.
+- **[PURGE]**: All remaining legacy or duplicate components outside the Atomic Design flow.
 
 ### **Typography Standardization**
 - **Fonts**: Strict 3-font Apple standard.

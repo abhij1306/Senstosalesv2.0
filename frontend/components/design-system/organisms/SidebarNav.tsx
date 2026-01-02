@@ -9,16 +9,13 @@ import {
   Receipt,
   FileText,
   Settings,
-  ChevronRight,
   Package,
-  Activity,
-  Box,
-  Users,
   BarChart3,
-  CreditCard,
+  Box,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { Caption1, Body, Headline, Footnote } from "../atoms/Typography";
 
 const navGroups = [
   {
@@ -50,106 +47,80 @@ export function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <div className="w-[270px] bg-app-sidebar h-full flex flex-col z-50 shrink-0 relative overflow-hidden font-heading rounded-none border-none">
-
-      {/* Brand Header - Compacted */}
-      <div className="p-6 pb-2 shrink-0 relative z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-app-accent flex items-center justify-center shadow-lg shadow-app-accent/20">
-            <Package className="text-white w-5 h-5" />
+    <aside className="w-72 flex-shrink-0 flex flex-col tahoe-glass !bg-white/20 dark:!bg-black/20 z-20 m-4 ml-4 rounded-[24px] overflow-hidden border-white/20">
+      {/* Brand Header */}
+      <div className="h-24 flex items-center px-6 border-b border-white/10">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 bg-gradient-to-br from-system-blue to-system-cyan rounded-[12px] shadow-lg flex items-center justify-center text-white ring-1 ring-white/20">
+            <Package className="w-6 h-6" />
           </div>
-          <div className="flex flex-col">
-            <span className="text-md font-bold text-app-fg tracking-tight leading-none uppercase">
-              SENSTO<span className="text-app-accent">SALES</span>
-            </span>
-            <span className="text-[8px] font-bold text-app-fg/40 mt-1 uppercase tracking-[0.3em]">
-              PRO ENTERPRISE
-            </span>
+          <div className="flex flex-col justify-center">
+            <Headline className="leading-tight text-vibrancy font-semibold">Sensto Sales</Headline>
+            <Caption1 className="text-text-secondary opacity-90 leading-tight mt-0.5 font-medium">Pro Enterprise</Caption1>
           </div>
         </div>
       </div>
 
-      {/* Navigation Groups - Densified */}
-      <div className="flex-1 px-3 py-4 space-y-6 overflow-y-auto no-scrollbar relative z-10">
+      {/* Navigation Groups */}
+      <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-9 no-scrollbar">
         {navGroups.map((group) => (
-          <div key={group.label} className="space-y-0.5">
-            <h3 className="px-3 text-[9px] font-bold text-app-fg/40 uppercase tracking-[0.3em] mb-2">
+          <div key={group.label}>
+            <Caption1 className="px-3 mb-3 pl-4 text-text-tertiary font-medium tracking-wide uppercase opacity-80">
               {group.label}
-            </h3>
-            {group.items.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/" && pathname.startsWith(item.href + "/"));
+            </Caption1>
+            <ul className="space-y-1">
+              {group.items.map((item) => {
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/" && pathname.startsWith(item.href + "/"));
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "group flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 relative z-10",
-                    isActive
-                      ? "text-app-accent"
-                      : "text-app-fg/60 hover:text-app-fg"
-                  )}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="sidebar-active-pill"
-                      className="absolute inset-x-2 inset-y-1 active-glow-soft rounded-lg -z-10"
-                      initial={false}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                  )}
-
-                  <div className="flex items-center gap-3 relative z-10 pl-2">
-                    <item.icon
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
                       className={cn(
-                        "w-4 h-4 transition-all duration-200",
+                        "flex items-center px-3.5 py-2.5 rounded-xl transition-all duration-200 group relative active:scale-[0.98] shadow-sm backdrop-blur-sm",
                         isActive
-                          ? "text-app-accent"
-                          : "text-app-fg/40 group-hover:text-app-fg/70"
-                      )}
-                    />
-                    <span
-                      className={cn(
-                        "text-[11px] font-bold tracking-wider uppercase",
-                        isActive ? "text-app-accent" : "text-app-fg/60 group-hover:text-app-fg"
+                          ? "bg-system-blue/15 text-system-blue font-semibold"
+                          : "text-text-secondary hover:bg-white/40 dark:hover:bg-white/10 hover:text-text-primary hover:shadow-sm"
                       )}
                     >
-                      {item.name}
-                    </span>
-                  </div>
-
-                  {isActive && (
-                    <ChevronRight className="w-3 h-3 text-[var(--color-sys-brand-primary)] opacity-100" />
-                  )}
-                </Link>
-              );
-            })}
+                      <item.icon
+                        className={cn(
+                          "w-[20px] h-[20px] mr-3 transition-colors",
+                          isActive ? "text-system-blue" : "text-text-tertiary group-hover:text-text-primary"
+                        )}
+                      />
+                      <Body className={cn("text-[15px] transition-colors", isActive ? "text-system-blue font-semibold" : "text-inherit font-medium")}>
+                        {item.name}
+                      </Body>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         ))}
-      </div>
+      </nav>
 
       {/* Premium Profile Footer */}
-      <div className="p-4 shrink-0 mt-auto relative z-10">
-        <div className="p-2.5 bg-app-fg/5 rounded-xl shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-app-accent/10 flex items-center justify-center text-app-accent font-black text-[11px]">
-              AS
-            </div>
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-[10px] font-bold text-app-fg truncate">Abhijit S.</span>
-              <div className="flex items-center gap-1 mt-0.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                <span className="text-[7px] font-bold text-app-fg/40 uppercase tracking-widest truncate">Administrator</span>
-              </div>
-            </div>
-            <div className="p-1.5 hover:bg-app-fg/10 rounded-lg transition-colors cursor-pointer text-app-fg/40 hover:text-app-fg">
-              <Settings size={12} />
+      <div className="p-4 border-t border-white/10">
+        <div className="flex items-center p-3 bg-white/10 dark:bg-black/10 backdrop-blur-md rounded-[16px] shadow-sm border border-white/10 cursor-pointer hover:bg-white/20 transition-smooth active:scale-[0.98] group">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-system-gray to-slate-400 text-white flex items-center justify-center font-semibold text-sm shadow-inner ring-2 ring-white/10">
+            <span>AS</span>
+          </div>
+          <div className="ml-3.5 flex-1 overflow-hidden">
+            <Footnote className="font-semibold text-text-primary truncate">Abhijit S.</Footnote>
+            <div className="flex items-center mt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-system-green mr-1.5 shadow-[0_0_6px_rgba(var(--system-green-rgb),0.8)]"></span>
+              <Caption2 className="text-text-secondary truncate font-medium">Administrator</Caption2>
             </div>
           </div>
+          <Settings className="w-5 h-5 text-text-tertiary group-hover:text-text-primary transition-colors" />
         </div>
       </div>
-    </div>
+    </aside>
   );
 }
+
+import { Caption2 } from "../atoms/Typography";

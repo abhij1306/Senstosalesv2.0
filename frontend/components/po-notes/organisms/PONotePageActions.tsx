@@ -9,7 +9,7 @@ interface PONotePageActionsProps {
 export const PONotePageActions = ({ onCreate, disabled }: PONotePageActionsProps) => {
     return (
         <Button
-            variant="default"
+            variant="primary"
             onClick={onCreate}
             disabled={disabled}
         >

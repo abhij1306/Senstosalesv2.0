@@ -1,3 +1,47 @@
+export default function Loading() {
+    return (
+        <div className="space-y-8 p-8">
+            {/* Header skeleton */}
+            <div className="flex items-end justify-between">
+                <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                        <div className="w-1.5 h-6 bg-app-accent rounded-full" />
+                        <div className="h-8 w-48 bg-app-overlay animate-pulse rounded-lg" />
+                    </div>
+                    <div className="h-4 w-64 bg-app-overlay/60 animate-pulse rounded-lg mt-2" />
+                </div>
+            </div>
 
-export default function Loading() { return ( <div className="space-y-6"> {/* Header skeleton */} <div className="space-y-2"> <div className="h-8 w-64 bg-sys-tertiary/20 animate-pulse rounded" /> <div className="h-4 w-96 bg-sys-bg-tertiary animate-pulse rounded" /> </div> {/* Toolbar skeleton */} <div className="flex gap-3"> <div className="h-10 w-64 bg-sys-bg-tertiary animate-pulse rounded-lg" /> <div className="h-10 w-32 bg-sys-bg-tertiary animate-pulse rounded-lg" /> <div className="h-10 w-32 bg-sys-bg-tertiary animate-pulse rounded-lg" /> </div> {/* Summary cards skeleton */} <div className="grid grid-cols-4 gap-4"> {[1, 2, 3, 4].map((i) => ( <div key={i} className="h-24 bg-gradient-to-br from-sys-brand/10 to-purple-500/10 animate-pulse rounded-lg border border-sys-tertiary/20" /> ))} </div> {/* Table skeleton */} <div className="bg-sys-bg-white rounded-lg border border-sys-tertiary/20 p-6"> {/* Table header skeleton */} <div className="h-10 bg-sys-bg-tertiary animate-pulse rounded mb-4" /> {/* Table rows skeleton */} <div className="space-y-3"> {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => ( <div key={i} className="h-12 bg-sys-bg-tertiary animate-pulse rounded" style={{ animationDelay: `${i * 50}ms` }} /> ))} </div> {/* Pagination skeleton */} <div className="flex justify-between items-center mt-6 pt-4 border-t"> <div className="h-8 w-48 bg-sys-bg-tertiary animate-pulse rounded" /> <div className="flex gap-2"> {[1, 2, 3, 4, 5].map((i) => ( <div key={i} className="h-8 w-8 bg-sys-bg-tertiary animate-pulse rounded" /> ))} </div> </div> </div> </div> );
+            {/* Toolbar skeleton */}
+            <div className="flex gap-4">
+                <div className="h-10 w-64 bg-app-overlay animate-pulse rounded-xl" />
+                <div className="h-10 w-32 bg-app-overlay animate-pulse rounded-xl" />
+                <div className="h-10 w-32 bg-app-overlay animate-pulse rounded-xl" />
+            </div>
+
+            {/* Summary cards skeleton */}
+            <div className="grid grid-cols-4 gap-6">
+                {[1, 2, 3, 4].map((i) => (
+                    <div
+                        key={i}
+                        className="h-28 bg-app-surface/50 animate-pulse rounded-2xl border border-app-border/30"
+                    />
+                ))}
+            </div>
+
+            {/* Table skeleton */}
+            <div className="bg-app-surface/30 rounded-3xl border border-app-border/30 p-8">
+                <div className="h-10 bg-app-overlay animate-pulse rounded-xl mb-6" />
+                <div className="space-y-4">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                        <div
+                            key={i}
+                            className="h-14 bg-app-overlay animate-pulse rounded-xl"
+                            style={{ animationDelay: `${i * 50}ms` }}
+                        />
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
 }

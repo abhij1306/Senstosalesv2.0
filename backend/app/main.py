@@ -21,21 +21,19 @@ from app.routers import (
     health,
     invoice,
     po,
+    po_notes,
     reports,
     search,
     settings,
     srv,
     system,
-    po_notes,
 )
 
 # Setup structured logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(
-    title=app_settings.PROJECT_NAME, description="SenstoSales ERP API", version="3.4.0"
-)
+app = FastAPI(title=app_settings.PROJECT_NAME, description="SenstoSales ERP API", version="3.4.0")
 
 # CORS Configuration
 # Simplified for development to resolve connectivity issues
@@ -47,6 +45,7 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
 
 @app.exception_handler(AppException)
 async def app_exception_handler(request: Request, exc: AppException):
@@ -64,7 +63,10 @@ async def app_exception_handler(request: Request, exc: AppException):
         },
     )
 
+
 from app.core.exceptions import ResourceNotFoundException
+
+
 @app.exception_handler(ResourceNotFoundException)
 async def resource_not_found_handler(request: Request, exc: ResourceNotFoundException):
     return JSONResponse(
@@ -76,6 +78,7 @@ async def resource_not_found_handler(request: Request, exc: ResourceNotFoundExce
             "details": exc.details,
         },
     )
+
 
 # Include Routers
 app.include_router(health.router, prefix="/api", tags=["Health"])
@@ -91,7 +94,6 @@ app.include_router(buyers.router, prefix="/api/buyers", tags=["Buyers"])
 app.include_router(search.router, prefix="/api/search", tags=["Search"])
 app.include_router(system.router, tags=["System"])  # Prefix defined in router
 app.include_router(po_notes.router, prefix="/api/po-notes", tags=["PO Notes"])
-
 
 
 @app.get("/")

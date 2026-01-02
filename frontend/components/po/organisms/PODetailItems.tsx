@@ -305,16 +305,16 @@ export const PODetailItems = ({
             <div className="table-container shadow-premium-hover border-none">
                 <table className="w-full text-left">
                     <thead>
-                        <tr className="border-b border-app-border/10 bg-app-overlay/10">
-                            <th className="py-3 px-4 text-center w-[50px]"><Label className="m-0 text-[10px]">#</Label></th>
-                            <th className="py-3 px-4 w-[120px]"><Label className="m-0 text-[10px]">Code</Label></th>
-                            <th className="py-3 px-4 w-[120px]"><Label className="m-0 text-[10px]">Drawing</Label></th>
-                            <th className="py-3 px-4"><Label className="m-0 text-[10px]">Description</Label></th>
-                            <th className="py-3 px-4 text-center w-[70px]"><Label className="m-0 text-[10px]">Unit</Label></th>
-                            <th className="py-3 px-4 text-right w-[90px]"><Label className="m-0 text-[10px]">Ordered</Label></th>
-                            <th className="py-3 px-4 text-right w-[90px] bg-blue-50/10 dark:bg-blue-900/10"><Label className="m-0 text-[10px] text-blue-600 dark:text-blue-400">Delivered</Label></th>
-                            <th className="py-3 px-4 text-right w-[90px] bg-blue-50/10 dark:bg-blue-900/10"><Label className="m-0 text-[10px] text-blue-600 dark:text-blue-400">Balance</Label></th>
-                            <th className="py-3 px-4 text-right w-[90px]"><Label className="m-0 text-[10px]">Received</Label></th>
+                        <tr className="border-b border-white/5 bg-app-overlay/10">
+                            <th className="py-3 px-4 text-center w-[50px]"><Label className="m-0 text-[12px]">#</Label></th>
+                            <th className="py-3 px-4 w-[120px]"><Label className="m-0 text-[12px]">Code</Label></th>
+                            <th className="py-3 px-4 w-[120px]"><Label className="m-0 text-[12px]">Drawing</Label></th>
+                            <th className="py-3 px-4"><Label className="m-0 text-[12px]">Description</Label></th>
+                            <th className="py-3 px-4 text-center w-[70px]"><Label className="m-0 text-[12px]">Unit</Label></th>
+                            <th className="py-3 px-4 text-right w-[90px]"><Label className="m-0 text-[12px]">Ordered</Label></th>
+                            <th className="py-3 px-4 text-right w-[90px] bg-blue-50/10 dark:bg-blue-900/10"><Label className="m-0 text-[12px] text-blue-600 dark:text-blue-400">Delivered</Label></th>
+                            <th className="py-3 px-4 text-right w-[90px] bg-blue-50/10 dark:bg-blue-900/10"><Label className="m-0 text-[12px] text-blue-600 dark:text-blue-400">Balance</Label></th>
+                            <th className="py-3 px-4 text-right w-[90px]"><Label className="m-0 text-[12px]">Received</Label></th>
                             <th className="py-3 px-4 w-[60px]"></th>
                         </tr>
                     </thead>

@@ -31,20 +31,20 @@ export function Pagination({
     if (totalItems === 0) return null;
 
     return (
-        <div className="flex items-center justify-between px-2 py-4 border-t border-sys-tertiary/20">
+        <div className="flex items-center justify-between px-2 py-4 border-t border-app-border/30">
             {/* Mobile: Simple Prev/Next */}
             <div className="flex flex-1 justify-between sm:hidden">
                 <button
                     onClick={() => onPageChange(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-sys-tertiary font-medium rounded-md text-sys-primary bg-sys-bg-white hover:bg-sys-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="relative inline-flex items-center px-4 py-2 border border-app-border font-medium rounded-md text-app-fg bg-app-surface hover:bg-app-overlay disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Previous
                 </button>
                 <button
                     onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-sys-tertiary font-medium rounded-md text-sys-primary bg-sys-bg-white hover:bg-sys-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-app-border font-medium rounded-md text-app-fg bg-app-surface hover:bg-app-overlay disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Next
                 </button>
@@ -52,7 +52,7 @@ export function Pagination({
             {/* Desktop: Full Controls */}
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                 <div>
-                    <p className="text-sys-primary">
+                    <p className="text-app-fg">
                         Showing <span className="font-medium">{startItem}</span> to{" "}
                         <span className="font-medium">{endItem}</span> of{" "}
                         <span className="font-medium">{totalItems}</span> results
@@ -60,7 +60,7 @@ export function Pagination({
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                        <span className="text-sys-secondary whitespace-nowrap">
+                        <span className="text-app-fg-muted whitespace-nowrap">
                             Rows per page:
                         </span>
                         <select
@@ -69,7 +69,7 @@ export function Pagination({
                                 onPageSizeChange(Number(e.target.value));
                                 onPageChange(1); // Reset to first page on size change
                             }}
-                            className="block w-full pl-3 pr-8 py-1 border-sys-tertiary focus:outline-none focus:ring-sys-brand focus:border-sys-brand sm: rounded-md"
+                            className="block w-full pl-3 pr-8 py-1 bg-app-surface border border-app-border text-app-fg focus:outline-none focus:ring-app-accent focus:border-app-accent sm:text-xs rounded-md"
                         >
                             {pageSizeOptions.map((option) => (
                                 <option key={option} value={option}>
@@ -85,7 +85,7 @@ export function Pagination({
                         <button
                             onClick={() => onPageChange(1)}
                             disabled={currentPage === 1}
-                            className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-sys-tertiary bg-sys-bg-white font-medium text-sys-secondary hover:bg-sys-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-app-border bg-app-surface font-medium text-app-fg-muted hover:bg-app-overlay disabled:opacity-50 disabled:cursor-not-allowed"
                             title="First Page"
                         >
                             <span className="sr-only">First</span>
@@ -94,13 +94,13 @@ export function Pagination({
                         <button
                             onClick={() => onPageChange(Math.max(1, currentPage - 1))}
                             disabled={currentPage === 1}
-                            className="relative inline-flex items-center px-2 py-2 border border-sys-tertiary bg-sys-bg-white font-medium text-sys-secondary hover:bg-sys-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="relative inline-flex items-center px-2 py-2 border border-app-border bg-app-surface font-medium text-app-fg-muted hover:bg-app-overlay disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Previous Page"
                         >
                             <span className="sr-only">Previous</span>
                             <ChevronLeft className="h-4 w-4" />
                         </button>
-                        <div className="relative inline-flex items-center px-4 py-2 border border-sys-tertiary bg-sys-bg-white font-medium text-sys-primary">
+                        <div className="relative inline-flex items-center px-4 py-2 border border-app-border bg-app-surface font-medium text-app-fg">
                             Page {currentPage} of {totalPages}
                         </div>
                         <button
@@ -108,7 +108,7 @@ export function Pagination({
                                 onPageChange(Math.min(totalPages, currentPage + 1))
                             }
                             disabled={currentPage === totalPages}
-                            className="relative inline-flex items-center px-2 py-2 border border-sys-tertiary bg-sys-bg-white font-medium text-sys-secondary hover:bg-sys-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="relative inline-flex items-center px-2 py-2 border border-app-border bg-app-surface font-medium text-app-fg-muted hover:bg-app-overlay disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Next Page"
                         >
                             <span className="sr-only">Next</span>
@@ -117,7 +117,7 @@ export function Pagination({
                         <button
                             onClick={() => onPageChange(totalPages)}
                             disabled={currentPage === totalPages}
-                            className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-sys-tertiary bg-sys-bg-white font-medium text-sys-secondary hover:bg-sys-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-app-border bg-app-surface font-medium text-app-fg-muted hover:bg-app-overlay disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Last Page"
                         >
                             <span className="sr-only">_Last</span>

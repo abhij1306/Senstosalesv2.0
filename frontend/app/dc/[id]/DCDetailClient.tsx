@@ -150,7 +150,7 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                             Create Invoice
                         </Button>
                     )}
-                    <Button variant="default" size="sm" onClick={() => setEditing(true)}>
+                    <Button variant="primary" size="sm" onClick={() => setEditing(true)}>
                         <Edit2 size={16} className="mr-2" />
                         Edit
                     </Button>
@@ -167,7 +167,7 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                         <X size={16} className="mr-2" />
                         Cancel
                     </Button>
-                    <Button variant="default" size="sm" onClick={handleSave} disabled={loading}>
+                    <Button variant="primary" size="sm" onClick={handleSave} disabled={loading}>
                         {loading ? <span className="animate-spin mr-2">◌</span> : <Save size={16} className="mr-2" />}
                         Save Changes
                     </Button>

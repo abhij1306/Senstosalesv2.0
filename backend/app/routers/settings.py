@@ -8,6 +8,7 @@ from app.models import Settings, SettingsUpdate
 
 router = APIRouter()
 
+
 @router.get("/", response_model=Settings)
 def get_settings(db: sqlite3.Connection = Depends(get_db)):
     """Get all settings as a dict mapped to Settings model"""
@@ -20,6 +21,7 @@ def get_settings(db: sqlite3.Connection = Depends(get_db)):
     except sqlite3.OperationalError:
         return {}  # Return empty dict if table doesn't exist
 
+
 @router.post("/")
 def update_setting(setting: SettingsUpdate, db: sqlite3.Connection = Depends(get_db)):
     """Update a single setting"""
@@ -31,7 +33,8 @@ def update_setting(setting: SettingsUpdate, db: sqlite3.Connection = Depends(get
         db.commit()
         return {"success": True, "key": setting.key, "value": setting.value}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
 
 @router.post("/batch")
 def update_settings_batch(settings: List[SettingsUpdate], db: sqlite3.Connection = Depends(get_db)):
@@ -45,4 +48,4 @@ def update_settings_batch(settings: List[SettingsUpdate], db: sqlite3.Connection
         db.commit()
         return {"success": True, "count": len(settings)}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

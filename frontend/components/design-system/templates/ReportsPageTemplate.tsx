@@ -77,9 +77,9 @@ export const ReportsPageTemplate = React.memo(
                     {/* Main Content: Charts or Table */}
                     <div className="space-y-4 w-full">
                         {charts && (
-                            <div className="surface-card p-6 w-full overflow-hidden">
-                                <div className="mb-4 shadow-none pb-2">
-                                    <h3 className="font-bold text-[var(--color-sys-text-primary)] uppercase tracking-wide">
+                            <div className="bg-app-surface/30 backdrop-blur-sm border border-app-border/30 rounded-3xl p-6 w-full overflow-hidden shadow-sm">
+                                <div className="mb-6 shadow-none pb-2 border-b border-app-border/20">
+                                    <h3 className="font-black text-app-fg uppercase tracking-[0.2em] text-[11px]">
                                         Analytics Overview
                                     </h3>
                                 </div>
@@ -90,8 +90,8 @@ export const ReportsPageTemplate = React.memo(
                         {columns && data && (
                             <div className="space-y-4 w-full">
                                 {tableTitle && (
-                                    <div className="flex items-center justify-between px-1">
-                                        <h2 className="font-bold text-[var(--color-sys-text-primary)] uppercase tracking-wide">
+                                    <div className="flex items-center justify-between px-1 mb-2">
+                                        <h2 className="font-black text-app-fg uppercase tracking-[0.2em] text-[11px]">
                                             {tableTitle}
                                         </h2>
                                     </div>
@@ -109,7 +109,6 @@ export const ReportsPageTemplate = React.memo(
                                             loading={loading}
                                             error={error}
                                             emptyMessage={emptyMessage}
-                                            no_borders={true}
                                         />
                                     </div>
                                 </div>

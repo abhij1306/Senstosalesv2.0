@@ -4,7 +4,7 @@ Summary statistics and recent activity
 """
 
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -75,9 +75,7 @@ def get_dashboard_summary(db: sqlite3.Connection = Depends(get_db)):
         total_order = ord_row[0] if ord_row and ord_row[0] else 0.0
 
         # Total Delivered (from DC Items)
-        deliv_row = db.execute(
-            "SELECT SUM(dispatch_qty) FROM delivery_challan_items"
-        ).fetchone()
+        deliv_row = db.execute("SELECT SUM(dispatch_qty) FROM delivery_challan_items").fetchone()
         total_deliv = deliv_row[0] if deliv_row and deliv_row[0] else 0.0
 
         # Total Received (from SRV Items)
@@ -99,7 +97,7 @@ def get_dashboard_summary(db: sqlite3.Connection = Depends(get_db)):
             "total_received": total_recvd,
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/activity")
@@ -183,7 +181,7 @@ def get_recent_activity(
         return activities[:limit]
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/insights")
@@ -255,6 +253,4 @@ def get_dashboard_insights(db: sqlite3.Connection = Depends(get_db)):
 
     except Exception:
         # Fail gracefully
-        return [
-            {"type": "error", "text": "System alert check failed", "action": "none"}
-        ]
+        return [{"type": "error", "text": "System alert check failed", "action": "none"}]

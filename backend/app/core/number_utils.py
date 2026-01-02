@@ -71,6 +71,8 @@ def to_float(value: Optional[Union[str, int, float]]) -> Optional[float]:
             return None
 
     return None
+
+
 def to_qty(value: Optional[Union[str, int, float]]) -> Optional[float]:
     """
     Convert value to float rounded to 3 decimal places (Standard for GST quantities)

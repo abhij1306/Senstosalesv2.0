@@ -538,7 +538,6 @@ export default function ReportsPage() {
                 totalItems={data.length}
                 onPageChange={handlePageChange}
                 loading={loading}
-                no_borders={true}
               />
             </ReportsDataCard>
           </motion.div>

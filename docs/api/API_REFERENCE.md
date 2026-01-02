@@ -1,6 +1,6 @@
 # SenstoSales API Documentation
 
-**Generated:** 2025-12-31 17:06:02  
+**Generated:** 2026-01-02 08:15:15  
 **Base URL:** `http://localhost:8000`
 
 ## Endpoints
@@ -216,6 +216,14 @@ Get Purchase Order detail with items and deliveries
 
 ---
 
+#### `PUT` /{po_number}
+
+No description
+
+**Response Model:** `PODetail`
+
+---
+
 #### `GET` /{po_number}/context
 
 Fetch PO context (Supplier/Buyer info) for DC/Invoice auto-fill
@@ -231,6 +239,12 @@ Check if PO has an associated Delivery Challan
 #### `GET` /{po_number}/excel
 
 Download PO as Excel
+
+---
+
+#### `PATCH` /{po_number}/items/{item_no}/delivered_qty
+
+No description
 
 ---
 

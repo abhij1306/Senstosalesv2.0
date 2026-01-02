@@ -16,18 +16,16 @@ from app.core.exceptions import (
     ResourceNotFoundError,
     ValidationError,
 )
+from app.core.number_utils import to_qty
 from app.core.result import ServiceResult
 from app.models import DCCreate
-from app.core.number_utils import to_float, to_int, to_qty
 
 logger = logging.getLogger(__name__)
 
 
 def generate_dc_number(po_number: str, db: sqlite3.Connection) -> str:
     """DISABLED - Manual numbering now required"""
-    raise NotImplementedError(
-        "Manual numbering is now required. Auto-generation is disabled."
-    )
+    raise NotImplementedError("Manual numbering is now required. Auto-generation is disabled.")
 
 
 def validate_dc_header(dc: DCCreate) -> None:
@@ -202,9 +200,7 @@ def check_dc_has_invoice(dc_number: str, db: sqlite3.Connection) -> Optional[str
     return invoice_row["invoice_number"] if invoice_row else None
 
 
-def create_dc(
-    dc: DCCreate, items: List[dict], db: sqlite3.Connection
-) -> ServiceResult[Dict]:
+def create_dc(dc: DCCreate, items: List[dict], db: sqlite3.Connection) -> ServiceResult[Dict]:
     """
     Create new Delivery Challan
     """
@@ -279,7 +275,7 @@ def create_dc(
             # We use a single INSERT ... SELECT statement to ensure atomicity.
             # The WHERE clause enforces that (Ordered - AlreadyDispatched) >= CurrentDispatch
             # This prevents race conditions where two users dispatch the last quantity simultaneously.
-            
+
             cursor = db.execute(
                 """
                 INSERT INTO delivery_challan_items
@@ -315,12 +311,13 @@ def create_dc(
                     item.get("hsn_code"),
                     item.get("hsn_rate"),
                     # Subquery params
-                    po_item_id, lot_no,
-                    po_item_id, lot_no,
-                    dispatch_qty
+                    po_item_id,
+                    lot_no,
+                    po_item_id,
+                    lot_no,
+                    dispatch_qty,
                 ),
             )
-
 
             if cursor.rowcount == 0:
                 # The INSERT failed because the WHERE clause (inventory check) failed
@@ -330,17 +327,16 @@ def create_dc(
                     details={
                         "lot_no": lot_no,
                         "attempted_qty": dispatch_qty,
-                        "invariant": "R-01 (Atomic Inventory Check)"
-                    }
+                        "invariant": "R-01 (Atomic Inventory Check)",
+                    },
                 )
-        
+
         # ATOMIC SYNC: Update PO Deliveries
         from app.services.reconciliation_service import ReconciliationService
+
         ReconciliationService.reconcile_dc_creation(db, items, final_dc_number)
 
-        logger.info(
-            f"Successfully created DC {final_dc_number} with {len(items)} items"
-        )
+        logger.info(f"Successfully created DC {final_dc_number} with {len(items)} items")
 
         return ServiceResult.ok({"success": True, "dc_number": final_dc_number})
 
@@ -418,17 +414,16 @@ def update_dc(
 
         # ATOMIC SYNC: Revert PO Deliveries for old items before deletion
         from app.services.reconciliation_service import ReconciliationService
+
         ReconciliationService.reconcile_dc_deletion(db, dc_number)
 
         # Delete old items
-        db.execute(
-            "DELETE FROM delivery_challan_items WHERE dc_number = ?", (dc_number,)
-        )
+        db.execute("DELETE FROM delivery_challan_items WHERE dc_number = ?", (dc_number,))
 
         # Insert new items with ATOMIC INVENTORY CHECK (R-01)
-        # We reuse the logic from create_dc but adapted for simple loop if needed, 
+        # We reuse the logic from create_dc but adapted for simple loop if needed,
         # or better, copy the robust INSERT...SELECT pattern.
-        
+
         for item in items:
             item_id = str(uuid.uuid4())
             po_item_id = item["po_item_id"]
@@ -470,21 +465,23 @@ def update_dc(
                     hsn_code,
                     hsn_rate,
                     # Subquery
-                    po_item_id, lot_no,
-                    po_item_id, lot_no,
-                    dispatch_qty
+                    po_item_id,
+                    lot_no,
+                    po_item_id,
+                    lot_no,
+                    dispatch_qty,
                 ),
             )
 
             if cursor.rowcount == 0:
-                 raise BusinessRuleViolation(
+                raise BusinessRuleViolation(
                     f"Inventory check failed for Item Lot {lot_no}. "
                     f"Attempted to dispatch {dispatch_qty}, but insufficient remaining quantity.",
                     details={
                         "lot_no": lot_no,
                         "attempted_qty": dispatch_qty,
-                        "invariant": "R-01 (Atomic Inventory Check during Update)"
-                    }
+                        "invariant": "R-01 (Atomic Inventory Check during Update)",
+                    },
                 )
 
         # ATOMIC SYNC: Apply new quantities
@@ -535,9 +532,9 @@ def delete_dc(dc_number: str, db: sqlite3.Connection) -> ServiceResult[Dict]:
         if not dc_row:
             raise ResourceNotFoundError("DC", dc_number)
 
-
         # ATOMIC SYNC: Revert PO Deliveries before deletion
         from app.services.reconciliation_service import ReconciliationService
+
         ReconciliationService.reconcile_dc_deletion(db, dc_number)
 
         # Delete DC Header (Items will be deleted via ON DELETE CASCADE or manually if not supported)

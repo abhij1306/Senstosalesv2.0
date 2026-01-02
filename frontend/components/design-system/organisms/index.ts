@@ -2,7 +2,6 @@
 export { DocumentActions } from "./DocumentActions";
 export { StatusCard } from "./StatusCard";
 export { DataTable } from "./DataTable";
-export { StatusBadge } from "./StatusBadge";
 export { SummaryCard } from "./SummaryCards";
 export { SummaryCards } from "./SummaryCards";
 export { SidebarNav } from "./SidebarNav";
@@ -26,6 +25,5 @@ export * from "../atoms/Layout";
 // Re-export molecules for pages
 export { SearchBar } from "../molecules/SearchBar";
 export { Dialog, DialogContent, DialogTitle } from "../molecules/Dialog";
-export { DetailField } from "../molecules/DetailField";
 export { useToast, ToastProvider } from "../molecules/Toast";
 export * from "../molecules/Tabs";

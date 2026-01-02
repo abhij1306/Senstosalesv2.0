@@ -48,7 +48,6 @@ def init_db(conn: sqlite3.Connection):
         "002_add_alerts.sql",
         "003_add_drawing_number_and_po_notes.sql",
         "004_complete_schema_alignment.sql",
-
         "v4_add_srv_tables.sql",
         "005_add_srv_po_found.sql",
         "006_fix_srv_schema.sql",
@@ -130,12 +129,8 @@ def get_connection() -> sqlite3.Connection:
         # Verify Foreign Keys are actually enabled
         fk_status = conn.execute("PRAGMA foreign_keys").fetchone()[0]
         if fk_status != 1:
-            logger.error(
-                f"CRITICAL: Foreign Keys failed to enable! Status: {fk_status}"
-            )
-            raise RuntimeError(
-                "Foreign Key enforcement failed - database integrity at risk"
-            )
+            logger.error(f"CRITICAL: Foreign Keys failed to enable! Status: {fk_status}")
+            raise RuntimeError("Foreign Key enforcement failed - database integrity at risk")
 
         logger.debug(f"Connection established: FK={fk_status}, WAL=enabled")
         return conn

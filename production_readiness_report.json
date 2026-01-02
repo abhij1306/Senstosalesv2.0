@@ -1,14 +1,16 @@
 {
-  "timestamp": "2026-01-02T00:33:09.856320",
+  "timestamp": "2026-01-02T11:16:34.940278",
   "overall": {
-    "overall_score": 57.0,
-    "overall_grade": "F",
+    "overall_score": 82.0,
+    "overall_grade": "B",
     "category_scores": {
       "dark_theme": 88,
-      "backend": 100,
+      "eslint": 100,
+      "typescript": 100,
+      "backend": 0,
       "security": 100
     },
-    "timestamp": "2026-01-02T00:33:09.856271"
+    "timestamp": "2026-01-02T11:16:34.940248"
   },
   "audits": {
     "dark_theme": {
@@ -19,19 +21,19 @@
     },
     "eslint": {
       "name": "Code Quality (ESLint)",
-      "score": 0,
+      "score": 100,
       "errors": 0,
       "warnings": 0
     },
     "typescript": {
       "name": "Type Safety",
-      "score": 0,
+      "score": 100,
       "errors": 0
     },
     "backend": {
       "name": "Backend Quality",
-      "score": 100,
-      "issues": 0
+      "score": 0,
+      "issues": 246
     }
   },
   "recommendations": [

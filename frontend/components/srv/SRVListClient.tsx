@@ -291,9 +291,13 @@ export function SRVListClient({ initialSRVs, initialStats }: SRVListClientProps)
                     onChange={handleFileSelect}
                     className="hidden"
                 />
-                <Button variant="default" onClick={handleUploadClick} className="shadow-lg shadow-sys-brand-primary/20">
+                <Button
+                    variant="primary"
+                    onClick={handleUploadClick}
+                    className="h-10 px-6 font-black uppercase tracking-widest active-glow shadow-lg shadow-app-accent/20 rounded-xl"
+                >
                     <Upload size={16} className="mr-2" />
-                    Upload SRV
+                    Provision SRV
                 </Button>
             </Flex>
         </Flex>

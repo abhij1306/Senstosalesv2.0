@@ -13,9 +13,9 @@ from pydantic import BaseModel
 from app.core.exceptions import DomainError, map_error_code_to_http_status
 from app.db import get_db
 from app.errors import internal_error, not_found
-from app.models import InvoiceCreate, InvoiceListItem, InvoiceStats
-from app.services.status_service import calculate_entity_status, calculate_pending_quantity
+from app.models import InvoiceListItem, InvoiceStats
 from app.services.invoice import create_invoice as service_create_invoice
+from app.services.status_service import calculate_entity_status, calculate_pending_quantity
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -84,14 +84,10 @@ class EnhancedInvoiceCreate(BaseModel):
 def get_invoice_stats(db: sqlite3.Connection = Depends(get_db)):
     """Get Invoice Page Statistics"""
     try:
-        total_row = db.execute(
-            "SELECT SUM(total_invoice_value) FROM gst_invoices"
-        ).fetchone()
+        total_row = db.execute("SELECT SUM(total_invoice_value) FROM gst_invoices").fetchone()
         total_invoiced = total_row[0] if total_row and total_row[0] else 0.0
 
-        gst_row = db.execute(
-            "SELECT SUM(cgst + sgst + igst) FROM gst_invoices"
-        ).fetchone()
+        gst_row = db.execute("SELECT SUM(cgst + sgst + igst) FROM gst_invoices").fetchone()
         gst_collected = gst_row[0] if gst_row and gst_row[0] else 0.0
 
         pending_payments = 0.0
@@ -161,7 +157,7 @@ def list_invoices(
     query += " GROUP BY inv.invoice_number, inv.invoice_date, inv.po_numbers, inv.dc_number,"
     query += " inv.buyer_gstin, inv.taxable_value, inv.total_invoice_value, inv.created_at"
     query += " ORDER BY inv.created_at DESC"
-    
+
     rows = db.execute(query, tuple(params)).fetchall()
 
     results = []
@@ -173,23 +169,20 @@ def list_invoices(
         # BAL = ORD - RECD (what hasn't been received yet)
         # BAL = ORD - RECD (what hasn't been received yet)
         total_pending = calculate_pending_quantity(total_ordered, total_received)
-        
+
         # Determine Status using centralized service
         status = calculate_entity_status(total_ordered, total_dispatched, total_received)
 
         row_dict["total_pending_quantity"] = total_pending
         row_dict["status"] = status
         results.append(InvoiceListItem(**row_dict))
-    
-    return results
 
+    return results
 
 
 # IMPORTANT: Specific routes must come before parameterized routes
 @router.get("/{invoice_number:path}/download")
-def download_invoice_excel(
-    invoice_number: str, db: sqlite3.Connection = Depends(get_db)
-):
+def download_invoice_excel(invoice_number: str, db: sqlite3.Connection = Depends(get_db)):
     """Download Invoice as Excel"""
     try:
         logger.info(f"Downloading Invoice Excel: {invoice_number}")
@@ -199,12 +192,10 @@ def download_invoice_excel(
         from app.services.excel_service import ExcelService
 
         # Use exact generator
-        return ExcelService.generate_exact_invoice_excel(
-            data["header"], data["items"], db
-        )
+        return ExcelService.generate_exact_invoice_excel(data["header"], data["items"], db)
 
     except Exception as e:
-        raise internal_error(f"Failed to generate Excel: {str(e)}", e)
+        raise internal_error(f"Failed to generate Excel: {str(e)}", e) from e
 
 
 @router.get("/{invoice_number}")
@@ -230,7 +221,8 @@ def get_invoice_detail(invoice_number: str, db: sqlite3.Connection = Depends(get
         header_dict["dc_number"] = header_dict.get("dc_number")
 
         # Calculate live status based on aggregates
-        agg = db.execute("""
+        agg = db.execute(
+            """
             SELECT 
                 COALESCE(SUM(inv_item.quantity), 0) as total_ord,
                 (
@@ -249,7 +241,9 @@ def get_invoice_detail(invoice_number: str, db: sqlite3.Connection = Depends(get
             JOIN gst_invoices i2 ON inv_item.invoice_number = i2.invoice_number
             WHERE i2.invoice_number = ?
             GROUP BY i2.invoice_number
-        """, (invoice_number,)).fetchone()
+        """,
+            (invoice_number,),
+        ).fetchone()
 
         if agg:
             t_ord = agg["total_ord"] or 0
@@ -261,9 +255,7 @@ def get_invoice_detail(invoice_number: str, db: sqlite3.Connection = Depends(get
 
         # Fetch buyer details from settings if not in invoice
         if not header_dict.get("buyer_name") or not header_dict.get("buyer_gstin"):
-            settings_rows = db.execute(
-                "SELECT key, value FROM settings"
-            ).fetchall()
+            settings_rows = db.execute("SELECT key, value FROM settings").fetchall()
             settings = {row["key"]: row["value"] for row in settings_rows}
 
             # Apply settings as fallback
@@ -328,9 +320,7 @@ def get_invoice_detail(invoice_number: str, db: sqlite3.Connection = Depends(get
 
 
 @router.post("/")
-def create_invoice(
-    request: EnhancedInvoiceCreate, db: sqlite3.Connection = Depends(get_db)
-):
+def create_invoice(request: EnhancedInvoiceCreate, db: sqlite3.Connection = Depends(get_db)):
     """
     Create Invoice from Delivery Challan
 
@@ -371,9 +361,7 @@ def create_invoice(
                 return result.data
             else:
                 # Should not happen if service raises DomainError
-                raise HTTPException(
-                    status_code=500, detail=result.message or "Unknown error"
-                )
+                raise HTTPException(status_code=500, detail=result.message or "Unknown error")
 
         except DomainError as e:
             # Convert domain error to HTTP response
@@ -386,16 +374,15 @@ def create_invoice(
                     "error_code": e.error_code.value,
                     "details": e.details,
                 },
-            )
+            ) from e
         except Exception:
             db.rollback()
             raise
 
     except sqlite3.IntegrityError as e:
         logger.error(f"Invoice creation failed due to integrity error: {e}", exc_info=e)
-        raise internal_error(f"Database integrity error: {str(e)}", e)
+        raise internal_error(f"Database integrity error: {str(e)}", e) from e
 
     except Exception as e:
         logger.error(f"Error creating invoice: {e}", exc_info=True)
         raise
-

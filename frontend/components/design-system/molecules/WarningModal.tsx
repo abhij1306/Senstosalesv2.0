@@ -61,7 +61,7 @@ export const WarningModal: React.FC<WarningModalProps> = ({
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-sys-primary/50 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-app-fg/40 backdrop-blur-sm"
             onClick={onCancel}
             role="dialog"
             aria-modal="true"
@@ -69,8 +69,8 @@ export const WarningModal: React.FC<WarningModalProps> = ({
         >
             <div
                 className={cn(
-                    "relative bg-sys-bg-white rounded-lg shadow-lg",
-                    "w-full max-w-md mx-4 p-6",
+                    "relative bg-app-surface rounded-2xl shadow-app-spotlight",
+                    "w-full max-w-md mx-4 p-8 border border-app-border/50",
                     "animate-in fade-in zoom-in-95 duration-200"
                 )}
                 onClick={(e) => e.stopPropagation()}
@@ -78,36 +78,39 @@ export const WarningModal: React.FC<WarningModalProps> = ({
                 {/* Close button */}
                 <button
                     onClick={onCancel}
-                    className="absolute top-4 right-4 text-[#6B7280] hover:text-[#111827] transition-colors"
+                    className="absolute top-4 right-4 text-app-fg-muted hover:text-app-fg transition-colors"
                     aria-label="Close modal"
                 >
                     <X size={20} />
                 </button>
 
                 {/* Icon */}
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#DC2626]/10 mb-4">
-                    <AlertTriangle size={24} className="text-[#DC2626]" />
+                <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-app-status-error/10 mb-6 mx-auto">
+                    <AlertTriangle size={28} className="text-app-status-error" />
                 </div>
 
                 {/* Content */}
-                <H2 id="warning-modal-title" className="mb-2">
-                    {title}
-                </H2>
-                <Body className="text-[#6B7280] mb-6">{message}</Body>
+                <div className="text-center">
+                    <H2 id="warning-modal-title" className="mb-2 text-app-fg">
+                        {title}
+                    </H2>
+                    <Body className="text-app-fg-muted mb-8">{message}</Body>
+                </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-3 justify-end">
-                    <Button variant="secondary" onClick={onCancel}>
-                        {cancelLabel}
-                    </Button>
+                <div className="flex flex-col gap-3">
                     <Button
-                        variant={confirmVariant}
+                        variant={confirmVariant === "destructive" ? "destructive" : "primary"}
+                        className="w-full"
                         onClick={() => {
                             onConfirm();
                             setIsVisible(false);
                         }}
                     >
                         {confirmLabel}
+                    </Button>
+                    <Button variant="ghost" className="w-full" onClick={onCancel}>
+                        {cancelLabel}
                     </Button>
                 </div>
             </div>

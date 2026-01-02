@@ -62,7 +62,7 @@ const ReportsCharts = ({ activeTab, chartData }: ReportsChartsProps) => {
                                         tick={{
                                             fontSize: 10,
                                             fontWeight: 600,
-                                            fill: "var(--app-fg-muted)",
+                                            fill: "rgb(var(--app-fg-secondary))",
                                         }}
                                         dy={8}
                                     />
@@ -72,7 +72,7 @@ const ReportsCharts = ({ activeTab, chartData }: ReportsChartsProps) => {
                                         tick={{
                                             fontSize: 10,
                                             fontWeight: 600,
-                                            fill: "var(--app-fg-muted)",
+                                            fill: "rgb(var(--app-fg-secondary))",
                                         }}
                                         tickFormatter={(value) => {
                                             if (value >= 10000000) return `${(value / 10000000).toFixed(1)}Cr`;
@@ -86,13 +86,7 @@ const ReportsCharts = ({ activeTab, chartData }: ReportsChartsProps) => {
                                             borderRadius: "12px",
                                             border: "1px solid #E0E0E0",
                                             boxShadow: "var(--shadow-lg)",
-                                            background: "var(--bg-surface)",
-                                            backdropFilter: "blur(12px)",
-                                            padding: "8px 12px",
-                                        }}
-                                        labelStyle={{
-                                            fontWeight: 700,
-                                            color: "var(--app-fg)",
+                                            color: "rgb(var(--app-fg-primary))",
                                             fontSize: "11px",
                                             marginBottom: "4px",
                                         }}
@@ -104,7 +98,7 @@ const ReportsCharts = ({ activeTab, chartData }: ReportsChartsProps) => {
                                     <Bar
                                         name="Ordered"
                                         dataKey="ordered_value"
-                                        fill="#1A73E8"
+                                        fill="rgb(var(--app-accent))"
                                         radius={[6, 6, 0, 0]}
                                         maxBarSize={40}
                                         opacity={0.9}
@@ -112,7 +106,7 @@ const ReportsCharts = ({ activeTab, chartData }: ReportsChartsProps) => {
                                     <Bar
                                         name="Delivered"
                                         dataKey="delivered_value"
-                                        fill="#1E8E3E"
+                                        fill="rgb(var(--app-success))"
                                         radius={[6, 6, 0, 0]}
                                         maxBarSize={40}
                                         opacity={0.9}
@@ -141,7 +135,7 @@ const ReportsCharts = ({ activeTab, chartData }: ReportsChartsProps) => {
                                             borderRadius: "12px",
                                             border: "1px solid #E0E0E0",
                                             boxShadow: "var(--shadow-lg)",
-                                            background: "var(--bg-surface)",
+                                            background: "rgb(var(--app-surface))",
                                             backdropFilter: "blur(10px)",
                                             padding: "8px 12px",
                                         }}
@@ -154,9 +148,9 @@ const ReportsCharts = ({ activeTab, chartData }: ReportsChartsProps) => {
                                         {chartData.map((entry: any, index: number) => {
                                             // Use theme-aware CSS variables
                                             const colors = [
-                                                '#1E8E3E',  // Green for Accepted
-                                                '#D93025',  // Red for Rejected
-                                                '#E37400',  // Amber for Pending
+                                                "rgb(var(--app-success))",
+                                                "rgb(var(--app-error))",
+                                                "rgb(var(--app-warning))",
                                             ];
                                             const color = entry.color || colors[index % colors.length];
 
@@ -188,8 +182,8 @@ const ReportsCharts = ({ activeTab, chartData }: ReportsChartsProps) => {
                                 <PieChart>
                                     <Pie
                                         data={[
-                                            { name: "Growth", value: 75, fill: "#1A73E8" },
-                                            { name: "Remaining", value: 25, fill: "#E0E0E0" },
+                                            { name: "Growth", value: 75, fill: "rgb(var(--app-accent))" },
+                                            { name: "Remaining", value: 25, fill: "rgb(var(--app-border))" },
                                         ]}
                                         cx="50%"
                                         cy="50%"

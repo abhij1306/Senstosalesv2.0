@@ -5,7 +5,7 @@
 export const API_BASE_URL =
   typeof window !== "undefined"
     ? ""
-    : process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+    : process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export interface Buyer {
   id: number;
@@ -574,9 +574,11 @@ export const api = {
     }),
   setBuyerDefault: (id: number) =>
     apiFetch<Buyer>(`/api/buyers/${id}/default`, { method: "PUT" }),
-  deleteBuyer: (id: number) =>
-    apiFetch<{ success: boolean }>(`/api/buyers/${id}`, { method: "DELETE" }),
+  deleteBuyer: (id: number) => apiFetch<{ success: boolean }>(`/api/buyers/${id}`, { method: "DELETE" }),
 
-
-
+  // ALERTS (Missing endpoints)
+  listAlerts: (acknowledged: boolean = false) =>
+    apiFetch<any[]>(`/api/alerts/?acknowledged=${acknowledged}`),
+  acknowledgeAlert: (id: string | number) =>
+    apiFetch<void>(`/api/alerts/${id}/acknowledge`, { method: "PUT" }),
 };

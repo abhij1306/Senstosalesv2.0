@@ -1,12 +1,15 @@
-from typing import List, Optional, Any
-from pydantic import BaseModel, Field, field_validator, BeforeValidator
+from typing import List, Optional
+
+from pydantic import BaseModel, BeforeValidator, Field
 from typing_extensions import Annotated
+
 
 # Helper for string coercion from SQLite
 def coerce_to_string(v):
     if v is None:
         return None
     return str(v)
+
 
 StringCoerced = Annotated[Optional[str], BeforeValidator(coerce_to_string)]
 
@@ -66,7 +69,7 @@ class PODelivery(BaseModel):
     ordered_quantity: Optional[float] = 0.0
     delivered_quantity: Optional[float] = 0.0
     received_quantity: Optional[float] = 0.0
-    manual_override_qty: Optional[float] = 0.0 # Added for TOT-5
+    manual_override_qty: Optional[float] = 0.0  # Added for TOT-5
     dely_date: Optional[str] = Field(None, description="YYYY-MM-DD")
     entry_allow_date: Optional[str] = Field(None, description="YYYY-MM-DD")
     dest_code: Optional[int] = None
@@ -359,8 +362,8 @@ class Settings(BaseModel):
     supplier_state_code: Optional[str] = None
 
     company_name: Optional[str] = None  # Legacy support
-    company_gstin: Optional[str] = None # Legacy support
-    company_address: Optional[str] = None # Legacy support
+    company_gstin: Optional[str] = None  # Legacy support
+    company_address: Optional[str] = None  # Legacy support
 
     buyer_name: Optional[str] = None
     buyer_address: Optional[str] = None
@@ -426,4 +429,3 @@ class SearchResult(BaseModel):
     amount: float = 0.0
     type_label: str
     status: str
-

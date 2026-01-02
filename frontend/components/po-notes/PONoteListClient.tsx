@@ -1,18 +1,23 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { Quote } from "lucide-react";
+import React, { useState, useCallback } from "react";
+import { Quote, Plus, FileText } from "lucide-react";
 import { api, PONote } from "@/lib/api";
 import {
-    DocumentTemplate,
-    EmptyState,
-    Grid,
     Stack,
+    Grid,
+    Flex,
+    Button,
+    Label,
+    H3,
+    Body,
+    Box,
+    Card,
 } from "@/components/design-system";
+import { DocumentTemplate } from "@/components/design-system/templates/DocumentTemplate";
 import { PONoteCard } from "@/components/po-notes/organisms/PONoteCard";
 import { PONoteDialog } from "@/components/po-notes/organisms/PONoteDialog";
 import { PONoteDeleteDialog } from "@/components/po-notes/organisms/PONoteDeleteDialog";
-import { PONotePageActions } from "@/components/po-notes/organisms/PONotePageActions";
 
 interface PONoteListClientProps {
     initialTemplates: PONote[];
@@ -83,14 +88,28 @@ export function PONoteListClient({ initialTemplates }: PONoteListClientProps) {
 
     return (
         <DocumentTemplate
-            title="Document Templates"
-            description="Reusable terms and conditions for purchase orders & challans"
-            actions={<PONotePageActions onCreate={handleCreate} disabled={loading} />}
-            icon={<Quote size={20} className="text-[var(--color-sys-brand-primary)]" />}
+            title="Policy & Terms"
+            description="Configure reusable clauses, standard T&Cs, and document policies for POs & DCs."
+            icon={<Quote className="w-5 h-5" />}
+            actions={
+                <Button
+                    onClick={handleCreate}
+                    disabled={loading}
+                    size="compact"
+                    className="h-9 px-6 active-glow"
+                >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Provision Clause
+                </Button>
+            }
         >
-            <Stack gap={8} className="py-2">
+            <Box className="mt-2">
                 {templates.length > 0 ? (
-                    <Grid cols="1" className="md:grid-cols-2 lg:grid-cols-3" gap={6}>
+                    <Grid
+                        cols={1}
+                        className="sm:grid-cols-2 xl:grid-cols-3"
+                        gap={4}
+                    >
                         {templates.map((template) => (
                             <PONoteCard
                                 key={template.id}
@@ -100,15 +119,25 @@ export function PONoteListClient({ initialTemplates }: PONoteListClientProps) {
                             />
                         ))}
                     </Grid>
-                ) : !loading && (
-                    <EmptyState
-                        icon={Quote}
-                        title="No templates configured"
-                        description="Standardize your document terms for faster processing."
-                        action={<PONotePageActions onCreate={handleCreate} />}
-                    />
+                ) : (
+                    <Card className="p-16 flex flex-col items-center justify-center text-center bg-app-surface/30 border-dashed border-2 border-app-border/30">
+                        <div className="w-16 h-16 rounded-full bg-app-overlay/5 flex items-center justify-center text-app-fg-muted mb-4">
+                            <FileText className="w-8 h-8 opacity-20" />
+                        </div>
+                        <H3 className="text-lg mb-2">Null Policy Matrix</H3>
+                        <Body className="text-app-fg-muted mb-6 max-w-sm">
+                            No standardized clauses detected. Provision a new term to accelerate document lifecycle.
+                        </Body>
+                        <Button
+                            variant="primary"
+                            onClick={handleCreate}
+                            className="active-glow"
+                        >
+                            Start Provisioning
+                        </Button>
+                    </Card>
                 )}
-            </Stack>
+            </Box>
 
             <PONoteDialog
                 isOpen={showForm}

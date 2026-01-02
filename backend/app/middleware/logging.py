@@ -45,9 +45,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                 "request_id": request_id,
                 "method": request.method,
                 "path": request.url.path,
-                "query_params": str(request.query_params)
-                if request.query_params
-                else None,
+                "query_params": str(request.query_params) if request.query_params else None,
                 "client_ip": client_ip,
                 "user_agent": request.headers.get("user-agent"),
             },

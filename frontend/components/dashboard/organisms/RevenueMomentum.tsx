@@ -24,12 +24,12 @@ interface RevenueMomentumProps {
 export function RevenueMomentum({ data, loading }: RevenueMomentumProps) {
     if (loading) {
         return (
-            <Box className="h-[400px] w-full rounded-3xl bg-[var(--color-sys-bg-surface)]/40 animate-pulse" />
+            <Box className="h-[400px] w-full rounded-3xl bg-app-surface/40 animate-pulse" />
         );
     }
 
     return (
-        <Box className="p-6 rounded-3xl surface-claymorphic shadow-clay-surface overflow-hidden border border-[var(--color-sys-surface-glass_border_light)]">
+        <div className="tahoe-glass-card p-6 h-full flex flex-col">
             <Flex
                 align="center"
                 justify="between"
@@ -37,29 +37,30 @@ export function RevenueMomentum({ data, loading }: RevenueMomentumProps) {
             >
                 <Stack gap={1}>
                     <Flex align="center" gap={2}>
-                        <div className="p-1.5 bg-[var(--color-sys-brand-primary)]/10 rounded-lg text-[var(--color-sys-brand-primary)]">
+                        <div className="p-1.5 bg-system-blue/10 rounded-lg text-system-blue">
                             <TrendingUp size={14} />
                         </div>
-                        <SmallText className="text-[var(--color-sys-brand-primary)] uppercase tracking-[0.2em] font-bold text-[10px]">
+                        <SmallText className="text-system-blue uppercase tracking-[0.2em] font-bold text-[10px]">
                             Revenue Analytics
                         </SmallText>
                     </Flex>
-                    <H3 className="text-h3 font-black tracking-tight uppercase">Revenue Momentum</H3>
+                    <H3 className="text-h3 font-black tracking-tight uppercase text-vibrancy">Revenue Momentum</H3>
                 </Stack>
-                <Flex align="center" gap={2} className="px-3 py-1.5 bg-[var(--color-sys-bg-tertiary)] rounded-full shadow-inner">
-                    <div className="w-2 h-2 rounded-full bg-[var(--color-sys-brand-primary)] animate-pulse" />
-                    <SmallText className="font-bold text-[var(--color-sys-text-secondary)]">Live Forecast</SmallText>
+                <Flex align="center" gap={2} className="px-3 py-1.5 bg-white/20 dark:bg-black/20 rounded-full shadow-inner border border-white/10 backdrop-blur-md">
+                    <div className="w-2 h-2 rounded-full bg-system-green animate-pulse shadow-[0_0_8px_rgba(var(--system-green-rgb),0.8)]" />
+                    <SmallText className="font-bold text-text-secondary">Live Forecast</SmallText>
                 </Flex>
             </Flex>
 
-            <Box className="h-[280px] w-full">
+            <div className="flex-1 min-h-0 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                        <CartesianGrid
-                            strokeDasharray="3 3"
-                            vertical={false}
-                            stroke="rgba(0,0,0,0.05)"
-                        />
+                        <defs>
+                            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="var(--system-blue)" stopOpacity={0.8} />
+                                <stop offset="100%" stopColor="var(--system-blue)" stopOpacity={0.2} />
+                            </linearGradient>
+                        </defs>
                         <XAxis
                             dataKey="name"
                             axisLine={false}
@@ -67,7 +68,7 @@ export function RevenueMomentum({ data, loading }: RevenueMomentumProps) {
                             tick={{
                                 fontSize: 10,
                                 fontWeight: 700,
-                                fill: "var(--color-sys-text-tertiary)",
+                                fill: "var(--text-tertiary)",
                             }}
                             dy={10}
                         />
@@ -77,28 +78,29 @@ export function RevenueMomentum({ data, loading }: RevenueMomentumProps) {
                             tick={{
                                 fontSize: 10,
                                 fontWeight: 700,
-                                fill: "var(--color-sys-text-tertiary)",
+                                fill: "var(--text-tertiary)",
                             }}
                             tickFormatter={(value) => {
                                 if (value === 0) return "0";
-                                // Convert to Crores (1 Cr = 1,00,00,000)
                                 const crValue = value / 10000000;
                                 return `${crValue.toFixed(1)}Cr`;
                             }}
                         />
                         <Tooltip
-                            cursor={{ fill: 'rgba(var(--color-sys-brand-primary-rgb), 0.05)', radius: 8 }}
+                            cursor={{ fill: 'rgba(255,255,255,0.05)', radius: 8 }}
                             contentStyle={{
                                 borderRadius: "16px",
-                                border: "none",
-                                boxShadow: "0 8px 32px rgba(0,0,0,0.05)",
-                                background: "var(--color-sys-bg-surface)",
-                                backdropFilter: "blur(10px)",
+                                border: "1px solid rgba(255,255,255,0.2)",
+                                boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
+                                background: "rgba(255,255,255,0.4)",
+                                backdropFilter: "blur(25px) saturate(180%)",
                                 padding: "12px",
+                                color: "var(--text-primary)"
                             }}
+                            itemStyle={{ color: "var(--text-primary)" }}
                             labelStyle={{
                                 fontWeight: 800,
-                                color: "var(--color-sys-text-primary)",
+                                color: "var(--text-secondary)",
                                 fontSize: "12px",
                                 marginBottom: "4px",
                             }}
@@ -109,29 +111,14 @@ export function RevenueMomentum({ data, loading }: RevenueMomentumProps) {
                         />
                         <Bar
                             dataKey="value"
-                            radius={[8, 8, 0, 0]}
+                            radius={[6, 6, 6, 6]}
                             barSize={40}
                             animationDuration={1500}
-                        >
-                            {data.map((entry, index) => {
-                                const isLast = index === data.length - 1;
-
-                                // Use CSS variable for blue color
-                                const color = 'var(--color-sys-brand-primary)';
-                                const opacity = isLast ? 1 : 0.7 + (index / Math.max(data.length - 1, 1)) * 0.3;
-
-                                return (
-                                    <Cell
-                                        key={`cell-${index}`}
-                                        fill={color}
-                                        fillOpacity={opacity}
-                                    />
-                                );
-                            })}
-                        </Bar>
+                            fill="url(#barGradient)"
+                        />
                     </BarChart>
                 </ResponsiveContainer>
-            </Box>
-        </Box>
+            </div>
+        </div>
     );
 }

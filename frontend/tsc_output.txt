@@ -1,0 +1,32 @@
+app/dc/[id]/DCDetailClient.tsx(153,29): error TS2322: Type '"default"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+app/dc/[id]/DCDetailClient.tsx(170,29): error TS2322: Type '"default"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+app/error.tsx(54,25): error TS2322: Type '"default"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+app/po/[id]/PODetailClient.tsx(135,25): error TS2322: Type '"default"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+app/po/[id]/PODetailClient.tsx(183,21): error TS2322: Type '"default"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+app/reports/page.tsx(541,17): error TS2322: Type '{ columns: Column<any>[]; data: any[]; keyField: string; page: number; pageSize: number; totalItems: number; onPageChange: (newPage: number) => void; loading: boolean; no_borders: boolean; }' is not assignable to type 'IntrinsicAttributes & DataTableProps<any>'.
+  Property 'no_borders' does not exist on type 'IntrinsicAttributes & DataTableProps<any>'.
+app/settings/page.tsx(266,33): error TS2322: Type '"default"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+app/settings/page.tsx(711,35): error TS2322: Type '"default"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+components/design-system/atoms/DownloadButton.tsx(52,13): error TS2322: Type '"default" | "link" | "secondary" | "ghost" | "outline"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+  Type '"default"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+components/design-system/molecules/ActionButtonGroup.tsx(7,247): error TS2322: Type '"default" | "secondary" | "ghost" | "destructive"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+  Type '"default"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+components/design-system/organisms/DocumentActions.tsx(43,29): error TS2322: Type '"default"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+components/design-system/organisms/DocumentActions.tsx(70,25): error TS2322: Type '"default"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+components/design-system/templates/CreateEditFormTemplate.tsx(117,21): error TS2322: Type '"default" | "secondary" | "ghost" | "destructive"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+  Type '"default"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+components/design-system/templates/ReportsPageTemplate.tsx(112,45): error TS2322: Type '{ columns: Column<T>[]; data: T[]; keyField: string; page: number | undefined; pageSize: number | undefined; totalItems: number | undefined; onPageChange: ((page: number) => void) | undefined; loading: boolean | undefined; error: string | undefined; emptyMessage: string | undefined; no_borders: boolean; }' is not assignable to type 'IntrinsicAttributes & DataTableProps<T>'.
+  Property 'no_borders' does not exist on type 'IntrinsicAttributes & DataTableProps<T>'.
+components/po-notes/organisms/PONotePageActions.tsx(12,13): error TS2322: Type '"default"' is not assignable to type '"link" | "primary" | "secondary" | "ghost" | "destructive" | "outline" | "excel" | "glass" | null | undefined'.
+components/reports/CommandBar.tsx(55,27): error TS2322: Type 'string' is not assignable to type 'boolean | undefined'.
+components/reports/POAgingReport.tsx(165,47): error TS2322: Type 'string' is not assignable to type 'boolean | undefined'.
+components/reports/POEfficiencyReport.tsx(154,53): error TS2322: Type '{ value: number; className: string; }' is not assignable to type 'IntrinsicAttributes & AccountingProps'.
+  Property 'value' does not exist on type 'IntrinsicAttributes & AccountingProps'.
+components/reports/POEfficiencyReport.tsx(157,53): error TS2322: Type '{ value: number; className: string; }' is not assignable to type 'IntrinsicAttributes & AccountingProps'.
+  Property 'value' does not exist on type 'IntrinsicAttributes & AccountingProps'.
+components/reports/TrendsSection.tsx(83,57): error TS2322: Type '{ children: number; size: string; className: string; }' is not assignable to type 'IntrinsicAttributes & AccountingProps'.
+  Property 'size' does not exist on type 'IntrinsicAttributes & AccountingProps'.
+components/reports/TrendsSection.tsx(89,57): error TS2322: Type '{ children: number; size: string; className: string; }' is not assignable to type 'IntrinsicAttributes & AccountingProps'.
+  Property 'size' does not exist on type 'IntrinsicAttributes & AccountingProps'.
+components/reports/UnifiedTable.tsx(135,46): error TS2304: Cannot find name 'Button'.
+components/reports/UnifiedTable.tsx(140,47): error TS2304: Cannot find name 'Button'.

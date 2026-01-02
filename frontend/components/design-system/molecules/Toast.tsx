@@ -75,24 +75,25 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                     <div
                         key={t.id}
                         className={cn(
-                            "pointer-events-auto min-w-[300px] max-w-sm rounded-lg shadow-lg border p-4 flex gap-3 transform transition-all duration-300 animate-in slide-in-from-right-12 fade-in",
-                            t.type === "success" && "bg-emerald-50 border-emerald-100 text-emerald-900",
-                            t.type === "error" && "bg-red-50 border-red-100 text-red-900",
-                            t.type === "warning" && "bg-amber-50 border-amber-100 text-amber-900",
-                            t.type === "info" && "bg-blue-50 border-blue-100 text-blue-900"
+                            "pointer-events-auto min-w-[320px] max-w-sm rounded-2xl shadow-app-spotlight border px-4 py-4 flex gap-4 transform transition-all duration-500 animate-in slide-in-from-right-12 fade-in backdrop-blur-md",
+                            "bg-app-surface/90 border-app-border",
+                            t.type === "success" && "border-l-4 border-l-app-status-success",
+                            t.type === "error" && "border-l-4 border-l-app-status-error",
+                            t.type === "warning" && "border-l-4 border-l-app-status-warning",
+                            t.type === "info" && "border-l-4 border-l-app-accent"
                         )}
                     >
                         <div className="shrink-0 mt-0.5">
-                            {t.type === "success" && <CheckCircle className="w-5 h-5 text-emerald-600" />}
-                            {t.type === "error" && <AlertCircle className="w-5 h-5 text-red-600" />}
-                            {t.type === "warning" && <AlertCircle className="w-5 h-5 text-amber-600" />}
-                            {t.type === "info" && <Info className="w-5 h-5 text-blue-600" />}
+                            {t.type === "success" && <CheckCircle className="w-5 h-5 text-app-status-success" />}
+                            {t.type === "error" && <AlertCircle className="w-5 h-5 text-app-status-error" />}
+                            {t.type === "warning" && <AlertCircle className="w-5 h-5 text-app-status-warning" />}
+                            {t.type === "info" && <Info className="w-5 h-5 text-app-accent" />}
                         </div>
                         <div className="flex-1">
-                            <h4 className="font-semibold">{t.title}</h4>
-                            {t.message && <p className="opacity-90 mt-0.5 text-sm">{t.message}</p>}
+                            <h4 className="font-bold text-app-fg text-[14px] leading-tight">{t.title}</h4>
+                            {t.message && <p className="text-app-fg-muted mt-1 text-[12px] leading-snug">{t.message}</p>}
                         </div>
-                        <button onClick={() => removeToast(t.id)} className="shrink-0 opacity-50 hover:opacity-100">
+                        <button onClick={() => removeToast(t.id)} className="shrink-0 text-app-fg-muted hover:text-app-fg transition-colors">
                             <X className="w-4 h-4" />
                         </button>
                     </div>

@@ -47,7 +47,7 @@ async def upload_batch_srvs(
                 # Common format: SRV_1234_for_PO_5678.html
                 po_match = re.search(r"PO_(\d+)", file.filename, re.IGNORECASE)
                 if not po_match:
-                     po_match = re.search(r"SRV_(\d+)", file.filename, re.IGNORECASE)
+                    po_match = re.search(r"SRV_(\d+)", file.filename, re.IGNORECASE)
 
             # Priority 3: Just digits (User said "file name IS the po number")
             if not po_match:
@@ -72,7 +72,7 @@ async def upload_batch_srvs(
                     "message": "; ".join(messages),
                     "messages": messages,
                     "successful": s_count,
-                    "failed": f_count
+                    "failed": f_count,
                 }
             )
 
@@ -141,9 +141,7 @@ def get_srv_list(
     srvs = []
     for row in result:
         po_found = bool(row["po_found"])
-        warning_msg = (
-            None if po_found else f"PO {row['po_number']} not found in database"
-        )
+        warning_msg = None if po_found else f"PO {row['po_number']} not found in database"
 
         srvs.append(
             {
@@ -204,9 +202,7 @@ def get_srv_detail(srv_number: str, db: sqlite3.Connection = Depends(get_db)):
     Get detailed SRV information with all items.
     """
     # Get SRV header
-    header_result = db.execute(
-        "SELECT * FROM srvs WHERE srv_number = ?", (srv_number,)
-    ).fetchone()
+    header_result = db.execute("SELECT * FROM srvs WHERE srv_number = ?", (srv_number,)).fetchone()
 
     if not header_result:
         raise HTTPException(status_code=404, detail=f"SRV {srv_number} not found")

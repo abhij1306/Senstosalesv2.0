@@ -138,18 +138,18 @@ export default function InvoiceDetailClient({ data: initialData }: InvoiceDetail
                                 <TabsContent value="buyer" className="mt-0">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-1.5">
-                                            <Label className="uppercase tracking-widest text-app-fg-muted">Buyer Name</Label>
-                                            <H3 className="text-app-fg text-xl leading-none">
+                                            <Label className="uppercase tracking-widest text-app-fg-muted text-[11px] opacity-70">Buyer Name</Label>
+                                            <H3 className="text-app-fg text-[15px] font-semibold leading-none">
                                                 {header.buyer_name || "-"}
                                             </H3>
                                         </div>
                                         <div className="space-y-1.5">
-                                            <Label className="uppercase tracking-widest text-app-fg-muted">Buyer GSTIN</Label>
-                                            <Accounting className="text-app-accent text-xl leading-none">{header.buyer_gstin || "-"}</Accounting>
+                                            <Label className="uppercase tracking-widest text-app-fg-muted text-[11px] opacity-70">Buyer GSTIN</Label>
+                                            <Accounting className="text-app-accent text-[15px] font-mono leading-none">{header.buyer_gstin || "-"}</Accounting>
                                         </div>
                                         <div className="space-y-1.5 col-span-2 pt-4 border-t border-app-border/5">
-                                            <Label className="uppercase tracking-widest text-app-fg-muted">Billing Address</Label>
-                                            <Body className="text-app-fg leading-relaxed max-w-3xl">
+                                            <Label className="uppercase tracking-widest text-app-fg-muted text-[11px] opacity-70">Billing Address</Label>
+                                            <Body className="text-app-fg text-[14px] leading-relaxed max-w-3xl opacity-90">
                                                 {header.buyer_address || "-"}
                                             </Body>
                                         </div>
@@ -158,21 +158,21 @@ export default function InvoiceDetailClient({ data: initialData }: InvoiceDetail
 
                                 <TabsContent value="references" className="mt-0">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">Order Number</Label><Accounting className="text-app-fg">{header.buyers_order_no || "-"}</Accounting></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">Order Date</Label><Body className="text-app-fg">{header.buyers_order_date ? formatDate(header.buyers_order_date) : "-"}</Body></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">Linked DC</Label><Accounting className="text-app-accent cursor-pointer hover:underline" onClick={() => router.push(header.dc_number ? dcRoute(header.dc_number) : "#")}>{header.dc_number || "-"}</Accounting></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">Challan Date</Label><Body className="text-app-fg">{header.dc_date ? formatDate(header.dc_date) : "-"}</Body></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">GEMC Number</Label><Body className="text-app-fg">{header.gemc_number || "-"}</Body></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">SRV Number</Label><Body className="text-app-fg">{header.srv_no || "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[11px] opacity-70">Order Number</Label><Accounting className="text-app-fg text-[14px] font-mono">{header.buyers_order_no || "-"}</Accounting></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[11px] opacity-70">Order Date</Label><Body className="text-app-fg text-[14px]">{header.buyers_order_date ? formatDate(header.buyers_order_date) : "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[11px] opacity-70">Linked DC</Label><Accounting className="text-app-accent cursor-pointer hover:underline text-[14px] font-mono" onClick={() => router.push(header.dc_number ? dcRoute(header.dc_number) : "#")}>{header.dc_number || "-"}</Accounting></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[11px] opacity-70">Challan Date</Label><Body className="text-app-fg text-[14px]">{header.dc_date ? formatDate(header.dc_date) : "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[11px] opacity-70">GEMC Number</Label><Body className="text-app-fg text-[14px]">{header.gemc_number || "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[11px] opacity-70">SRV Number</Label><Body className="text-app-fg text-[14px]">{header.srv_no || "-"}</Body></div>
                                     </div>
                                 </TabsContent>
 
                                 <TabsContent value="logistics" className="mt-0">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">Vehicle No</Label><Body className="text-app-fg">{header.vehicle_no || "-"}</Body></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">LR Number</Label><Body className="text-app-fg">{header.lr_no || "-"}</Body></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">Transporter</Label><Body className="text-app-fg">{header.transporter || "-"}</Body></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted">Payment Terms</Label><Body className="text-app-fg text-app-accent">{header.payment_terms || "45 Days"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[11px] opacity-70">Vehicle No</Label><Body className="text-app-fg text-[14px]">{header.vehicle_no || "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[11px] opacity-70">LR Number</Label><Body className="text-app-fg text-[14px]">{header.lr_no || "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[11px] opacity-70">Transporter</Label><Body className="text-app-fg text-[14px]">{header.transporter || "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[11px] opacity-70">Payment Terms</Label><Body className="text-app-fg text-app-accent text-[14px]">{header.payment_terms || "45 Days"}</Body></div>
                                     </div>
                                 </TabsContent>
                             </Card>
@@ -182,20 +182,20 @@ export default function InvoiceDetailClient({ data: initialData }: InvoiceDetail
 
                 {/* Items Table */}
                 <div className="space-y-4">
-                    <Label className="m-0 text-app-fg-muted uppercase tracking-widest">
+                    <Label className="m-0 text-app-fg-muted uppercase tracking-widest text-[11px] opacity-70">
                         Billing Structure ({items.length} Items)
                     </Label>
                     <div className="table-container shadow-premium-hover border-none bg-app-surface/30">
                         <table className="w-full text-left">
                             <thead>
-                                <tr className="border-b border-app-border/10 bg-app-overlay/10">
-                                    <th className="py-3 px-4 w-[60px]"><Label>#</Label></th>
-                                    <th className="py-3 px-4"><Label>Description</Label></th>
-                                    <th className="py-3 px-4 w-[120px]"><Label>HSN/SAC</Label></th>
-                                    <th className="py-3 px-4 text-right w-[100px]"><Label>Qty</Label></th>
-                                    <th className="py-3 px-4 text-right w-[120px]"><Label>Rate</Label></th>
-                                    <th className="py-3 px-4 text-right w-[140px] bg-blue-50/10 dark:bg-blue-900/10"><Label className="text-blue-600 dark:text-blue-400">Taxable</Label></th>
-                                    <th className="py-3 px-4 text-right w-[100px]"><Label>Recd</Label></th>
+                                <tr className="border-b border-app-border/5 bg-app-overlay/5">
+                                    <th className="py-3 px-4 w-[60px]"><Label className="text-[11px]">#</Label></th>
+                                    <th className="py-3 px-4"><Label className="text-[11px]">Description</Label></th>
+                                    <th className="py-3 px-4 w-[120px]"><Label className="text-[11px]">HSN/SAC</Label></th>
+                                    <th className="py-3 px-4 text-right w-[100px]"><Label className="text-[11px]">Qty</Label></th>
+                                    <th className="py-3 px-4 text-right w-[120px]"><Label className="text-[11px]">Rate</Label></th>
+                                    <th className="py-3 px-4 text-right w-[140px] bg-blue-50/10 dark:bg-blue-900/10"><Label className="text-blue-600 dark:text-blue-400 text-[11px]">Taxable</Label></th>
+                                    <th className="py-3 px-4 text-right w-[100px]"><Label className="text-[11px]">Recd</Label></th>
                                     <th className="py-3 px-4 w-[50px]"></th>
                                 </tr>
                             </thead>
@@ -211,16 +211,16 @@ export default function InvoiceDetailClient({ data: initialData }: InvoiceDetail
                                     return (
                                         <React.Fragment key={parentKey}>
                                             <tr className={cn("transition-colors border-b border-app-border/5", isExpanded ? "bg-app-overlay/10" : "bg-app-overlay/5")}>
-                                                <td className="py-3 px-4"><MonoCode className="text-app-accent/60">#S</MonoCode></td>
+                                                <td className="py-3 px-4"><MonoCode className="text-app-accent/60 text-[12px]">#S</MonoCode></td>
                                                 <td className="py-3 px-4">
-                                                    <Body className="text-app-fg-muted/90">{parent.description}</Body>
-                                                    {parent.material_code && <SmallText className="text-app-fg-muted/40 uppercase tracking-tighter">Code: {parent.material_code}</SmallText>}
+                                                    <Body className="text-app-fg-muted/90 text-[13px] font-medium">{parent.description}</Body>
+                                                    {parent.material_code && <SmallText className="text-app-fg-muted/40 uppercase tracking-tighter text-[10px]">Code: {parent.material_code}</SmallText>}
                                                 </td>
-                                                <td className="py-3 px-4"><SmallText className="text-app-fg-muted/40 uppercase tracking-widest">{parent.hsn_sac || "-"}</SmallText></td>
-                                                <td className="py-3 px-4 text-right"><Accounting className="text-app-fg-muted/70">{tQty}</Accounting></td>
-                                                <td className="py-3 px-4 text-right"><Accounting className="text-app-fg-muted/40">{parent.rate}</Accounting></td>
-                                                <td className="py-3 px-4 text-right bg-blue-50/5 dark:bg-blue-900/5"><Accounting className="text-blue-600/60 dark:text-blue-400/60">{tVal}</Accounting></td>
-                                                <td className="py-3 px-4 text-right"><Accounting className="text-app-fg-muted/70">{tRec}</Accounting></td>
+                                                <td className="py-3 px-4"><SmallText className="text-app-fg-muted/40 uppercase tracking-widest text-[11px]">{parent.hsn_sac || "-"}</SmallText></td>
+                                                <td className="py-3 px-4 text-right"><Accounting className="text-app-fg-muted/70 text-[13px]">{tQty}</Accounting></td>
+                                                <td className="py-3 px-4 text-right"><Accounting className="text-app-fg-muted/40 text-[13px]">{parent.rate}</Accounting></td>
+                                                <td className="py-3 px-4 text-right bg-blue-50/5 dark:bg-blue-900/5"><Accounting className="text-blue-600/60 dark:text-blue-400/60 text-[13px]">{tVal}</Accounting></td>
+                                                <td className="py-3 px-4 text-right"><Accounting className="text-app-fg-muted/70 text-[13px]">{tRec}</Accounting></td>
                                                 <td className="py-3 px-4 text-center">
                                                     <button onClick={() => toggleItem(parentKey)} className="p-1.5 rounded-md hover:bg-app-accent/10 hover:text-app-accent transition-all text-app-fg-muted/30">
                                                         {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -233,16 +233,16 @@ export default function InvoiceDetailClient({ data: initialData }: InvoiceDetail
                                                         <div className="absolute left-[30px] top-0 bottom-0 w-[2px] bg-app-accent/20" />
                                                         <div className="flex items-center gap-2 pl-[38px]">
                                                             <span className="text-app-accent/30" style={{ fontSize: '10px' }}>L</span>
-                                                            <MonoCode className="text-app-fg-muted">L-{item.po_sl_no}</MonoCode>
+                                                            <MonoCode className="text-app-fg-muted text-[11px]">L-{item.po_sl_no}</MonoCode>
                                                         </div>
                                                     </td>
                                                     <td colSpan={2} />
-                                                    <td className="py-2 px-4 text-right"><Accounting className="text-app-fg-muted">{item.quantity}</Accounting></td>
+                                                    <td className="py-2 px-4 text-right"><Accounting className="text-app-fg-muted text-[12px]">{item.quantity}</Accounting></td>
                                                     <td className="py-2 px-4 text-right" />
                                                     <td className="py-2 px-4 text-right bg-blue-50/5 dark:bg-blue-900/5">
-                                                        <Accounting className="text-blue-600 dark:text-blue-400">{item.taxable_value || item.amount}</Accounting>
+                                                        <Accounting className="text-blue-600 dark:text-blue-400 text-[12px]">{item.taxable_value || item.amount}</Accounting>
                                                     </td>
-                                                    <td className="py-2 px-4 text-right"><Accounting className="text-app-fg-muted">{item.received_qty || 0}</Accounting></td>
+                                                    <td className="py-2 px-4 text-right"><Accounting className="text-app-fg-muted text-[12px]">{item.received_qty || 0}</Accounting></td>
                                                     <td />
                                                 </tr>
                                             ))}
@@ -260,21 +260,21 @@ export default function InvoiceDetailClient({ data: initialData }: InvoiceDetail
                         <Card className="p-8 bg-app-surface/50 border-none shadow-premium-hover backdrop-blur-xl">
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center pb-2 border-b border-app-border/10">
-                                    <Label className="uppercase tracking-widest text-app-fg-muted">Net Taxable Value</Label>
-                                    <Accounting className="text-xl text-app-fg">{header.total_taxable_value || header.taxable_value}</Accounting>
+                                    <Label className="uppercase tracking-widest text-app-fg-muted text-[11px]">Net Taxable Value</Label>
+                                    <Accounting className="text-lg font-semibold text-app-fg">{header.total_taxable_value || header.taxable_value}</Accounting>
                                 </div>
                                 <div className="flex justify-between items-center text-app-fg-muted">
-                                    <Label className="uppercase tracking-widest">Total GST (CGST + SGST)</Label>
+                                    <Label className="uppercase tracking-widest text-[11px]">Total GST (CGST + SGST)</Label>
                                     <Accounting className="text-sm">{((header.cgst_total || header.cgst || 0) + (header.sgst_total || header.sgst || 0)).toFixed(2)}</Accounting>
                                 </div>
                                 <div className="pt-6 mt-4 border-t border-app-border/20 flex justify-between items-end">
                                     <div className="space-y-2">
-                                        <Label className="uppercase text-app-accent tracking-widest">Grand Total</Label>
-                                        <SmallText className="text-app-fg-muted block max-w-[280px] leading-snug italic lowercase first-letter:uppercase">
+                                        <Label className="uppercase text-app-accent tracking-widest text-[11px]">Grand Total</Label>
+                                        <SmallText className="text-app-fg-muted block max-w-[280px] leading-snug italic lowercase first-letter:uppercase text-[12px]">
                                             {amountInWords(header.total_invoice_value || 0)} Only
                                         </SmallText>
                                     </div>
-                                    <Accounting className="text-4xl text-app-fg tracking-tighter leading-none">
+                                    <Accounting className="text-3xl text-app-fg tracking-tighter leading-none">
                                         {header.total_invoice_value || 0}
                                     </Accounting>
                                 </div>

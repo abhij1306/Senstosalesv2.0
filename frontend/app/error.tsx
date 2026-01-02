@@ -51,7 +51,7 @@ export default function Error({
                         REBOOT HUB
                     </Button>
                     <Button
-                        variant="default"
+                        variant="primary"
                         onClick={reset}
                         className="bg-app-status-error hover:bg-app-status-error/90"
                     >

@@ -1,0 +1,546 @@
+[
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 42,
+      "row": 55
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\core\\validation_helpers.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 55
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 55,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 60,
+      "row": 84
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\buyers.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 84
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 84,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 60,
+      "row": 111
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\buyers.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 111
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 111,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 60,
+      "row": 123
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\buyers.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 123
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 123,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 60,
+      "row": 135
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\buyers.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 135
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 135,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 60,
+      "row": 100
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\dashboard.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 100
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 100,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 60,
+      "row": 184
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\dashboard.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 184
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 184,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 65,
+      "row": 81
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\dc.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 81
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 81,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 71,
+      "row": 198
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\dc.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 198
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 198,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 14,
+      "row": 401
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\dc.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 394
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 394,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 71,
+      "row": 408
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\dc.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 408
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 408,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 14,
+      "row": 447
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\dc.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 440
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 440,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 71,
+      "row": 454
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\dc.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 454
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 454,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 10,
+      "row": 480
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\dc.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 477
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 477,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 60,
+      "row": 484
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\dc.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 484
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 484,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 94,
+      "row": 123
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\health.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 123
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 123,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 71,
+      "row": 198
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\invoice.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 198
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 198,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 14,
+      "row": 377
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\invoice.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 370
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 370,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 71,
+      "row": 384
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\invoice.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 384
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 384,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 74,
+      "row": 202
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\po.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 202
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 202,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 38,
+      "row": 284
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\po.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 284
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 284,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 66,
+      "row": 285
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\po.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 285
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 285,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 71,
+      "row": 422
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\po.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 422
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 422,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 82,
+      "row": 480
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\po.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 480
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 480,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 40,
+      "row": 172
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\reports.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 172
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 172,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 44,
+      "row": 187
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\reports.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 187
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 187,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 84,
+      "row": 257
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\reports.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 257
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 257,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 80,
+      "row": 117
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\search.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 117
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 117,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 60,
+      "row": 36
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\settings.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 36
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 36,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 60,
+      "row": 51
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\settings.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 51
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 51,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 79,
+      "row": 57
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\routers\\system.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 57
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 57,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 61,
+      "row": 293
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\app\\services\\ingest_po.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 293
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 293,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  }
+]

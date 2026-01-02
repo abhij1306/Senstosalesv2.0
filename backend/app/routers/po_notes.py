@@ -1,29 +1,30 @@
-
 """
 PO Notes Router
 Handles CRUD operations for PO Notes templates.
 """
 
 import sqlite3
-import datetime
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Body
-
-from app.db import get_db
+from fastapi import APIRouter, Depends, HTTPException
 
 # Simple Pydantic models for internal use if not in models.py
 from pydantic import BaseModel
+
+from app.db import get_db
+
 
 class PONoteCreate(BaseModel):
     title: str
     content: str
     is_active: bool = True
 
+
 class PONoteUpdate(BaseModel):
     title: str = None
     content: str = None
     is_active: bool = None
+
 
 class PONoteOut(BaseModel):
     id: str  # Changed from int - migration 003 uses TEXT for id
@@ -33,7 +34,9 @@ class PONoteOut(BaseModel):
     created_at: str
     updated_at: str
 
+
 router = APIRouter()
+
 
 @router.get("/", response_model=List[PONoteOut])
 def list_po_notes(db: sqlite3.Connection = Depends(get_db)):
@@ -43,17 +46,17 @@ def list_po_notes(db: sqlite3.Connection = Depends(get_db)):
     ).fetchall()
     return [dict(row) for row in rows]
 
+
 @router.get("/{note_id}", response_model=PONoteOut)
 def get_po_note(note_id: str, db: sqlite3.Connection = Depends(get_db)):
     """Get a specific PO Note template"""
-    row = db.execute(
-        "SELECT * FROM po_notes_templates WHERE id = ?", (note_id,)
-    ).fetchone()
-    
+    row = db.execute("SELECT * FROM po_notes_templates WHERE id = ?", (note_id,)).fetchone()
+
     if not row:
         raise HTTPException(status_code=404, detail="Note not found")
-        
+
     return dict(row)
+
 
 @router.post("/", response_model=PONoteOut)
 def create_po_note(note: PONoteCreate, db: sqlite3.Connection = Depends(get_db)):
@@ -67,9 +70,10 @@ def create_po_note(note: PONoteCreate, db: sqlite3.Connection = Depends(get_db))
         (note.title, note.content, 1 if note.is_active else 0),
     )
     db.commit()
-    
+
     new_id = cursor.lastrowid
     return get_po_note(new_id, db)
+
 
 @router.put("/{note_id}", response_model=PONoteOut)
 def update_po_note(note_id: str, note: PONoteUpdate, db: sqlite3.Connection = Depends(get_db)):
@@ -78,7 +82,7 @@ def update_po_note(note_id: str, note: PONoteUpdate, db: sqlite3.Connection = De
     existing = db.execute("SELECT id FROM po_notes_templates WHERE id = ?", (note_id,)).fetchone()
     if not existing:
         raise HTTPException(status_code=404, detail="Note not found")
-        
+
     # Build update query
     fields = []
     values = []
@@ -91,18 +95,19 @@ def update_po_note(note_id: str, note: PONoteUpdate, db: sqlite3.Connection = De
     if note.is_active is not None:
         fields.append("is_active = ?")
         values.append(1 if note.is_active else 0)
-        
+
     if not fields:
         return get_po_note(note_id, db)
-        
+
     fields.append("updated_at = CURRENT_TIMESTAMP")
     values.append(note_id)
-    
+
     query = f"UPDATE po_notes_templates SET {', '.join(fields)} WHERE id = ?"
     db.execute(query, tuple(values))
     db.commit()
-    
+
     return get_po_note(note_id, db)
+
 
 @router.delete("/{note_id}")
 def delete_po_note(note_id: str, db: sqlite3.Connection = Depends(get_db)):
@@ -110,8 +115,8 @@ def delete_po_note(note_id: str, db: sqlite3.Connection = Depends(get_db)):
     existing = db.execute("SELECT id FROM po_notes_templates WHERE id = ?", (note_id,)).fetchone()
     if not existing:
         raise HTTPException(status_code=404, detail="Note not found")
-        
+
     db.execute("UPDATE po_notes_templates SET is_active = 0 WHERE id = ?", (note_id,))
     db.commit()
-    
+
     return {"message": "Note deleted successfully"}

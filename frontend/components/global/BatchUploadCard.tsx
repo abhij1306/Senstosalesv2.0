@@ -14,7 +14,7 @@ import {
     Stack,
     Box,
     H4,
-} from "@/components/design-system/organisms";
+} from "@/components/design-system";
 
 export default function BatchUploadCard() {
     const {
@@ -52,16 +52,15 @@ export default function BatchUploadCard() {
             >
                 <div
                     className={cn(
-                        "rounded-3xl transition-all duration-300 overflow-hidden",
-                        "bg-white/90 backdrop-blur-xl",
-                        "shadow-[0_20px_40px_-12px_rgba(0,0,0,0.12),0_4px_8px_rgba(0,0,0,0.05)]",
-                        minimized ? "p-2 pr-4" : "p-0"
+                        "rounded-[2.5rem] transition-all duration-300 overflow-hidden",
+                        "glass-panel shadow-macos-soft border border-white/40 dark:border-white/10",
+                        minimized ? "p-2 pr-6" : "p-0"
                     )}
                 >
                     {minimized ? (
-                        <Flex align="center" gap={3}>
-                            <Box className="relative w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-inner">
-                                <svg className="w-full h-full transform -rotate-90 p-1">
+                        <Flex align="center" gap={3.5}>
+                            <Box className="relative w-12 h-12 flex items-center justify-center bg-gray-100/50 dark:bg-white/10 rounded-full shadow-inner border border-white/20 dark:border-white/5">
+                                <svg className="w-full h-full transform -rotate-90 p-2">
                                     <circle
                                         cx="16"
                                         cy="16"
@@ -69,140 +68,135 @@ export default function BatchUploadCard() {
                                         stroke="currentColor"
                                         strokeWidth="3"
                                         fill="transparent"
-                                        className="text-slate-100"
+                                        className="text-gray-400/20"
                                         viewBox="0 0 32 32"
                                     />
                                     <circle
                                         cx="16"
                                         cy="16"
                                         r="14"
-                                        stroke="url(#gradient-brand)"
+                                        stroke="#007AFF"
                                         strokeWidth="3"
                                         fill="transparent"
                                         strokeDasharray={88}
                                         strokeDashoffset={88 - (88 * progress.current) / progress.total}
-                                        className="text-[var(--color-sys-brand-primary)]"
+                                        className="transition-all duration-500 ease-out shadow-[0_0_8px_rgba(0,122,255,0.4)]"
                                         viewBox="0 0 32 32"
                                     />
-                                    <defs>
-                                        <linearGradient id="gradient-brand" x1="0%" y1="0%" x2="100%" y2="0%">
-                                            <stop offset="0%" stopColor="#3B82F6" />
-                                            <stop offset="100%" stopColor="#8B5CF6" />
-                                        </linearGradient>
-                                    </defs>
                                 </svg>
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <H4 className="text-[var(--color-sys-brand-primary)] p-0 m-0">
-                                        {Math.round((progress.current / progress.total) * 100)}%
-                                    </H4>
+                                    <span className="text-[11px] font-bold text-primary">
+                                        {Math.round((progress.current / (progress.total || 1)) * 100)}%
+                                    </span>
                                 </div>
                             </Box>
                             <Stack gap={0}>
-                                <SmallText className="font-bold text-[var(--color-sys-text-primary)]">Uploading...</SmallText>
-                                <H4 className="text-[var(--color-sys-text-tertiary)] font-semibold">
-                                    {progress.current}/{progress.total} Parsed
-                                </H4>
+                                <div className="text-[12px] font-semibold text-app-fg leading-tight">Processing</div>
+                                <div className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight">
+                                    {progress.current}/{progress.total} Ingested
+                                </div>
                             </Stack>
                             <Button
                                 variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 ml-auto hover:bg-black/5 rounded-full"
+                                size="compact"
+                                className="h-8 w-8 ml-3 hover:bg-white/40 dark:hover:bg-white/10 rounded-full"
                                 onClick={() => setMinimized(false)}
                             >
-                                <Maximize2 size={16} />
+                                <Maximize2 size={15} className="text-gray-500" />
                             </Button>
                         </Flex>
                     ) : (
-                        <div className="p-6">
-                            <Flex justify="between" align="start" className="mb-6">
-                                <Flex align="center" gap={3}>
+                        <div className="p-8">
+                            <Flex justify="between" align="start" className="mb-8">
+                                <Flex align="center" gap={4.5}>
                                     <Box className={cn(
-                                        "w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-colors duration-500",
-                                        isComplete ? "bg-emerald-500 text-white" : "bg-blue-600 text-white"
+                                        "w-16 h-16 rounded-[22px] flex items-center justify-center shadow-lg transition-all duration-500 border border-white/40 shadow-blue-500/20",
+                                        isComplete
+                                            ? "bg-green-500 text-white"
+                                            : "bg-primary text-white"
                                     )}>
-                                        {isComplete ? <CheckCircle size={24} strokeWidth={3} /> : <Loader2 size={24} className="animate-spin" />}
+                                        {isComplete ? <CheckCircle size={32} /> : <Loader2 size={32} className="animate-spin" />}
                                     </Box>
                                     <Stack gap={0.5}>
-                                        <Body className="font-black text-xl text-[var(--color-sys-text-primary)] tracking-tight">
-                                            {isComplete ? "Processing Complete" : `Ingesting ${uploadType}`}
-                                        </Body>
-                                        <SmallText className="text-[var(--color-sys-text-secondary)] font-medium">
-                                            {files.length} Document{files.length !== 1 ? 's' : ''} in Queue
-                                        </SmallText>
+                                        <div className="text-[22px] font-semibold text-app-fg tracking-tight leading-tight">
+                                            {isComplete ? "Finalized" : `Matrix Ingestion`}
+                                        </div>
+                                        <div className="text-[11px] font-bold uppercase tracking-[0.1em] text-gray-500 dark:text-gray-400 opacity-70">
+                                            {files.length} Document{files.length !== 1 ? 's' : ''} Streamed
+                                        </div>
                                     </Stack>
                                 </Flex>
-                                <Flex gap={1}>
+                                <Flex gap={2}>
                                     <Button
                                         variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 rounded-full hover:bg-black/5 text-slate-400 hover:text-slate-600"
+                                        size="compact"
+                                        className="h-9 w-9 rounded-full bg-gray-100/50 dark:bg-white/10 hover:bg-white/70 dark:hover:bg-white/20 text-gray-500 transition-all"
                                         onClick={() => setMinimized(true)}
                                     >
-                                        <Minimize2 size={18} />
+                                        <Minimize2 size={16} />
                                     </Button>
                                     {isComplete && (
                                         <Button
                                             variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 rounded-full hover:bg-black/5 text-slate-400 hover:text-slate-600"
+                                            size="compact"
+                                            className="h-9 w-9 rounded-full bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-500 transition-all"
                                             onClick={resetUpload}
                                         >
-                                            <X size={18} />
+                                            <X size={16} />
                                         </Button>
                                     )}
                                 </Flex>
                             </Flex>
 
-                            <Stack gap={6}>
+                            <Stack gap={8}>
                                 {/* Progress Bar */}
                                 <Box className="w-full">
-                                    <Flex justify="between" align="end" className="mb-2 w-full">
-                                        <H4 className="text-slate-400">
-                                            Parsers Active
-                                        </H4>
-                                        <Accounting className="font-black text-blue-600 text-h2 leading-none">
-                                            {Math.round((progress.current / progress.total) * 100)}%
-                                        </Accounting>
+                                    <Flex justify="between" align="end" className="mb-3 w-full px-1">
+                                        <div className="text-[11px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 opacity-60">
+                                            Parser Velocity
+                                        </div>
+                                        <div className="text-[26px] font-bold text-primary tracking-tighter tabular-nums">
+                                            {Math.round((progress.current / (progress.total || 1)) * 100)}%
+                                        </div>
                                     </Flex>
-                                    <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner border border-slate-200/50">
+                                    <div className="h-4 w-full bg-gray-200/50 dark:bg-white/5 rounded-full overflow-hidden border border-white/20 dark:border-white/5 p-1">
                                         <motion.div
                                             className={cn(
-                                                "h-full rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.1)] relative overflow-hidden",
-                                                isComplete ? "bg-emerald-500" : "bg-gradient-to-r from-blue-500 to-indigo-600"
+                                                "h-full rounded-full shadow-[0_0_12px_rgba(0,122,255,0.4)] relative overflow-hidden transition-all duration-300",
+                                                isComplete ? "bg-green-500" : "bg-primary"
                                             )}
                                             initial={{ width: 0 }}
                                             animate={{
-                                                width: `${(progress.current / progress.total) * 100}%`,
+                                                width: `${(progress.current / (progress.total || 1)) * 100}%`,
                                             }}
+                                            transition={{ type: "spring", damping: 25, stiffness: 120 }}
                                         >
-                                            <div className="absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite]" />
+                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite]" />
                                         </motion.div>
                                     </div>
                                 </Box>
 
-                                {/* Grid Stats - Perfectly Aligned */}
-                                <div className="grid grid-cols-2 gap-4 w-full">
-                                    <Box className="flex flex-col items-start justify-center p-4 bg-emerald-50/80 border border-emerald-100/80 rounded-2xl shadow-sm h-24">
+                                {/* Grid Stats */}
+                                <div className="grid grid-cols-2 gap-5 w-full">
+                                    <Box className="flex flex-col items-center justify-center p-6 bg-green-50/50 dark:bg-green-500/10 border border-green-500/20 rounded-[2rem] shadow-sm h-32 group hover:scale-[1.02] transition-all">
                                         <Flex align="center" gap={2} className="mb-2">
-                                            <div className="p-1.5 bg-white rounded-full shadow-sm text-emerald-600">
-                                                <CheckCircle size={14} strokeWidth={3} />
-                                            </div>
-                                            <H4 className="text-emerald-600/80 font-bold tracking-widest">Accepted</H4>
+                                            <CheckCircle size={14} className="text-green-500" />
+                                            <div className="text-[11px] font-bold uppercase tracking-widest text-green-600 dark:text-green-400 opacity-80">Accepted</div>
                                         </Flex>
-                                        <Accounting className="text-h1 font-black text-emerald-700 tracking-tighter">{acceptedCount}</Accounting>
+                                        <div className="text-3xl font-bold text-green-600 dark:text-green-400 tracking-tighter tabular-nums">{acceptedCount}</div>
                                     </Box>
 
                                     <Box className={cn(
-                                        "flex flex-col items-start justify-center p-4 rounded-2xl shadow-sm h-24 border transition-colors",
-                                        rejectedCount > 0 ? "bg-rose-50/80 border-rose-100/80" : "bg-slate-50/80 border-slate-100/80"
+                                        "flex flex-col items-center justify-center p-6 rounded-[2rem] shadow-sm h-32 border transition-all hover:scale-[1.02] group",
+                                        rejectedCount > 0
+                                            ? "bg-red-50/50 dark:bg-red-500/10 border-red-500/20"
+                                            : "bg-gray-50/50 dark:bg-white/5 border-gray-200/40 dark:border-white/10"
                                     )}>
                                         <Flex align="center" gap={2} className="mb-2">
-                                            <div className={cn("p-1.5 bg-white rounded-full shadow-sm", rejectedCount > 0 ? "text-rose-600" : "text-slate-400")}>
-                                                <AlertCircle size={14} strokeWidth={3} />
-                                            </div>
-                                            <H4 className={cn("font-bold tracking-widest", rejectedCount > 0 ? "text-rose-600/80" : "text-slate-400")}>Rejected</H4>
+                                            <AlertCircle size={14} className={rejectedCount > 0 ? "text-red-500" : "text-gray-400"} />
+                                            <div className={cn("text-[11px] font-bold uppercase tracking-widest opacity-80", rejectedCount > 0 ? "text-red-600 dark:text-red-400" : "text-gray-500 dark:text-gray-400")}>Rejected</div>
                                         </Flex>
-                                        <Accounting className={cn("text-h1 font-black tracking-tighter", rejectedCount > 0 ? "text-rose-700" : "text-slate-400")}>{rejectedCount}</Accounting>
+                                        <div className={cn("text-3xl font-bold tracking-tighter tabular-nums", rejectedCount > 0 ? "text-red-600 dark:text-red-400" : "text-gray-300 dark:text-gray-600")}>{rejectedCount}</div>
                                     </Box>
                                 </div>
 
@@ -210,19 +204,19 @@ export default function BatchUploadCard() {
                                 {!isComplete && (
                                     <Button
                                         variant="outline"
-                                        size="sm"
+                                        size="lg"
                                         onClick={cancelUpload}
-                                        className="w-full text-rose-500 hover:text-rose-600 hover:bg-rose-50 border-rose-200/60 h-12 font-bold tracking-widest text-xs uppercase rounded-xl border-2 shadow-sm"
+                                        className="w-full text-red-500 hover:text-white hover:bg-red-500 border-red-500/20 h-14 font-bold tracking-[0.1em] text-[12px] uppercase rounded-[20px] transition-all"
                                     >
-                                        Halt Operation
+                                        Halt Provisioning
                                     </Button>
                                 )}
                                 {isComplete && (
                                     <Button
                                         onClick={resetUpload}
-                                        className="w-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-200 h-12 font-bold tracking-widest text-xs uppercase rounded-xl"
+                                        className="w-full bg-primary hover:bg-primary/90 text-white shadow-xl shadow-blue-500/30 h-14 font-bold tracking-[0.1em] text-[12px] uppercase rounded-[20px] transition-all"
                                     >
-                                        Done
+                                        Dismiss Ledger
                                     </Button>
                                 )}
                             </Stack>

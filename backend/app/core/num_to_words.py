@@ -45,11 +45,7 @@ def num_to_words(num):
             return (
                 units[n // 100]
                 + " Hundred"
-                + (
-                    " and " + convert_less_than_thousand(n % 100)
-                    if n % 100 != 0
-                    else ""
-                )
+                + (" and " + convert_less_than_thousand(n % 100) if n % 100 != 0 else "")
             )
 
     crore = num // 10000000

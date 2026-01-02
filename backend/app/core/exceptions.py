@@ -66,15 +66,12 @@ class ValidationError(AppException):
 
 class ConflictError(AppException):
     def __init__(self, message: str, details: dict = None):
-        super().__init__(
-            message=message, error_code="CONFLICT", status_code=409, details=details
-        )
+        super().__init__(message=message, error_code="CONFLICT", status_code=409, details=details)
 
 
 ResourceNotFoundError = ResourceNotFoundException
 
 # --- Compatibility Layer for Legacy Code (routers/dc.py etc) ---
-
 
 
 class ErrorCode(Enum):

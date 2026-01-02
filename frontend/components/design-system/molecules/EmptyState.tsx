@@ -3,6 +3,8 @@ import { Card } from "../atoms/Card";
 import { H3, Body } from "../atoms/Typography";
 import { Flex } from "../atoms/Layout";
 import { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+
 
 interface EmptyStateProps {
     icon: LucideIcon;
@@ -20,14 +22,14 @@ export const EmptyState = ({
     className,
 }: EmptyStateProps) => {
     return (
-        <Card className={`text-center py-24 border-dashed border-[#E5E7EB] col-span-full ${className}`}>
-            <Flex justify="center" className="mb-4">
-                <div className="w-16 h-16 bg-[#F9FAFB] rounded-full flex items-center justify-center">
-                    <Icon className="w-8 h-8 text-[#D1D5DB]" />
+        <Card className={cn("text-center py-20 border-dashed border-app-border bg-app-surface/30 backdrop-blur-sm col-span-full", className)}>
+            <Flex justify="center" className="mb-6">
+                <div className="w-16 h-16 bg-app-accent/5 rounded-full flex items-center justify-center border border-app-accent/10">
+                    <Icon className="w-8 h-8 text-app-accent/40" />
                 </div>
             </Flex>
-            <H3 className="mb-2">{title}</H3>
-            <Body className="text-[#6B7280] mb-6 max-w-md mx-auto">
+            <H3 className="mb-2 text-app-fg">{title}</H3>
+            <Body className="text-app-fg-muted mb-6 max-w-md mx-auto">
                 {description}
             </Body>
             {action && <Flex justify="center">{action}</Flex>}

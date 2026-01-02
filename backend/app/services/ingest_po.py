@@ -10,6 +10,7 @@ from typing import Dict, List, Tuple
 from app.core.date_utils import normalize_date
 from app.core.number_utils import to_float, to_int, to_qty
 
+
 def to_money(val) -> float:
     """Enforce SA-2: 2 Decimal Precision"""
     try:
@@ -37,7 +38,7 @@ class POIngestionService:
         """
         if not po_items:
             raise ValueError("Scraper returned zero items for this PO. Aborting ingestion.")
-            
+
         print(f"🔥🔥🔥 START INGEST: H={len(po_header)} I={len(po_items)}", flush=True)
         print(f"📋 PO Number: {po_header.get('PURCHASE ORDER')}", flush=True)
         print(f"📦 Items to process: {[item.get('PO ITM') for item in po_items]}", flush=True)
@@ -50,25 +51,25 @@ class POIngestionService:
             po_number = str(po_header.get("PURCHASE ORDER", "")).strip()
             if not po_number:
                 raise ValueError("Missing PO Number in header")
-            
-            po_header["PURCHASE ORDER"] = po_number # Ensure internal consistency
+
+            po_header["PURCHASE ORDER"] = po_number  # Ensure internal consistency
 
             # 2. Find Buyer (Lookup by DVN/SupplierCode if possible, else default)
             dvn = po_header.get("DVN")
             supp_code = po_header.get("SUPP CODE")
-            
+
             buyer_row = None
             if dvn and supp_code:
                 buyer_row = db.execute(
-                    "SELECT id FROM buyers WHERE department_no = ? AND supplier_code = ?", 
-                    (str(dvn), str(supp_code))
+                    "SELECT id FROM buyers WHERE department_no = ? AND supplier_code = ?",
+                    (str(dvn), str(supp_code)),
                 ).fetchone()
-                
+
             if not buyer_row:
                 buyer_row = db.execute("SELECT id FROM buyers WHERE is_default = 1").fetchone()
             if not buyer_row:
                 buyer_row = db.execute("SELECT id FROM buyers LIMIT 1").fetchone()
-                
+
             buyer_id = buyer_row[0] if buyer_row else None
 
             # 3. Check for Existing PO
@@ -84,16 +85,17 @@ class POIngestionService:
 
             # 4. Prepare Header Data
             from app.core.validation import get_financial_year
-            
+
             po_date = normalize_date(po_header.get("PO DATE"))
             financial_year = get_financial_year(po_date) if po_date else "2025-26"
-            
+
             header_data = {
                 "po_number": po_number,
                 "po_date": po_date,
                 "buyer_id": buyer_id,
                 "supplier_name": po_header.get("SUPP NAME M/S") or po_header.get("supplier_name"),
-                "supplier_gstin": po_header.get("TIN NO") or po_header.get("supplier_gstin"), # Scraper often finds TIN as GSTIN
+                "supplier_gstin": po_header.get("TIN NO")
+                or po_header.get("supplier_gstin"),  # Scraper often finds TIN as GSTIN
                 "supplier_code": po_header.get("SUPP CODE"),
                 "supplier_phone": po_header.get("PHONE"),
                 "supplier_fax": po_header.get("FAX"),
@@ -151,7 +153,7 @@ class POIngestionService:
                 po_item_no = to_int(item.get("PO ITM"))
                 if po_item_no is None:
                     continue
-                
+
                 # Use existing ID to prevent breaking FKs on update
                 existing_item = db.execute(
                     "SELECT id FROM purchase_order_items WHERE po_number = ? AND po_item_no = ?",
@@ -177,11 +179,16 @@ class POIngestionService:
                         updated_at=CURRENT_TIMESTAMP
                     """,
                     (
-                        item_id, po_number, po_item_no, item.get("MATERIAL CODE"),
+                        item_id,
+                        po_number,
+                        po_item_no,
+                        item.get("MATERIAL CODE"),
                         item.get("DESCRIPTION") or item.get("material_description"),
                         item.get("DRG") or item.get("drg_no"),
-                        to_int(item.get("MTRL CAT")), item.get("UNIT"),
-                        po_rate, ord_qty
+                        to_int(item.get("MTRL CAT")),
+                        item.get("UNIT"),
+                        po_rate,
+                        ord_qty,
                     ),
                 )
 
@@ -209,12 +216,12 @@ class POIngestionService:
                 for dely in deliveries:
                     lot_no = to_int(dely.get("LOT NO") or 1)
                     track = existing_tracking.get(lot_no, {"delivered": 0, "received": 0})
-                    
+
                     # Use RCD QTY from PO HTML if available (it's the truth for PO state)
                     rcd_qty = to_qty(dely.get("RCD QTY"))
                     if rcd_qty is None:
                         rcd_qty = track["received"]
-                    
+
                     # Support manual override of DSP (delivered) quantity
                     # Router sends "DSP QTY" if it's a manual edit session
                     dsp_qty = to_qty(dely.get("DSP QTY"))
@@ -232,12 +239,15 @@ class POIngestionService:
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                         (
-                            item_id, lot_no, 
+                            item_id,
+                            lot_no,
                             to_qty(dely.get("DELY QTY") or ord_qty),
                             normalize_date(dely.get("DELY DATE")),
                             normalize_date(dely.get("ENTRY ALLOW DATE") or dely.get("DELY DATE")),
                             to_int(dely.get("DEST CODE")),
-                            dsp_qty, rcd_qty, manual_override
+                            dsp_qty,
+                            rcd_qty,
+                            manual_override,
                         ),
                     )
 
@@ -250,32 +260,37 @@ class POIngestionService:
                     SET status = 'Cancelled', updated_at = CURRENT_TIMESTAMP 
                     WHERE po_number = ? AND id NOT IN ({placeholders})
                     """,
-                    [po_number] + processed_item_ids
+                    [po_number] + processed_item_ids,
                 )
 
             # Reconciliation: Only for UPDATES to existing POs
             # For NEW uploads, there's nothing to reconcile yet
             # For EXISTING uploads, sync to update received quantities from PO HTML
             if existing:  # PO existed before this ingestion
-                print(f"🔄 Running TOT Sync for updated PO {po_number} (syncing RCD QTY)...", flush=True)
+                print(
+                    f"🔄 Running TOT Sync for updated PO {po_number} (syncing RCD QTY)...",
+                    flush=True,
+                )
                 try:
                     from app.services.reconciliation_service import ReconciliationService
+
                     ReconciliationService.sync_po(db, po_number)
-                    print(f"✅ TOT Sync completed", flush=True)
+                    print("✅ TOT Sync completed", flush=True)
                 except Exception as sync_err:
                     print(f"⚠️ TOT Sync failed (non-critical): {sync_err}", flush=True)
                     # Don't fail the entire upload if sync fails - RCD QTY is already updated in items table
             else:
                 print(f"ℹ️ New PO upload {po_number}, skipping sync", flush=True)
-            
+
             warnings.append(f"✅ Ingested PO {po_number} with {len(po_items)} items.")
             return True, warnings
 
         except Exception as e:
             print(f"❌ INGESTION ERROR: {type(e).__name__}: {str(e)}", flush=True)
             import traceback
+
             traceback.print_exc()
-            raise ValueError(f"Ingestion Failure: {str(e)}")
+            raise ValueError(f"Ingestion Failure: {str(e)}") from e
 
 
 # Singleton instance

@@ -12,7 +12,19 @@ export {
     H1,
     H2,
     H3,
+    H4,
+    LargeTitle,
+    Title1,
+    Title2,
+    Title3,
+    Headline,
     Body,
+    Callout,
+    Subhead,
+    Footnote,
+    Caption1,
+    Caption2,
+    Monospaced,
     Label,
     SmallText,
     MonoCode,
@@ -22,8 +34,11 @@ export {
 } from "./atoms/Typography";
 export { Card } from "./atoms/Card";
 export type { CardProps } from "./atoms/Card";
-export { Badge } from "./atoms/Badge";
+export { Badge, badgeVariants } from "./atoms/Badge";
 export type { BadgeProps } from "./atoms/Badge";
+export { StatusBadge, statusBadgeVariants } from "./atoms/StatusBadge";
+export type { StatusBadgeProps } from "./atoms/StatusBadge";
+export * from "./atoms/DownloadButton";
 export { Checkbox } from "./atoms/Checkbox";
 export type { CheckboxProps } from "./atoms/Checkbox";
 export { Icon } from "./atoms/Icon";
@@ -36,8 +51,6 @@ export { FormField } from "./molecules/FormField";
 export type { FormFieldProps } from "./molecules/FormField";
 export { SearchBar } from "./molecules/SearchBar";
 export type { SearchBarProps } from "./molecules/SearchBar";
-export { StatusTag } from "./molecules/StatusTag";
-export type { StatusTagProps } from "./molecules/StatusTag";
 export { ActionButtonGroup } from "./molecules/ActionButtonGroup";
 export type {
     ActionButtonGroupProps,
@@ -48,9 +61,6 @@ export type { WarningModalProps } from "./molecules/WarningModal";
 export { DocumentJourney } from "./molecules/DocumentJourney";
 export type { DocumentStage } from "./molecules/DocumentJourney";
 
-// Legacy molecules (to be migrated)
-export { DetailField } from "./molecules/DetailField";
-export { StatBlock } from "./molecules/StatBlock";
 export { Tabs, TabsList, TabsTrigger, TabsContent } from "./molecules/Tabs";
 export { TableHeaderCell, TableRowCell } from "./molecules/TableCells";
 
@@ -70,7 +80,6 @@ export type { DataTableProps, Column } from "./organisms/DataTable";
 export { SidebarNav } from "./organisms/SidebarNav";
 export { GlobalCommandPalette } from "./organisms/GlobalCommandPalette";
 export { SearchTrigger } from "./molecules/SearchTrigger";
-export { StatusBadge } from "./organisms/StatusBadge";
 export { InspectionManifest } from "./organisms/InspectionManifest";
 export { EmptyState } from "./molecules/EmptyState";
 export { default as GlobalSearch } from "./organisms/GlobalSearch";

@@ -26,16 +26,12 @@ def apply_multipart_fix():
         @functools.wraps(original_init)
         def patched_init(self, headers, stream, max_files=5000, max_fields=5000):
             # Call original init with our new defaults
-            return original_init(
-                self, headers, stream, max_files=max_files, max_fields=max_fields
-            )
+            return original_init(self, headers, stream, max_files=max_files, max_fields=max_fields)
 
         # Replace the __init__ method
         MultiPartParser.__init__ = patched_init
 
-        print(
-            "✅ Patched starlette.formparsers.MultiPartParser: max_files default 1000 -> 5000"
-        )
+        print("✅ Patched starlette.formparsers.MultiPartParser: max_files default 1000 -> 5000")
         logger.info(
             "✅ patched starlette.formparsers.MultiPartParser: max_files default 1000 -> 5000"
         )

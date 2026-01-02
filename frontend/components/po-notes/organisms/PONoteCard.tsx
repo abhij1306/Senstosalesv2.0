@@ -1,15 +1,17 @@
+"use client";
+
+import React from "react";
 import {
     Edit2,
     Trash2,
     FileText,
     CheckSquare,
+    Clock,
+    Hash
 } from "lucide-react";
 import { PONote } from "@/lib/api";
-import { Card } from "@/components/design-system/atoms/Card";
-import { Button } from "@/components/design-system/atoms/Button";
-import { Badge } from "@/components/design-system/atoms/Badge";
-import { H3, SmallText } from "@/components/design-system/atoms/Typography";
-import { Flex, Box } from "@/components/design-system/atoms/Layout";
+import { Card, Button, Badge, H3, SmallText, Flex, Stack, Box } from "@/components/design-system";
+import { cn } from "@/lib/utils";
 
 interface PONoteCardProps {
     template: PONote;
@@ -20,54 +22,70 @@ interface PONoteCardProps {
 export const PONoteCard = ({ template, onEdit, onDelete }: PONoteCardProps) => {
     return (
         <Card
-            className="surface-claymorphic shadow-clay-surface h-full hover:shadow-lg transition-all animate-in fade-in zoom-in-95 duration-300 border border-[var(--color-sys-surface-glass_border_light)]"
+            className="group relative flex flex-col h-full bg-app-surface/50 border border-app-border/30 hover:border-app-accent/30 transition-all duration-500 overflow-hidden hover:shadow-app-spotlight"
         >
-            <div className="p-6 flex-1 flex flex-col">
-                <Flex justify="between" align="start" className="mb-4">
+            {/* Background Decorative Element */}
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-app-accent/5 rounded-full blur-3xl group-hover:bg-app-accent/10 transition-colors" />
+
+            <div className="p-5 flex-1 flex flex-col relative z-10">
+                <Flex justify="between" align="start" className="mb-5">
                     <Flex align="center" gap={3} className="flex-1">
-                        <div className="w-10 h-10 bg-[var(--color-sys-brand-primary)]/10 rounded-lg flex items-center justify-center shrink-0">
-                            <FileText className="w-5 h-5 text-[var(--color-sys-brand-primary)]" />
+                        <div className="w-10 h-10 bg-app-overlay/10 rounded-2xl flex items-center justify-center shrink-0 border border-app-border/20 group-hover:bg-app-accent/10 group-hover:border-app-accent/20 transition-all duration-300 shadow-sm">
+                            <FileText className="w-5 h-5 text-app-fg-muted group-hover:text-app-accent transition-colors" />
                         </div>
-                        <H3 className="text-[16px] line-clamp-1 text-[var(--color-sys-text-primary)]">
-                            {template.title}
-                        </H3>
+                        <Stack gap={1}>
+                            <H3 className="text-sm font-black tracking-tight text-app-fg line-clamp-1 group-hover:text-app-accent transition-colors">
+                                {template.title}
+                            </H3>
+                            <Flex align="center" gap={1.5}>
+                                <Hash className="w-2.5 h-2.5 text-app-fg-muted" />
+                                <span className="text-[10px] font-bold text-app-fg-muted uppercase tracking-widest opacity-50">
+                                    TERM-{template.id.toString().padStart(4, '0')}
+                                </span>
+                            </Flex>
+                        </Stack>
                     </Flex>
-                    <Flex gap={1}>
+                    <Flex gap={1} className="opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon"
                             onClick={() => onEdit(template)}
-                            title="Edit"
+                            className="w-8 h-8 rounded-lg hover:bg-app-overlay/10"
+                            title="Edit Provision"
                         >
-                            <Edit2 size={14} className="text-[var(--color-sys-text-secondary)]" />
+                            <Edit2 size={12} className="text-app-fg-muted hover:text-app-accent transition-colors" />
                         </Button>
                         <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon"
                             onClick={() => onDelete(template.id)}
-                            className="text-[var(--color-sys-status-error)] hover:text-[var(--color-sys-status-error)]/80"
-                            title="Delete"
+                            className="w-8 h-8 rounded-lg hover:bg-app-status-error/10 text-app-fg-muted hover:text-app-status-error transition-colors"
+                            title="Purge Clause"
                         >
-                            <Trash2 size={14} />
+                            <Trash2 size={12} />
                         </Button>
                     </Flex>
                 </Flex>
-                <Box className="flex-1 bg-[var(--color-sys-bg-tertiary)]/30 rounded-lg p-4 border border-[var(--color-sys-text-tertiary)]/10">
-                    <SmallText className="text-[var(--color-sys-text-secondary)] leading-relaxed whitespace-pre-wrap line-clamp-6">
+
+                <Box className="flex-1 bg-app-overlay/5 rounded-xl p-4 border border-app-border/10 group-hover:bg-app-overlay/10 transition-all">
+                    <p className="text-[12px] text-app-fg-muted font-medium leading-relaxed whitespace-pre-wrap line-clamp-5 group-hover:text-app-fg transition-colors">
                         {template.content}
-                    </SmallText>
+                    </p>
                 </Box>
+
                 <Flex
                     align="center"
                     justify="between"
-                    className="mt-4 pt-4 border-t border-[var(--color-sys-text-tertiary)]/10"
+                    className="mt-5 pt-4 border-t border-app-border/20"
                 >
-                    <SmallText className="text-[var(--color-sys-text-tertiary)]">
-                        Ver. {new Date(template.updated_at).getFullYear()}.
-                        {new Date(template.updated_at).getMonth() + 1}
-                    </SmallText>
-                    <Badge variant="success">
-                        <CheckSquare size={12} /> Active
+                    <Flex align="center" gap={2}>
+                        <Clock className="w-3 h-3 text-app-fg-muted opacity-40" />
+                        <span className="text-[9px] font-black text-app-fg-muted uppercase tracking-[0.2em] opacity-40">
+                            v.{new Date(template.updated_at).getFullYear()}.{new Date(template.updated_at).getMonth() + 1}
+                        </span>
+                    </Flex>
+                    <Badge variant="success" className="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border border-app-status-success/20 bg-app-status-success/5">
+                        Operational
                     </Badge>
                 </Flex>
             </div>

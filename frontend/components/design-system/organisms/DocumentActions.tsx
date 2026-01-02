@@ -40,7 +40,7 @@ export function DocumentActions({
                     </Button>
                 )}
                 {onSave && (
-                    <Button variant="default" size="sm" onClick={onSave} disabled={isSaving}>
+                    <Button variant="primary" size="sm" onClick={onSave} disabled={isSaving}>
                         <Save size={16} /> {isSaving ? "Saving..." : "Save"}
                     </Button>
                 )}
@@ -67,7 +67,7 @@ export function DocumentActions({
                 </Button>
             )}
             {onEdit && (
-                <Button variant="default" size="sm" onClick={onEdit}>
+                <Button variant="primary" size="sm" onClick={onEdit}>
                     <Edit2 size={16} /> Edit
                 </Button>
             )}

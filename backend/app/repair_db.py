@@ -1,9 +1,9 @@
-
-import sqlite3
 import os
+import sqlite3
+
 
 def repair():
-    db_path = 'db/business.db'
+    db_path = "db/business.db"
     if not os.path.exists(db_path):
         print(f"DB not found at {db_path}")
         return
@@ -15,13 +15,13 @@ def repair():
     print("Checking srvs table...")
     cursor.execute("PRAGMA table_info(srvs)")
     existing_srvs_cols = [r[1] for r in cursor.fetchall()]
-    
+
     srvs_to_add = [
         ("srv_status", "VARCHAR(50) DEFAULT 'Received'"),
         ("po_found", "BOOLEAN DEFAULT 1"),
-        ("warning_message", "TEXT")
+        ("warning_message", "TEXT"),
     ]
-    
+
     for col, definition in srvs_to_add:
         if col not in existing_srvs_cols:
             print(f"Adding {col} to srvs...")
@@ -31,7 +31,7 @@ def repair():
     print("Checking srv_items table...")
     cursor.execute("PRAGMA table_info(srv_items)")
     existing_srv_items_cols = [r[1] for r in cursor.fetchall()]
-    
+
     srv_items_to_add = [
         ("invoice_no", "VARCHAR(50)"),
         ("remarks", "TEXT"),
@@ -45,9 +45,9 @@ def repair():
         ("pmir_no", "VARCHAR(50)"),
         ("finance_date", "DATE"),
         ("cnote_no", "VARCHAR(50)"),
-        ("cnote_date", "DATE")
+        ("cnote_date", "DATE"),
     ]
-    
+
     for col, definition in srv_items_to_add:
         if col not in existing_srv_items_cols:
             print(f"Adding {col} to srv_items...")
@@ -56,6 +56,7 @@ def repair():
     conn.commit()
     conn.close()
     print("Repair complete.")
+
 
 if __name__ == "__main__":
     repair()

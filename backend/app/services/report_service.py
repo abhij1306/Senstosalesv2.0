@@ -67,10 +67,16 @@ def get_po_reconciliation_by_date(
     try:
         df = pd.read_sql_query(query, db, params=[start_date, end_date, start_date, end_date])
         # Add a calculated 'total_received' column for the frontend
-        df['total_received'] = df['total_accepted'] + df['total_rejected']
+        df["total_received"] = df["total_accepted"] + df["total_rejected"]
         # Ensure numeric types
-        for col in ['ordered_qty', 'total_dispatched', 'total_accepted', 'total_rejected', 'total_received']:
-            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+        for col in [
+            "ordered_qty",
+            "total_dispatched",
+            "total_accepted",
+            "total_rejected",
+            "total_received",
+        ]:
+            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
         return df
     except Exception as e:
         print(f"Error generating PO reconciliation report: {e}")
@@ -82,7 +88,7 @@ def get_monthly_sales_summary(
 ) -> pd.DataFrame:
     """
     Generate Revenue Velocity Report: Ordered Value vs Delivered Value.
-    
+
     Ordered Value = Sum(ord_qty * po_rate) by PO Date Month
     Delivered Value = Sum(dispatch_qty * po_rate) by DC Date Month (proxy for revenue realization)
     """
@@ -96,7 +102,7 @@ def get_monthly_sales_summary(
     WHERE po.po_date BETWEEN ? AND ?
     GROUP BY month
     """
-    
+
     # 2. Delivered Value Query
     q_delivered = """
     SELECT 
@@ -112,22 +118,20 @@ def get_monthly_sales_summary(
     try:
         df_ord = pd.read_sql_query(q_ordered, db, params=[start_date, end_date])
         df_del = pd.read_sql_query(q_delivered, db, params=[start_date, end_date])
-        
+
         # Merge on month (Outer join to keep all months)
-        df = pd.merge(df_ord, df_del, on='month', how='outer').fillna(0)
-        
+        df = pd.merge(df_ord, df_del, on="month", how="outer").fillna(0)
+
         # Sort by month desc (for Table view consistency)
-        df = df.sort_values('month', ascending=False)
-        
+        df = df.sort_values("month", ascending=False)
+
         return df
     except Exception as e:
         print(f"Error generating Revenue Velocity report: {e}")
-        return pd.DataFrame(columns=['month', 'ordered_value', 'delivered_value'])
+        return pd.DataFrame(columns=["month", "ordered_value", "delivered_value"])
 
 
-def get_dc_register(
-    start_date: str, end_date: str, db: sqlite3.Connection
-) -> pd.DataFrame:
+def get_dc_register(start_date: str, end_date: str, db: sqlite3.Connection) -> pd.DataFrame:
     """
     Generate DC Register.
     """
@@ -155,9 +159,7 @@ def get_dc_register(
         return pd.DataFrame()
 
 
-def get_invoice_register(
-    start_date: str, end_date: str, db: sqlite3.Connection
-) -> pd.DataFrame:
+def get_invoice_register(start_date: str, end_date: str, db: sqlite3.Connection) -> pd.DataFrame:
     """
     Detailed Invoice Register
     """
@@ -209,9 +211,7 @@ def get_pending_po_items(db: sqlite3.Connection) -> pd.DataFrame:
         return pd.DataFrame()
 
 
-def get_po_register(
-    start_date: str, end_date: str, db: sqlite3.Connection
-) -> pd.DataFrame:
+def get_po_register(start_date: str, end_date: str, db: sqlite3.Connection) -> pd.DataFrame:
     """
     Summary of POs with totals.
     """
@@ -240,6 +240,7 @@ def get_po_register(
     except Exception as e:
         print(f"Error generating PO Register: {e}")
         return pd.DataFrame()
+
 
 def get_reconciliation_lots(po_number: str, db: sqlite3.Connection) -> list:
     """
@@ -278,24 +279,26 @@ def get_reconciliation_lots(po_number: str, db: sqlite3.Connection) -> list:
         for row in rows:
             r = dict(row)
             # High Water Mark: Delivered is MAX(Dispatched, Received)
-            already_delivered = max(r['lot_dispatched_qty'], r['lot_received_qty'])
-            remaining = r['lot_ordered_qty'] - already_delivered
-            
-            # Manual Override Delta: 
+            already_delivered = max(r["lot_dispatched_qty"], r["lot_received_qty"])
+            remaining = r["lot_ordered_qty"] - already_delivered
+
+            # Manual Override Delta:
             # If manual_dlv_qty > already_delivered, the user wants to dispatch more.
             # This satisfies the requirement to fetch "only items and quantities where the user has manually updated the DLV"
-            suggested_dispatch = max(0, r['manual_dlv_qty'] - r['lot_dispatched_qty'])
-            
-            results.append({
-                "po_item_id": r['po_item_id'],
-                "lot_no": r['lot_no'],
-                "material_description": r['material_description'],
-                "drg_no": r['drg_no'],
-                "ordered_qty": r['lot_ordered_qty'],
-                "received_qty": r['lot_received_qty'],
-                "remaining_qty": max(0, remaining),
-                "suggested_dispatch_qty": suggested_dispatch
-            })
+            suggested_dispatch = max(0, r["manual_dlv_qty"] - r["lot_dispatched_qty"])
+
+            results.append(
+                {
+                    "po_item_id": r["po_item_id"],
+                    "lot_no": r["lot_no"],
+                    "material_description": r["material_description"],
+                    "drg_no": r["drg_no"],
+                    "ordered_qty": r["lot_ordered_qty"],
+                    "received_qty": r["lot_received_qty"],
+                    "remaining_qty": max(0, remaining),
+                    "suggested_dispatch_qty": suggested_dispatch,
+                }
+            )
         return results
     except Exception as e:
         print(f"Error getting reconciliation lots: {e}")

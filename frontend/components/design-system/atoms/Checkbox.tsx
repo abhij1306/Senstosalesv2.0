@@ -21,10 +21,10 @@ const CheckboxInternal = React.forwardRef<HTMLInputElement, CheckboxProps>(
                     id={checkboxId}
                     ref={ref}
                     className={cn(
-                        "h-[18px] w-[18px] rounded border-[var(--color-sys-text-tertiary)]/50 text-[var(--color-sys-brand-primary)]",
-                        "focus:ring-2 focus:ring-[var(--color-sys-brand-primary)]/40 focus:ring-offset-0",
+                        "h-4 w-4 rounded border-app-border text-app-accent",
+                        "focus:ring-2 focus:ring-app-accent/40 focus:ring-offset-0",
                         "disabled:cursor-not-allowed disabled:opacity-50",
-                        "cursor-pointer",
+                        "cursor-pointer transition-all duration-200",
                         className
                     )}
                     {...props}
@@ -32,7 +32,7 @@ const CheckboxInternal = React.forwardRef<HTMLInputElement, CheckboxProps>(
                 {label && (
                     <label
                         htmlFor={checkboxId}
-                        className="text-[14px] font-medium text-[var(--color-sys-text-primary)] cursor-pointer select-none"
+                        className="text-sm font-medium text-app-fg-muted hover:text-app-fg transition-colors cursor-pointer select-none"
                     >
                         {label}
                     </label>

@@ -1,10 +1,18 @@
+"use client";
+
+import React from "react";
 import {
     Label,
-} from "@/components/design-system/atoms/Typography";
-import { Button } from "@/components/design-system/atoms/Button";
-import { Input } from "@/components/design-system/atoms/Input";
-import { Stack } from "@/components/design-system/atoms/Layout";
+    Button,
+    Input,
+    Stack,
+    Flex,
+    SmallText,
+    H3
+} from "@/components/design-system";
 import { Dialog } from "@/components/design-system/molecules/Dialog";
+import { cn } from "@/lib/utils";
+import { FileEdit, Info } from "lucide-react";
 
 interface PONoteDialogProps {
     isOpen: boolean;
@@ -32,45 +40,67 @@ export const PONoteDialog = ({
             title={title}
             maxWidth="max-w-xl"
             footer={
-                <Button
-                    type="button"
-                    variant="default"
-                    onClick={onSubmit}
-                    className="w-full"
-                >
-                    {isEditing ? "Save Changes" : "Create Template"}
-                </Button>
+                <Flex gap={3} className="w-full">
+                    <Button
+                        variant="ghost"
+                        onClick={onClose}
+                        className="flex-1 font-black text-[10px] uppercase tracking-widest h-10 rounded-xl"
+                    >
+                        Abort
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="primary"
+                        onClick={onSubmit}
+                        className="flex-[2] font-black text-[10px] uppercase tracking-widest h-10 rounded-xl active-glow"
+                    >
+                        {isEditing ? "Commit Provision" : "Instantiate Clause"}
+                    </Button>
+                </Flex>
             }
         >
-            <Stack gap={4} className="py-4">
-                <p className="text-[var(--color-sys-text-secondary)] -mt-2">
-                    Configure standard terms for purchase orders
-                </p>
+            <Stack gap={5} className="py-2">
+                <Flex align="center" gap={3} className="p-3 bg-app-accent/5 rounded-2xl border border-app-accent/10">
+                    <div className="w-8 h-8 rounded-xl bg-app-accent/10 flex items-center justify-center text-app-accent">
+                        <Info className="w-4 h-4" />
+                    </div>
+                    <p className="text-[11px] font-medium text-app-fg opacity-80 leading-snug">
+                        Standardized clauses ensure legal consistency across all purchase orders and dispatch documents.
+                    </p>
+                </Flex>
+
                 <Stack gap={2}>
-                    <Label className="text-[var(--color-sys-text-secondary)] uppercase">Template Title</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-app-accent">Identifier</Label>
                     <Input
                         value={formData.title}
                         onChange={(e) =>
                             setFormData({ ...formData, title: e.target.value })
                         }
-                        placeholder="e.g., Standard Warranty Clause"
-                        className="text-[var(--color-sys-text-primary)] bg-[var(--color-sys-bg-tertiary)]/10"
+                        placeholder="e.g., Warranty Protocol v2.0"
+                        className="h-10 bg-app-overlay/10 border-app-border/30 rounded-xl font-bold text-sm text-app-fg focus:ring-app-accent/20"
                         required
                         autoFocus
                     />
                 </Stack>
+
                 <Stack gap={2}>
-                    <Label className="text-[var(--color-sys-text-secondary)] uppercase">Template Content</Label>
-                    <textarea
-                        value={formData.content}
-                        onChange={(e) =>
-                            setFormData({ ...formData, content: e.target.value })
-                        }
-                        rows={10}
-                        className="w-full px-3 py-2 text-[14px] text-[var(--color-sys-text-primary)] bg-[var(--color-sys-bg-tertiary)]/10 border border-[var(--color-sys-text-tertiary)]/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-sys-brand-primary)]/10 focus:border-[var(--color-sys-brand-primary)]/30 resize-none transition-all"
-                        placeholder="Enter documentation text..."
-                        required
-                    />
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-app-accent">Provision Schema</Label>
+                    <div className="relative group">
+                        <div className="absolute top-3 left-3 pointer-events-none opacity-20 group-focus-within:opacity-50 transition-opacity">
+                            <FileEdit className="w-4 h-4 text-app-fg" />
+                        </div>
+                        <textarea
+                            value={formData.content}
+                            onChange={(e) =>
+                                setFormData({ ...formData, content: e.target.value })
+                            }
+                            rows={8}
+                            className="w-full pl-10 pr-4 py-3 text-sm text-app-fg bg-app-overlay/10 border border-app-border/30 rounded-2xl focus:outline-none focus:ring-2 focus:ring-app-accent/20 focus:border-app-accent/40 resize-none transition-all font-medium placeholder:text-app-fg-muted/30"
+                            placeholder="Enter the full legal text for this provision..."
+                            required
+                        />
+                    </div>
+                    <SmallText className="px-1 opacity-50 uppercase tracking-tighter">Markdown and standard text accepted.</SmallText>
                 </Stack>
             </Stack>
         </Dialog>

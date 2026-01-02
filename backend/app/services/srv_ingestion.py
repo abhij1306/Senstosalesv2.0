@@ -6,8 +6,8 @@ Validates and inserts SRV data into the database.
 import sqlite3
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
-from app.core.number_utils import to_float, to_int, to_qty
 
+from app.core.number_utils import to_qty
 from app.services.srv_scraper import scrape_srv_html
 
 
@@ -46,7 +46,11 @@ def validate_srv_data(srv_data: Dict, db: sqlite3.Connection) -> Tuple[bool, str
 
     if not po_exists:
         # SRV-1: Strict PO Linkage Required.
-        return False, f"Strict Error: PO {header['po_number']} not found. SRV cannot be processed without an existing PO.", False
+        return (
+            False,
+            f"Strict Error: PO {header['po_number']} not found. SRV cannot be processed without an existing PO.",
+            False,
+        )
 
     po_found = True
 
@@ -93,7 +97,7 @@ def validate_srv_data(srv_data: Dict, db: sqlite3.Connection) -> Tuple[bool, str
             )
 
         if not item.get("po_item_no"):
-             return False, f"Item {idx + 1}: Missing PO item number", po_found
+            return False, f"Item {idx + 1}: Missing PO item number", po_found
 
         # Check if PO item exists
         po_item_exists = db.execute(
@@ -114,7 +118,7 @@ def validate_srv_data(srv_data: Dict, db: sqlite3.Connection) -> Tuple[bool, str
         # INVARIANT: SRV-2 - Received quantity cannot exceed DC Dispatch quantity
         challan_no = item.get("challan_no")
         # received_qty already defined
-        
+
         if challan_no:
             dc_item = db.execute(
                 """
@@ -139,9 +143,7 @@ def validate_srv_data(srv_data: Dict, db: sqlite3.Connection) -> Tuple[bool, str
     return True, "Valid", po_found
 
 
-def ingest_srv_to_db(
-    srv_data: Dict, db: sqlite3.Connection, po_found: bool = True
-) -> bool:
+def ingest_srv_to_db(srv_data: Dict, db: sqlite3.Connection, po_found: bool = True) -> bool:
     """
     Insert SRV data into database with transaction safety.
     Also updates PO item quantities with received and rejected quantities from SRV.
@@ -171,7 +173,9 @@ def ingest_srv_to_db(
                 "srv_number": header["srv_number"],
                 "srv_date": header["srv_date"],
                 "po_number": header["po_number"],
-                "invoice_number": items[0].get("invoice_no") if items and items[0].get("invoice_no") else None,
+                "invoice_number": items[0].get("invoice_no")
+                if items and items[0].get("invoice_no")
+                else None,
                 "created_at": datetime.now().isoformat(),
                 "updated_at": datetime.now().isoformat(),
             },
@@ -228,10 +232,9 @@ def ingest_srv_to_db(
                 },
             )
 
-
         # 3. ATOMIC SYNC: Reconciliation Service
         from app.services.reconciliation_service import ReconciliationService
-        
+
         if po_found:
             ReconciliationService.reconcile_srv_ingestion(
                 db, items, header["srv_number"], header["po_number"]
@@ -348,17 +351,19 @@ def process_srv_file(
             # Ingest
             try:
                 ingest_srv_to_db(srv_data, db, po_found)
-                
+
                 status_msg = "Updated (Overwritten)" if existing_srv else "Created"
                 if message != "Valid":
-                     status_msg += f" - {message}"
+                    status_msg += f" - {message}"
 
                 results.append(
                     {
                         "success": True,
                         "srv_number": header.get("srv_number"),
-                        "warnings": [status_msg] if not po_found else [status_msg], # Pass status as warning for UI visibility
-                        "status": status_msg
+                        "warnings": [status_msg]
+                        if not po_found
+                        else [status_msg],  # Pass status as warning for UI visibility
+                        "status": status_msg,
                     }
                 )
             except Exception as e:
@@ -379,9 +384,7 @@ def process_srv_file(
             prefix = f"SRV {r['srv_number']}: "
             if r["success"]:
                 if r.get("warnings"):
-                    all_messages.append(
-                        f"{prefix}Success (Warning: {r['warnings'][0]})"
-                    )
+                    all_messages.append(f"{prefix}Success (Warning: {r['warnings'][0]})")
                 else:
                     all_messages.append(f"{prefix}Success")
             else:
@@ -440,6 +443,7 @@ def delete_srv(srv_number: str, db: sqlite3.Connection) -> Tuple[bool, str]:
 
         # 2. ATOMIC SYNC: Revert quantities BEFORE deletion
         from app.services.reconciliation_service import ReconciliationService
+
         ReconciliationService.reconcile_srv_deletion(db, srv_number)
 
         # 3. Hard Delete SRV Items first (FK constraint safety)

@@ -18,7 +18,8 @@ import {
   Edit2,
   X,
 } from "lucide-react";
-import { api, type Buyer } from "@/lib/api";
+import { api, API_BASE_URL, type Buyer } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { DocumentTemplate } from "@/components/design-system/templates/DocumentTemplate";
 import {
   Tabs,
@@ -156,7 +157,7 @@ export default function SettingsPage() {
     setIsResetting(true);
     setError(null);
     try {
-      const response = await fetch(`${api.baseUrl}/api/system/reset-db`, {
+      const response = await fetch(`${API_BASE_URL}/api/system/reset-db`, {
         method: "POST",
       });
       const data = await response.json();
@@ -252,7 +253,7 @@ export default function SettingsPage() {
               <TabsContent value="supplier" className="mt-0">
                 <Grid cols="1" className="lg:grid-cols-12" gap={6}>
                   <div className="lg:col-span-8">
-                    <div className="bg-app-surface rounded-3xl border border-app-border p-8 shadow-sm relative overflow-hidden group">
+                    <div className="bg-app-surface rounded-2xl border border-app-border p-6 shadow-sm relative overflow-hidden group">
                       {/* Ambient Blobs */}
                       <Box className="absolute top-0 right-0 w-64 h-64 bg-app-accent/5 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-app-accent/10 transition-all duration-700" />
 
@@ -262,7 +263,7 @@ export default function SettingsPage() {
                             <Flex align="center" justify="between" className="mb-8">
                               <H3>Business Profile</H3>
                               <Button
-                                variant="default"
+                                variant="primary"
                                 size="sm"
                                 onClick={() =>
                                   handleSaveSettings([
@@ -286,8 +287,8 @@ export default function SettingsPage() {
                               </Button>
                             </Flex>
 
-                            <Grid cols={2} gap={6}>
-                              <FormGroup label="Business Name">
+                            <Grid cols={3} gap={4} className="items-end">
+                              <FormGroup label="Business Name" className="col-span-2">
                                 <Input
                                   value={settings.supplier_name || ""}
                                   onChange={(e) =>
@@ -296,12 +297,12 @@ export default function SettingsPage() {
                                       supplier_name: e.target.value,
                                     })
                                   }
-                                  className="bg-app-surface-hover/30"
+                                  className="bg-app-surface-hover/30 h-9"
                                 />
                               </FormGroup>
                               <FormGroup label="GSTIN">
                                 <Input
-                                  className="bg-app-surface-hover/30"
+                                  className="bg-app-surface-hover/30 h-9 font-mono uppercase"
                                   value={settings.supplier_gstin || ""}
                                   onChange={(e) =>
                                     setSettings({
@@ -311,7 +312,7 @@ export default function SettingsPage() {
                                   }
                                 />
                               </FormGroup>
-                              <Box className="col-span-2">
+                              <Box className="col-span-3">
                                 <FormGroup label="Registered Office Address">
                                   <Input
                                     value={settings.supplier_address || ""}
@@ -321,7 +322,7 @@ export default function SettingsPage() {
                                         supplier_address: e.target.value,
                                       })
                                     }
-                                    className="bg-app-surface-hover/30"
+                                    className="bg-app-surface-hover/30 h-9"
                                   />
                                 </FormGroup>
                               </Box>
@@ -334,10 +335,10 @@ export default function SettingsPage() {
                                       supplier_contact: e.target.value,
                                     })
                                   }
-                                  className="bg-app-surface-hover/30"
+                                  className="bg-app-surface-hover/30 h-9"
                                 />
                               </FormGroup>
-                              <FormGroup label="Email ID">
+                              <FormGroup label="Email ID" className="col-span-2">
                                 <Input
                                   value={settings.supplier_email || ""}
                                   onChange={(e) =>
@@ -346,7 +347,7 @@ export default function SettingsPage() {
                                       supplier_email: e.target.value,
                                     })
                                   }
-                                  className="bg-app-surface-hover/30"
+                                  className="bg-app-surface-hover/30 h-9"
                                 />
                               </FormGroup>
                             </Grid>
@@ -434,7 +435,7 @@ export default function SettingsPage() {
                       exit={{ opacity: 0, y: -10 }}
                       className="mb-8"
                     >
-                      <Card className="p-8 border-none bg-[var(--color-sys-bg-surface)] shadow-lg ring-1 ring-[var(--color-sys-brand-primary)]/10">
+                      <Card className="p-8 border-none bg-app-surface shadow-app-spotlight ring-1 ring-app-accent/10">
                         <Flex
                           align="center"
                           justify="between"
@@ -464,13 +465,13 @@ export default function SettingsPage() {
                               placeholder="e.g. Bharat Electronics Ltd"
                               value={buyerForm.name}
                               onChange={(e) => setBuyerForm({ ...buyerForm, name: e.target.value })}
-                              className="bg-[var(--color-sys-bg-tertiary)]/30"
+                              className="bg-app-overlay/30"
                             />
                           </FormGroup>
                           <FormGroup label="GSTIN">
                             <Input
                               placeholder="Valid 15-char GSTIN"
-                              className="font-mono uppercase bg-[var(--color-sys-bg-tertiary)]/30"
+                              className="font-mono uppercase bg-app-overlay/30"
                               value={buyerForm.gstin}
                               onChange={(e) =>
                                 setBuyerForm({
@@ -490,7 +491,7 @@ export default function SettingsPage() {
                                   place_of_supply: e.target.value,
                                 })
                               }
-                              className="bg-[var(--color-sys-bg-tertiary)]/30"
+                              className="bg-app-overlay/30"
                             />
                           </FormGroup>
                           <Box className="md:col-span-2">
@@ -504,7 +505,7 @@ export default function SettingsPage() {
                                     billing_address: e.target.value,
                                   })
                                 }
-                                className="bg-[var(--color-sys-bg-tertiary)]/30"
+                                className="bg-app-overlay/30"
                               />
                             </FormGroup>
                           </Box>
@@ -647,7 +648,7 @@ export default function SettingsPage() {
                 <Grid cols="1" className="lg:grid-cols-12" gap={6}>
                   <div className="lg:col-span-8">
                     <div className="bg-app-surface rounded-3xl border border-app-border p-8 shadow-sm relative overflow-hidden">
-                      <Box className="absolute bottom-0 left-0 w-40 h-40 bg-[var(--color-sys-status-error)]/5 rounded-full -ml-10 -mb-10 blur-2xl transition-all duration-700" />
+                      <Box className="absolute bottom-0 left-0 w-40 h-40 bg-app-status-error/5 rounded-full -ml-10 -mb-10 blur-2xl transition-all duration-700" />
                       <div className="relative z-10">
                         <Box className="mt-4">
                           <Label className="mb-4">Operational Invariants</Label>
@@ -707,7 +708,7 @@ export default function SettingsPage() {
                                 exit={{ opacity: 0 }}
                               >
                                 <Button
-                                  variant="default"
+                                  variant="primary"
                                   onClick={() => setShowResetConfirm(true)}
                                   className="w-full bg-app-status-error hover:bg-app-status-error/90 text-white rounded-full uppercase"
                                 >
@@ -762,20 +763,22 @@ export default function SettingsPage() {
 function FormGroup({
   label,
   help,
+  className,
   children,
 }: {
   label: string;
   help?: string;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col justify-center min-h-[44px]">
-      <div className="flex items-center justify-between mb-1.5">
-        <Label className="font-bold text-app-fg-muted leading-none">
+    <div className={cn("flex flex-col justify-center", className)}>
+      <div className="flex items-center justify-between mb-1">
+        <Label className="leading-none mb-1">
           {label}
         </Label>
         {help && (
-          <SmallText className="text-app-fg-muted/50 opacity-50 italic">
+          <SmallText className="text-app-fg-muted/40 italic text-[9px]">
             {help}
           </SmallText>
         )}

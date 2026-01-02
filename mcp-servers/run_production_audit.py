@@ -26,7 +26,9 @@ class ProductionAuditRunner:
                 [sys.executable, str(script)],
                 capture_output=True,
                 text=True,
-                cwd=self.project_root
+                cwd=self.project_root,
+                shell=sys.platform == "win32",
+                encoding='utf-8'
             )
             
             # Load the generated report
@@ -48,7 +50,9 @@ class ProductionAuditRunner:
                 ["npm", "run", "lint", "--", "--format=json"],
                 capture_output=True,
                 text=True,
-                cwd=frontend
+                cwd=frontend,
+                shell=sys.platform == "win32",
+                encoding='utf-8'
             )
             
             if result.stdout:
@@ -79,7 +83,9 @@ class ProductionAuditRunner:
                 ["npx", "tsc", "--noEmit"],
                 capture_output=True,
                 text=True,
-                cwd=frontend
+                cwd=frontend,
+                shell=sys.platform == "win32",
+                encoding='utf-8'
             )
             
             error_count = result.stdout.count("error TS")
@@ -102,7 +108,9 @@ class ProductionAuditRunner:
             result = subprocess.run(
                 ["ruff", "check", str(backend), "--output-format=json"],
                 capture_output=True,
-                text=True
+                text=True,
+                shell=sys.platform == "win32",
+                encoding='utf-8'
             )
             
             if result.stdout:
