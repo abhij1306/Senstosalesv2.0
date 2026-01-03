@@ -244,7 +244,7 @@
     },
     "/{dc_number}/invoice": {
       "get": {
-        "summary": "No description",
+        "summary": "Check if DC has an associated GST Invoice",
         "operationId": "check_dc_has_invoice_endpoint",
         "tags": [
           "dc"
@@ -429,7 +429,7 @@
     },
     "/{invoice_number:path}/download": {
       "get": {
-        "summary": "No description",
+        "summary": "Download Invoice as Excel",
         "operationId": "download_invoice_excel",
         "tags": [
           "invoice"
@@ -490,7 +490,7 @@
         }
       },
       "put": {
-        "summary": "No description",
+        "summary": "Update an existing Purchase Order",
         "operationId": "update_po",
         "tags": [
           "po"
@@ -553,7 +553,7 @@
     },
     "/upload": {
       "post": {
-        "summary": "No description",
+        "summary": "Upload and parse PO HTML file",
         "operationId": "upload_po_html",
         "tags": [
           "po"

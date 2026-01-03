@@ -70,4 +70,4 @@ async def reset_database(db: sqlite3.Connection = Depends(get_db)):
     except Exception as e:
         logger.error(f"System reset failed: {e}", exc_info=True)
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

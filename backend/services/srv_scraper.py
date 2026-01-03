@@ -65,13 +65,12 @@ def scrape_srv_html(html_content: str) -> List[Dict]:
                 # Map headers
                 header_map = {h: i for i, h in enumerate(headers)}
 
-                def get_cell_val(keys):
-                    for key in keys:
-                        if key in header_map and header_map[key] < len(cells):
-                            return cells[header_map[key]].get_text(strip=True)
-                    return None
-
-                srv_number = get_cell_val(["SRV NO", "SRV", "SRV_NO"])
+                # Extract SRV number directly without nested function
+                srv_number = None
+                for key in ["SRV NO", "SRV", "SRV_NO"]:
+                    if key in header_map and header_map[key] < len(cells):
+                        srv_number = cells[header_map[key]].get_text(strip=True)
+                        break
 
                 # Validation: Skip header rows or invalid rows
                 if not srv_number or srv_number in ["SRV NO", "SRV ITM", "SRV"]:
@@ -82,10 +81,20 @@ def scrape_srv_html(html_content: str) -> List[Dict]:
                 # Initialize group if not exists
                 if srv_number not in srv_groups:
                     # Extract Header Info from this row
-                    po_number_raw = get_cell_val(["PO NO", "PURCHASE ORDER", "PO_NO", "PO NUMBER"])
+                    po_number_raw = None
+                    for key in ["PO NO", "PURCHASE ORDER", "PO_NO", "PO NUMBER"]:
+                        if key in header_map and header_map[key] < len(cells):
+                            po_number_raw = cells[header_map[key]].get_text(strip=True)
+                            break
                     # Keep as TEXT - do NOT convert to int (database schema changed to TEXT)
                     po_number = str(po_number_raw) if po_number_raw else None
-                    srv_date = parse_date(get_cell_val(["SRV DATE", "DATE"]))
+                    
+                    srv_date_raw = None
+                    for key in ["SRV DATE", "DATE"]:
+                        if key in header_map and header_map[key] < len(cells):
+                            srv_date_raw = cells[header_map[key]].get_text(strip=True)
+                            break
+                    srv_date = parse_date(srv_date_raw)
 
                     srv_groups[srv_number] = {
                         "header": {
@@ -105,7 +114,7 @@ def scrape_srv_html(html_content: str) -> List[Dict]:
 
     # Convert groups to list
     results = []
-    for srv_num, data in srv_groups.items():
+    for _srv_num, data in srv_groups.items():
         results.append(data)
 
     return results

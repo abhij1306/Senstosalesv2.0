@@ -1,6 +1,6 @@
 # SenstoSales API Documentation
 
-**Generated:** 2026-01-02 08:15:15  
+**Generated:** 2026-01-03 08:35:04  
 **Base URL:** `http://localhost:8000`
 
 ## Endpoints
@@ -117,7 +117,7 @@ Download DC as Excel
 
 #### `GET` /{dc_number}/invoice
 
-No description
+Check if DC has an associated GST Invoice
 
 ---
 
@@ -151,12 +151,6 @@ No description
 
 ### INVOICE
 
-#### `POST` /
-
-No description
-
----
-
 #### `GET` /stats
 
 Get Invoice Page Statistics
@@ -167,7 +161,7 @@ Get Invoice Page Statistics
 
 #### `GET` /{invoice_number:path}/download
 
-No description
+Download Invoice as Excel
 
 ---
 
@@ -182,7 +176,7 @@ Get Invoice detail with items and linked DCs
 
 #### `POST` /
 
-No description
+Manually create a Purchase Order from structured data
 
 **Response Model:** `PODetail`
 
@@ -190,7 +184,7 @@ No description
 
 #### `GET` /stats
 
-Get PO Page Statistics
+Get aggregated PO statistics
 
 **Response Model:** `POStats`
 
@@ -198,7 +192,7 @@ Get PO Page Statistics
 
 #### `POST` /upload
 
-No description
+Upload and parse PO HTML file
 
 ---
 
@@ -218,7 +212,7 @@ Get Purchase Order detail with items and deliveries
 
 #### `PUT` /{po_number}
 
-No description
+Update an existing Purchase Order
 
 **Response Model:** `PODetail`
 

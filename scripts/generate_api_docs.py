@@ -11,7 +11,7 @@ from typing import Dict, List, Any
 from datetime import datetime
 
 # Project paths
-BACKEND_DIR = Path(__file__).parent.parent / "backend" / "app" / "routers"
+BACKEND_DIR = Path(__file__).parent.parent / "backend" / "api"
 DOCS_DIR = Path(__file__).parent.parent / "docs" / "api"
 DOCS_DIR.mkdir(parents=True, exist_ok=True)
 

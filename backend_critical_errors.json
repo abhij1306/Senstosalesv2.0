@@ -1,0 +1,278 @@
+warning: The top-level linter settings are deprecated in favour of their counterparts in the `lint` section. Please update the following options in `pyproject.toml`:
+  - 'ignore' -> 'lint.ignore'
+  - 'select' -> 'lint.select'
+  - 'per-file-ignores' -> 'lint.per-file-ignores'
+[
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 60,
+      "row": 73
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\api\\system.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 73
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 73,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "E722",
+    "end_location": {
+      "column": 19,
+      "row": 87
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\audits\\production_audit_suite.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 87
+    },
+    "message": "Do not use bare `except`",
+    "noqa_row": 87,
+    "url": "https://docs.astral.sh/ruff/rules/bare-except"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 22,
+      "row": 165
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\audits\\production_audit_suite.py",
+    "fix": null,
+    "location": {
+      "column": 20,
+      "row": 165
+    },
+    "message": "Undefined name `re`",
+    "noqa_row": 165,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "E722",
+    "end_location": {
+      "column": 19,
+      "row": 171
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\audits\\production_audit_suite.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 171
+    },
+    "message": "Do not use bare `except`",
+    "noqa_row": 171,
+    "url": "https://docs.astral.sh/ruff/rules/bare-except"
+  },
+  {
+    "cell": null,
+    "code": "E722",
+    "end_location": {
+      "column": 19,
+      "row": 198
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\audits\\production_audit_suite.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 198
+    },
+    "message": "Do not use bare `except`",
+    "noqa_row": 198,
+    "url": "https://docs.astral.sh/ruff/rules/bare-except"
+  },
+  {
+    "cell": null,
+    "code": "E722",
+    "end_location": {
+      "column": 19,
+      "row": 266
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\audits\\production_audit_suite.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 266
+    },
+    "message": "Do not use bare `except`",
+    "noqa_row": 266,
+    "url": "https://docs.astral.sh/ruff/rules/bare-except"
+  },
+  {
+    "cell": null,
+    "code": "E722",
+    "end_location": {
+      "column": 19,
+      "row": 286
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\audits\\production_audit_suite.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 286
+    },
+    "message": "Do not use bare `except`",
+    "noqa_row": 286,
+    "url": "https://docs.astral.sh/ruff/rules/bare-except"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 62,
+      "row": 66
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\main.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 66
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 66,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "F811",
+    "end_location": {
+      "column": 32,
+      "row": 991
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\services\\excel_service.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 991
+    },
+    "message": "Redefinition of unused `generate_exact_dc_excel` from line 499",
+    "noqa_row": 991,
+    "url": "https://docs.astral.sh/ruff/rules/redefined-while-unused"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 19,
+      "row": 316
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\services\\po_scraper.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 316
+    },
+    "message": "Undefined name `logger`",
+    "noqa_row": 316,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 19,
+      "row": 345
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\services\\po_scraper.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 345
+    },
+    "message": "Undefined name `logger`",
+    "noqa_row": 345,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "B023",
+    "end_location": {
+      "column": 45,
+      "row": 70
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\services\\srv_scraper.py",
+    "fix": null,
+    "location": {
+      "column": 35,
+      "row": 70
+    },
+    "message": "Function definition does not bind loop variable `header_map`",
+    "noqa_row": 70,
+    "url": "https://docs.astral.sh/ruff/rules/function-uses-loop-variable"
+  },
+  {
+    "cell": null,
+    "code": "B023",
+    "end_location": {
+      "column": 60,
+      "row": 70
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\services\\srv_scraper.py",
+    "fix": null,
+    "location": {
+      "column": 50,
+      "row": 70
+    },
+    "message": "Function definition does not bind loop variable `header_map`",
+    "noqa_row": 70,
+    "url": "https://docs.astral.sh/ruff/rules/function-uses-loop-variable"
+  },
+  {
+    "cell": null,
+    "code": "B023",
+    "end_location": {
+      "column": 77,
+      "row": 70
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\services\\srv_scraper.py",
+    "fix": null,
+    "location": {
+      "column": 72,
+      "row": 70
+    },
+    "message": "Function definition does not bind loop variable `cells`",
+    "noqa_row": 70,
+    "url": "https://docs.astral.sh/ruff/rules/function-uses-loop-variable"
+  },
+  {
+    "cell": null,
+    "code": "B023",
+    "end_location": {
+      "column": 41,
+      "row": 71
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\services\\srv_scraper.py",
+    "fix": null,
+    "location": {
+      "column": 36,
+      "row": 71
+    },
+    "message": "Function definition does not bind loop variable `cells`",
+    "noqa_row": 71,
+    "url": "https://docs.astral.sh/ruff/rules/function-uses-loop-variable"
+  },
+  {
+    "cell": null,
+    "code": "B023",
+    "end_location": {
+      "column": 52,
+      "row": 71
+    },
+    "filename": "C:\\Users\\abhij\\.gemini\\antigravity\\scratch\\SenstoSales\\backend\\services\\srv_scraper.py",
+    "fix": null,
+    "location": {
+      "column": 42,
+      "row": 71
+    },
+    "message": "Function definition does not bind loop variable `header_map`",
+    "noqa_row": 71,
+    "url": "https://docs.astral.sh/ruff/rules/function-uses-loop-variable"
+  }
+]

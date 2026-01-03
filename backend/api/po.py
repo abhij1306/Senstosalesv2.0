@@ -302,7 +302,6 @@ async def upload_po_html(file: UploadFile = File(...), db: sqlite3.Connection = 
         # If any error occurs (validation or DB), context manager rolls back
         with db_transaction(db):
             # Validate FY Uniqueness (Optional strict check)
-            from backend.validation.validation import get_financial_year
 
             po_num = po_header.get("PURCHASE ORDER")
             po_date = po_header.get("DATE")

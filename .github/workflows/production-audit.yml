@@ -41,7 +41,7 @@ jobs:
           pip install ruff
       
       - name: Run Dark Theme Audit
-        run: python mcp-servers/performance/dark-theme-audit.py
+        run: python backend/audits/performance/dark-theme-audit.py
         continue-on-error: true
       
       - name: Run ESLint
@@ -60,7 +60,9 @@ jobs:
       
       - name: Run Master Production Audit
         id: audit
-        run: python mcp-servers/run_production_audit.py
+        run: |
+          python backend/audits/run_production_audit.py
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
         continue-on-error: true
       
       - name: Upload Audit Report
@@ -70,7 +72,7 @@ jobs:
           name: production-readiness-report
           path: |
             production_readiness_report.json
-            mcp-servers/performance/dark_theme_audit_report.json
+            backend/audits/performance/dark_theme_audit_report.json
           retention-days: 30
       
       - name: Comment PR with Results
@@ -109,7 +111,11 @@ jobs:
             });
       
       - name: Fail if score below threshold
-        if: steps.audit.outcome == 'failure'
         run: |
-          echo "Production readiness score is below threshold"
-          exit 1
+          SCORE=$(python -c "import json; print(json.load(open('production_readiness_report.json'))['overall']['overall_score'])")
+          echo "Production readiness score: $SCORE/100"
+          if (( $(echo "$SCORE < 80" | bc -l) )); then
+            echo "Production readiness score is below threshold (80)"
+            exit 1
+          fi
+          echo "Production readiness check passed!"

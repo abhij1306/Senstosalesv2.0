@@ -3,8 +3,11 @@ PO Scraper - Refactored for FastAPI
 Extracts PO data from HTML files
 """
 
+import logging
 import re
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 # --------------------------------------------------
 # Regex

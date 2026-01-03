@@ -230,7 +230,7 @@ class POService:
         for item_row in item_rows:
             item_dict = dict(item_row)
             item_id = item_dict["id"]
-            po_item_no = item_dict["po_item_no"]
+            item_dict["po_item_no"]
 
             # Map deliveries and compute High-Water Mark DLV
             item_deliveries = []

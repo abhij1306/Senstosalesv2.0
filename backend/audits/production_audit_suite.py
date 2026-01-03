@@ -5,6 +5,7 @@ Executes all critical audits for v6.0.0-dark-prod release
 """
 
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Dict
@@ -84,7 +85,7 @@ class ProductionAuditSuite:
                         issues.append(str(file.relative_to(self.frontend)))
                 if "<img" in content:
                     image_count += 1
-            except:
+            except Exception:
                 pass
 
         return {
@@ -168,7 +169,7 @@ class ProductionAuditSuite:
                 # Check for atomic usage/imports
                 if "Typography" in content or "H1" in content or "Body" in content:
                     atomic_usage += 1
-            except:
+            except Exception:
                 pass
 
         total = len(tsx_files)
@@ -195,7 +196,7 @@ class ProductionAuditSuite:
                 if "/app/" in str(file) and 'from "@/components/design-system/molecules' in content:
                     if 'from "@/components/design-system/organisms' not in content:
                         violations.append(str(file.relative_to(self.frontend)))
-            except:
+            except Exception:
                 pass
 
         return {
@@ -263,7 +264,7 @@ class ProductionAuditSuite:
                                 }
                             )
                     functions[func] = str(file.relative_to(self.backend))
-            except:
+            except Exception:
                 pass
 
         return {"instances": len(duplicates), "list": duplicates[:10]}
@@ -283,7 +284,7 @@ class ProductionAuditSuite:
                     # Check for hardcoded rates
                     if "0.09" in content or "9.0" in content or "9 /" in content:
                         consistent = False
-            except:
+            except Exception:
                 pass
 
         return {
