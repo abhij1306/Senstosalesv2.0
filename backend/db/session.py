@@ -34,7 +34,7 @@ else:
 # BASE_DIR is backend/ directory, so parent is root/
 INTERNAL_DIR = BASE_DIR.parent
 DATABASE_DIR = INTERNAL_DIR / "db"
-DATABASE_PATH = DATABASE_DIR / "business.db"
+DATABASE_PATH = DATABASE_DIR / "database"
 MIGRATIONS_DIR = INTERNAL_DIR / "migrations"
 
 

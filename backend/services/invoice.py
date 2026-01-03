@@ -26,7 +26,7 @@ def generate_invoice_number(db: sqlite3.Connection) -> str:
     raise NotImplementedError("Manual numbering is now required. Auto-generation is disabled.")
 
 
-def calculate_tax(taxable_value: float, cgst_rate: float = 9.0, sgst_rate: float = 9.0) -> dict:
+def calculate_tax(taxable_value: float, cgst_rate: float, sgst_rate: float) -> dict:
     """
     Calculate CGST and SGST amounts
     INVARIANT: INV-2 - Backend is the source of truth for all monetary calculations
@@ -229,6 +229,12 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
         if not dc_items or len(dc_items) == 0:
             raise ValidationError(f"DC {dc_number} has no items")
 
+        # Fetch tax rates from settings
+        settings_rows = db.execute("SELECT key, value FROM settings WHERE key IN ('cgst_rate', 'sgst_rate')").fetchall()
+        settings = {row["key"]: float(row["value"]) for row in settings_rows}
+        cgst_rate = settings.get("cgst_rate", 9.0)
+        sgst_rate = settings.get("sgst_rate", 9.0)
+
         # INVARIANT: INV-2 - Calculate totals (backend is source of truth)
         invoice_items = []
         total_taxable = 0.0
@@ -272,7 +278,7 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
 
             taxable_value = round(qty * rate, 2)
 
-            tax_calc = calculate_tax(taxable_value)
+            tax_calc = calculate_tax(taxable_value, cgst_rate, sgst_rate)
 
             invoice_items.append(
                 {
@@ -284,9 +290,9 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
                     "unit": "NO",
                     "rate": rate,
                     "taxable_value": taxable_value,
-                    "cgst_rate": 9.0,
+                    "cgst_rate": cgst_rate,
                     "cgst_amount": tax_calc["cgst_amount"],
-                    "sgst_rate": 9.0,
+                    "sgst_rate": sgst_rate,
                     "sgst_amount": tax_calc["sgst_amount"],
                     "igst_rate": 0.0,
                     "igst_amount": 0.0,

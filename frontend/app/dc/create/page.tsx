@@ -20,6 +20,7 @@ import {
   Card,
   DocumentJourney,
   DocumentTemplate,
+  Autocomplete,
 } from "@/components/design-system";
 import { ActionConfirmationModal } from "@/components/design-system/molecules/ActionConfirmationModal";
 import { useDCStore } from "@/store/dcStore";
@@ -53,6 +54,31 @@ function CreateDCPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+  const [poOptions, setPoOptions] = useState<any[]>([]);
+  const [isSearchingPO, setIsSearchingPO] = useState(false);
+
+  // Handler for PO autocomplete search
+  const handlePOSearch = async (query: string) => {
+    if (!query || query.length < 2) {
+      setPoOptions([]);
+      return;
+    }
+    setIsSearchingPO(true);
+    try {
+      const results = await api.searchGlobal(query);
+      const poResults = (results || []).filter((r: any) => r.type === "PO");
+      setPoOptions(poResults.map((r: any) => ({
+        value: r.id,
+        label: r.id,
+        subLabel: r.supplier_name || r.subtitle || "",
+      })));
+    } catch (e) {
+      console.error(e);
+      setPoOptions([]);
+    } finally {
+      setIsSearchingPO(false);
+    }
+  };
 
   const header = data?.header || {
     dc_number: "",
@@ -237,7 +263,23 @@ function CreateDCPageContent() {
   };
 
   const topActions = (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3">
+      {/* PO Search - only show when no PO is preloaded */}
+      {!initialPoNumber && (
+        <div className="w-64">
+          <Autocomplete
+            placeholder="Search PO Number..."
+            value={poNumber}
+            options={poOptions}
+            onSearch={handlePOSearch}
+            loading={isSearchingPO}
+            onChange={(val) => {
+              setPONumber(val);
+              if (val) loadInitialData(val);
+            }}
+          />
+        </div>
+      )}
       <Button variant="secondary" onClick={() => router.back()} disabled={isSubmitting}>
         Cancel
       </Button>
@@ -280,52 +322,21 @@ function CreateDCPageContent() {
           </div>
         )}
 
-        {/* PO Selection */}
-        {!initialPoNumber && (
-          <div className="p-6 bg-surface rounded-xl shadow-1">
-            <Caption1 className="mb-2 block uppercase tracking-wide text-text-tertiary">
-              Purchase Order Reference
-            </Caption1>
-            <div className="flex gap-3 mt-1">
-              <div className="flex-1">
-                <Input
-                  id="search-po-number"
-                  name="search-po-number"
-                  value={poNumber}
-                  onChange={(e) => setPONumber(e.target.value)}
-                  placeholder="Enter PO number"
-                />
-              </div>
-              <Button
-                variant="secondary"
-                onClick={() => loadInitialData(poNumber)}
-                disabled={!poNumber || isLoading}
-                className="h-[36px]"
-              >
-                {isLoading ? (
-                  <Loader2 size={16} className="animate-spin mr-2" />
-                ) : (
-                  <Search size={16} className="mr-2" />
-                )}
-                {isLoading ? "Loading..." : "Load Items"}
-              </Button>
+        {/* PO Info Display - shows selected PO details */}
+        {poData && !initialPoNumber && (
+          <div className="p-4 bg-surface-variant/30 rounded-xl border-none flex items-center justify-between">
+            <div className="flex flex-col">
+              <Caption1 className="text-text-tertiary uppercase tracking-wide">
+                Supplier
+              </Caption1>
+              <Body className="text-text-primary">{poData.supplier_name}</Body>
             </div>
-            {poData && (
-              <div className="mt-4 p-4 bg-surface-variant/30 rounded-xl border-none flex items-center justify-between">
-                <div className="flex flex-col">
-                  <Caption1 className="text-text-tertiary uppercase tracking-wide">
-                    Supplier
-                  </Caption1>
-                  <Body className="text-text-primary">{poData.supplier_name}</Body>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="bg-surface text-text-tertiary border-white/10"
-                >
-                  PO #{poData.po_number}
-                </Badge>
-              </div>
-            )}
+            <Badge
+              variant="outline"
+              className="bg-surface text-text-tertiary border-white/10"
+            >
+              PO #{poData.po_number}
+            </Badge>
           </div>
         )}
 

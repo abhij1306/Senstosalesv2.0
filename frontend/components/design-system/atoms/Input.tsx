@@ -14,13 +14,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                     // Base styles - Component Token
                     'bg-[var(--input-bg)]',
                     'border border-[var(--input-border)]',
-                    'rounded-[var(--input-radius)]',
-                    'w-full h-9', // 36px height - Compact
-                    'px-3 py-2',  // 12px/8px padding
-
-                    // Typography
-                    'text-[var(--input-text)]',
-                    'font-[var(--weight-regular)]',
                     'text-sm', /* Fallback/Base */
 
                     // Placeholder

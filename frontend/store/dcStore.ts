@@ -25,6 +25,7 @@ interface DCState {
     updateNote: (index: number, value: string) => void;
     removeNote: (index: number) => void;
     setNumberStatus: (isChecking: boolean, isDuplicate: boolean, conflictType: string | null) => void;
+    clear: () => void;
 }
 
 export const useDCStore = create<DCState>((set) => ({
@@ -86,5 +87,15 @@ export const useDCStore = create<DCState>((set) => ({
         notes: state.notes.filter((_, i) => i !== index)
     })),
     setNumberStatus: (isCheckingNumber, isDuplicateNumber, conflictType) =>
-        set({ isCheckingNumber, isDuplicateNumber, conflictType })
+        set({ isCheckingNumber, isDuplicateNumber, conflictType }),
+    clear: () => set({
+        data: null,
+        originalData: null,
+        poData: null,
+        notes: [],
+        isEditing: false,
+        isCheckingNumber: false,
+        isDuplicateNumber: false,
+        conflictType: null
+    })
 }));

@@ -172,7 +172,7 @@ export function DCListClient({ initialDCs, initialStats }: DCListClientProps) {
             />
 
             <Button
-                variant="primary"
+                variant="success"
                 onClick={() => router.push("/dc/create")}
                 className="min-w-[140px] whitespace-nowrap"
             >

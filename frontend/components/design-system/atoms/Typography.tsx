@@ -25,6 +25,22 @@ export const Title3 = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingE
 );
 Title3.displayName = 'Title3';
 
+// Display 1 - Huge numbers (Dashboard)
+export const Display1 = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
+    ({ className, ...props }, ref) => (
+        <h1 ref={ref} className={cn('type-display-1', className)} {...props} />
+    )
+);
+Display1.displayName = 'Display1';
+
+// Display 2 - Large numbers
+export const Display2 = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
+    ({ className, ...props }, ref) => (
+        <h2 ref={ref} className={cn('type-display-2', className)} {...props} />
+    )
+);
+Display2.displayName = 'Display2';
+
 // Body - Standard text
 export const Body = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLParagraphElement>>(
     ({ className, ...props }, ref) => (

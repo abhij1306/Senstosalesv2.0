@@ -41,9 +41,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
                     variant === 'success' && [
                         'bg-emerald-600 text-white',
-                        'shadow-1',
-                        'hover:bg-emerald-700 hover:shadow-2',
-                        'focus-visible:ring-emerald-600',
+                        'shadow-md shadow-emerald-500/20',
+                        'hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-500/30',
+                        'active:transform active:scale-95',
+                        'dark:bg-emerald-500 dark:hover:bg-emerald-400',
+                        'focus-visible:ring-emerald-500',
                     ],
 
                     variant === 'elevated' && [
@@ -75,10 +77,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     ],
 
                     variant === 'destructive' && [
-                        'bg-[var(--action-destructive)] text-[var(--action-destructive-fg)]',
-                        'shadow-1',
-                        'hover:opacity-90 hover:shadow-2',
-                        'focus-visible:ring-[var(--action-destructive)]',
+                        'bg-rose-600 text-white',
+                        'shadow-md shadow-rose-500/20',
+                        'hover:bg-rose-700 hover:shadow-lg hover:shadow-rose-500/30',
+                        'active:transform active:scale-95',
+                        'dark:bg-rose-500 dark:hover:bg-rose-400',
+                        'focus-visible:ring-rose-500',
                     ],
 
                     variant === 'glass' && [

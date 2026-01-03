@@ -31,7 +31,7 @@ export const DocumentTemplate = ({
 }: DocumentTemplateProps) => {
     return (
         <motion.div
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: -15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
             className={cn("w-full will-change-[transform,opacity]", className)}

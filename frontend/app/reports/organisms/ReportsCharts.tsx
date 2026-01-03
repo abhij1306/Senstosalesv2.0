@@ -12,11 +12,14 @@ import {
     Cell,
     PieChart,
     Pie,
+    LabelList,
 } from "recharts";
 import { Activity } from "lucide-react";
 import { motion } from "framer-motion";
 import { Flex, Stack, Box, Grid } from "@/components/design-system/atoms/Layout";
-import { Body, SmallText } from "@/components/design-system/atoms/Typography";
+import { Body } from "@/components/design-system/atoms/Typography";
+import { SummaryCard } from "@/components/design-system/organisms/SummaryCards";
+import { cn } from "@/lib/utils";
 
 interface ReportsChartsProps {
     activeTab: string;
@@ -24,148 +27,160 @@ interface ReportsChartsProps {
 }
 
 const ReportsCharts = ({ activeTab, chartData }: ReportsChartsProps) => {
+    // Calculate dynamic stats from chartData
+    const kpiStats = React.useMemo(() => {
+        if (!chartData || chartData.length === 0) return [];
+
+        if (activeTab === "sales") {
+            const totalOrdered = chartData.reduce((acc, curr) => acc + (curr.ordered_value || 0), 0);
+            const totalDelivered = chartData.reduce((acc, curr) => acc + (curr.delivered_value || 0), 0);
+            const fulfillmentRate = totalOrdered > 0 ? (totalDelivered / totalOrdered) * 100 : 0;
+            const variance = totalOrdered - totalDelivered;
+
+            return [
+                { label: "Total Revenue", value: totalOrdered, type: "currency", color: "text-action-primary" },
+                { label: "Delivered Value", value: totalDelivered, type: "currency", color: "text-status-success" },
+                { label: "Fulfillment", value: fulfillmentRate, type: "percentage", color: "text-brand" },
+                { label: "Variance", value: variance, type: "currency", color: "text-status-warning" }
+            ];
+        }
+
+        if (activeTab === "reconciliation") {
+            const accepted = chartData.find(d => d.name === "Accepted")?.value || 0;
+            const rejected = chartData.find(d => d.name === "Rejected")?.value || 0;
+            const pending = chartData.find(d => d.name === "Pending")?.value || 0;
+            const total = accepted + rejected + pending;
+            const acceptanceRate = total > 0 ? (accepted / total) * 100 : 0;
+
+            return [
+                { label: "Items Processed", value: total, type: "number", color: "text-action-primary" },
+                { label: "Accepted", value: accepted, type: "number", color: "text-status-success" },
+                { label: "Acceptance Rate", value: acceptanceRate, type: "percentage", color: "text-brand" },
+                { label: "Pending Audit", value: pending, type: "number", color: "text-status-warning" }
+            ];
+        }
+        return [];
+    }, [chartData, activeTab]);
+
+    const formatValue = (val: number, type: string) => {
+        if (type === "currency") {
+            if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)}Cr`;
+            if (val >= 100000) return `₹${(val / 100000).toFixed(2)}L`;
+            return `₹${val.toLocaleString()}`;
+        }
+        if (type === "percentage") return `${val.toFixed(1)}%`;
+        return val.toLocaleString();
+    };
+
     return (
         <motion.div
             key={`chart-${activeTab}`}
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.3 }}
         >
-            <Grid cols="1" gap={6} className="lg:grid-cols-3">
-                {/* Main Chart Card */}
-                <Box className="lg:col-span-2 p-6 rounded-2xl bg-app-surface/40 backdrop-blur-md shadow-clay-surface transition-all duration-300 hover:shadow-premium-hover">
-                    <Flex
-                        align="center"
-                        justify="between"
-                        className="mb-4 shadow-none pb-2"
-                    >
-                        <Box>
-                            <Body className="font-regular text-app-accent uppercase tracking-wide text-xs">
-                                {activeTab === "sales" ? "Revenue Momentum" : "Quality Distribution"}
-                            </Body>
-                        </Box>
+            <Grid cols="1" gap={4} className="lg:grid-cols-4 items-stretch">
+                {/* Main Chart Container - Left Side (Bento) */}
+                <Box className="lg:col-span-3 p-7 rounded-[28px] bg-app-surface/40 backdrop-blur-xl shadow-md">
+                    <Flex align="center" justify="between" className="mb-6">
+                        <Body className="text-[10px] font-bold text-app-fg-muted uppercase tracking-[0.15em] opacity-60">
+                            {activeTab === "sales" ? "Momentum Trends" : "Audit Distribution"}
+                        </Body>
                     </Flex>
-                    <Box className="h-[240px] w-full">
+
+                    <Box className="h-[320px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             {activeTab === "sales" ? (
                                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                     <CartesianGrid
-                                        strokeDasharray="3 3"
+                                        strokeDasharray="4 4"
                                         vertical={false}
-                                        stroke="hsl(var(--system-blue) / 0.2)"
-                                        opacity={0.3}
+                                        stroke="rgba(var(--text-primary), 0.05)"
                                     />
                                     <XAxis
                                         dataKey="name"
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{
-                                            fontSize: 10,
-                                            fontWeight: 600,
-                                            fill: "rgb(var(--app-fg-secondary))",
-                                        }}
-                                        dy={8}
+                                        tick={{ fontSize: 10, fill: "rgba(var(--text-primary), 0.5)" }}
+                                        dy={10}
                                     />
                                     <YAxis
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{
-                                            fontSize: 10,
-                                            fontWeight: 600,
-                                            fill: "rgb(var(--app-fg-secondary))",
-                                        }}
+                                        tick={{ fontSize: 10, fill: "rgba(var(--text-primary), 0.5)" }}
                                         tickFormatter={(value) => {
-                                            if (value >= 10000000) return `${(value / 10000000).toFixed(1)}Cr`;
-                                            if (value >= 100000) return `${(value / 100000).toFixed(1)}L`;
-                                            if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
-                                            return String(value);
-                                        }}
-                                    />
-                                    <Tooltip
-                                        formatter={(value: number | undefined, name: string | undefined) => [
-                                            (value ? Math.round(value).toLocaleString() : "0"),
-                                            name || ""
-                                        ]}
-                                        contentStyle={{
-                                            borderRadius: "12px",
-                                            border: "1px solid hsl(var(--system-blue) / 0.2)",
-                                            boxShadow: "var(--shadow-3)",
-                                            color: "rgb(var(--app-fg-primary))",
-                                            fontSize: "11px",
-                                            marginBottom: "4px",
-                                        }}
-                                        itemStyle={{
-                                            fontSize: "10px",
-                                            fontWeight: 600,
+                                            if (value >= 10000000) return `${(value / 10000000).toFixed(0)}Cr`;
+                                            if (value >= 100000) return `${(value / 100000).toFixed(0)}L`;
+                                            return value;
                                         }}
                                     />
                                     <Bar
                                         name="Ordered"
                                         dataKey="ordered_value"
-                                        fill="rgb(var(--color-sys-primary))" // primary
+                                        fill="rgb(var(--action-primary))"
                                         radius={[6, 6, 0, 0]}
                                         maxBarSize={40}
-                                        opacity={0.9}
-                                    />
+                                    >
+                                        <LabelList
+                                            dataKey="ordered_value"
+                                            position="top"
+                                            formatter={(value: any) => {
+                                                if (value >= 10000000) return `${(value / 10000000).toFixed(1)}Cr`;
+                                                if (value >= 100000) return `${(value / 100000).toFixed(1)}L`;
+                                                if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+                                                return value === 0 ? "" : value;
+                                            }}
+                                            style={{ fontSize: 9, fontWeight: 600, fill: "rgba(var(--text-primary), 0.6)" }}
+                                        />
+                                    </Bar>
                                     <Bar
                                         name="Delivered"
                                         dataKey="delivered_value"
                                         fill="rgb(var(--status-success))"
                                         radius={[6, 6, 0, 0]}
                                         maxBarSize={40}
-                                        opacity={0.9}
-                                    />
+                                    >
+                                        <LabelList
+                                            dataKey="delivered_value"
+                                            position="top"
+                                            formatter={(value: any) => {
+                                                if (value >= 10000000) return `${(value / 10000000).toFixed(1)}Cr`;
+                                                if (value >= 100000) return `${(value / 100000).toFixed(1)}L`;
+                                                if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+                                                return value === 0 ? "" : value;
+                                            }}
+                                            style={{ fontSize: 9, fontWeight: 600, fill: "rgba(var(--text-primary), 0.6)" }}
+                                        />
+                                    </Bar>
                                 </BarChart>
                             ) : (
-                                <BarChart data={chartData} layout="vertical" margin={{ left: 40, right: 10 }}>
+                                <BarChart data={chartData} layout="vertical" margin={{ left: 40, right: 20 }}>
                                     <XAxis type="number" hide />
                                     <YAxis
                                         dataKey="name"
                                         type="category"
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{
-                                            fontSize: 10,
-                                            fontWeight: 600,
-                                            fill: "#64748B",
-                                        }}
+                                        tick={{ fontSize: 11, fontWeight: 500, fill: "rgba(var(--text-primary), 0.7)" }}
                                     />
                                     <Tooltip
-                                        formatter={(value: any) => [
-                                            typeof value === "number" ? Math.round(value) : value,
-                                            "",
-                                        ]}
                                         contentStyle={{
-                                            borderRadius: "12px",
-                                            border: "1px solid #E2E8F0",
-                                            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                                            background: "#FFFFFF",
-                                            padding: "8px 12px",
-                                        }}
-                                        itemStyle={{
-                                            fontSize: "10px",
-                                            fontWeight: 600,
-                                            color: "#1E293B"
+                                            borderRadius: "16px",
+                                            background: "rgba(var(--bg-surface-elevated), 0.95)",
+                                            backdropFilter: "blur(8px)",
+                                            border: "none",
+                                            boxShadow: "0 8px 24px rgba(0,0,0,0.12)"
                                         }}
                                     />
-                                    <Bar dataKey="value" radius={[0, 6, 6, 0]} maxBarSize={28}>
-                                        {chartData.map((entry: any, index: number) => {
-                                            // Use specific colors
-                                            const colors = [
-                                                "#16A34A", // green
-                                                "#DC2626", // red
-                                                "#D97706", // amber
-                                            ];
-                                            const color = entry.color || colors[index % colors.length];
-
-                                            return (
-                                                <Cell
-                                                    key={`cell-${index}`}
-                                                    fill={color}
-                                                    fillOpacity={0.9}
-                                                />
-                                            );
-                                        })}
+                                    <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={36}>
+                                        {chartData.map((entry: any, index: number) => (
+                                            <Cell
+                                                key={`cell-${index}`}
+                                                fill={entry.color || "rgb(var(--action-primary))"}
+                                                fillOpacity={0.85}
+                                            />
+                                        ))}
                                     </Bar>
                                 </BarChart>
                             )}
@@ -173,77 +188,22 @@ const ReportsCharts = ({ activeTab, chartData }: ReportsChartsProps) => {
                     </Box>
                 </Box>
 
-                {/* Secondary Charts Stack */}
-                <Stack gap={4}>
-                    <Flex
-                        align="center"
-                        justify="center"
-                        direction="col"
-                        className="p-5 rounded-2xl bg-app-surface/40 backdrop-blur-md shadow-clay-surface text-center"
-                    >
-                        <Flex align="center" justify="center" className="relative w-28 h-28">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={[
-                                            { name: "Growth", value: 75, fill: "#2563EB" },
-                                            { name: "Remaining", value: 25, fill: "hsl(var(--system-blue) / 0.15)" },
-                                        ]}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={42}
-                                        outerRadius={56}
-                                        dataKey="value"
-                                        startAngle={90}
-                                        endAngle={-270}
-                                        stroke="transparent"
-                                        strokeWidth={0}
-                                    />
-                                </PieChart>
-                            </ResponsiveContainer>
-                            <Stack align="center" justify="center" className="absolute inset-0">
-                                <Body className="font-regular text-app-accent text-lg">
-                                    75%
-                                </Body>
-                                <SmallText className="text-[9px] text-app-accent font-regular uppercase tracking-wider leading-none">
-                                    Margin
-                                </SmallText>
-                            </Stack>
-                        </Flex>
-                        <Box className="mt-3">
-                            <Body className="text-[10px] font-regular text-app-fg-muted uppercase tracking-widest">
-                                Gross Profit Margin
-                            </Body>
-                        </Box>
-                    </Flex>
-
-                    <Flex
-                        justify="between"
-                        direction="col"
-                        className="p-5 rounded-2xl bg-app-surface/40 backdrop-blur-md shadow-clay-surface transition-all duration-300 hover:shadow-premium-hover"
-                    >
-                        <Flex align="center" justify="between">
-                            <Stack>
-                                <SmallText className="text-[9px] font-regular text-app-fg-muted uppercase tracking-widest leading-none">
-                                    Quick Ratio
-                                </SmallText>
-                                <Body className="font-regular text-app-fg mt-1 text-sm">
-                                    0.9:8
-                                </Body>
-                            </Stack>
-                            <Box className="w-9 h-9 rounded-xl flex items-center justify-center bg-app-status-warning/10 text-app-status-warning">
-                                <Activity size={18} />
-                            </Box>
-                        </Flex>
-                        <Box className="mt-3">
-                            <Box className="w-full bg-app-border/30 h-2 rounded-full overflow-hidden">
-                                <Box className="bg-gradient-to-r from-amber-400 to-amber-600 h-full rounded-full w-[45%]" />
-                            </Box>
-                            <SmallText className="text-[9px] text-app-fg-muted/70 font-medium mt-2 leading-relaxed">
-                                Liquid assets vs Current liabilities
-                            </SmallText>
-                        </Box>
-                    </Flex>
+                {/* Dynamic KPI Column - Right Side (Bento) */}
+                <Stack gap={3} className="lg:col-span-1 h-full">
+                    {kpiStats.map((stat, idx) => (
+                        <SummaryCard
+                            key={idx}
+                            title={stat.label}
+                            value={formatValue(stat.value, stat.type)}
+                            variant={
+                                stat.color.includes("action-primary") ? "primary" :
+                                    stat.color.includes("status-success") ? "success" :
+                                        stat.color.includes("status-warning") ? "warning" :
+                                            "default"
+                            }
+                            className="w-full"
+                        />
+                    ))}
                 </Stack>
             </Grid>
         </motion.div>

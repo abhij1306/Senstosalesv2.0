@@ -229,7 +229,7 @@ export function InvoiceListClient({ initialInvoices, initialStats }: InvoiceList
             />
 
             <Button
-                variant="primary"
+                variant="success"
                 onClick={() => router.push("/invoice/create")}
                 className="min-w-[140px] whitespace-nowrap"
             >

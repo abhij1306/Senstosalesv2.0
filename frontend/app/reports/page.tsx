@@ -34,11 +34,14 @@ import {
   DocumentTemplate,
   Button,
   DatePicker,
+  Tabs,
+  TabsList,
+  TabsTrigger,
 } from "@/components/design-system";
-import { ReportNavGrid } from "./organisms/ReportNavGrid";
 import { ReportsDataCard } from "./organisms/ReportsDataCard";
 
 type ReportType = "sales" | "dc_register" | "invoice_register" | "pending" | "reconciliation";
+type ViewMode = "analytics" | "details";
 
 // --- FIX 2: Static Column Definitions (Moved Outside Component) ---
 // This prevents the Table from re-rendering on every keystroke.
@@ -286,6 +289,7 @@ const reconciliationColumns: Column<any>[] = [
 
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState<ReportType>("sales");
+  const [viewMode, setViewMode] = useState<ViewMode>("analytics");
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -293,6 +297,15 @@ export default function ReportsPage() {
   const [startDate, setStartDate] = useState<string>("2020-01-01");
   const [endDate, setEndDate] = useState<string>(new Date().toISOString().split("T")[0]);
   const [headerPortal, setHeaderPortal] = useState<HTMLElement | null>(null);
+
+  // Automatically switch view mode based on tab type
+  useEffect(() => {
+    if (activeTab === "sales" || activeTab === "reconciliation") {
+      setViewMode("analytics");
+    } else {
+      setViewMode("details");
+    }
+  }, [activeTab]);
 
   // --- CHART DATA GENERATION ---
   const chartData = useMemo(() => {
@@ -316,12 +329,12 @@ export default function ReportsPage() {
         {
           name: "Accepted",
           value: data.reduce((s, r) => s + (r.total_accepted || 0), 0),
-          color: "hsl(142, 76%, 36%)",  // Green
+          color: "rgb(var(--status-success))",  // Green
         },
         {
           name: "Rejected",
           value: data.reduce((s, r) => s + (r.total_rejected || 0), 0),
-          color: "hsl(0, 84%, 60%)",  // Red
+          color: "rgb(var(--status-error))",  // Red
         },
         {
           name: "Pending",
@@ -331,7 +344,7 @@ export default function ReportsPage() {
               Math.max(0, (r.ordered_qty || 0) - (r.total_accepted || 0) - (r.total_rejected || 0)),
             0
           ),
-          color: "hsl(38, 92%, 50%)",  // Amber
+          color: "rgb(var(--status-warning))",  // Amber
         },
       ].filter((d) => d.value > 0);
     }
@@ -447,104 +460,137 @@ export default function ReportsPage() {
     <DocumentTemplate
       icon={<BarChart3 />}
       title="Reports"
-      description="Multi-dimensional trend analysis and reconciliation"
+      description="Multi-dimensional trend analysis"
       actions={toolbarContent}
     >
-      <div className="space-y-6">
-        <ReportNavGrid
-          items={[
-            {
-              id: "sales",
-              title: "Growth",
-              description: "Revenue and tax velocity trends",
-              icon: <TrendingUp />,
-            },
-            {
-              id: "dc_register",
-              title: "DC Register",
-              description: "Dispatch and logistics tracking",
-              icon: <Truck />,
-            },
-            {
-              id: "invoice_register",
-              title: "Invoices",
-              description: "Billing and payment ledger",
-              icon: <Receipt />,
-            },
-            {
-              id: "pending",
-              title: "Shortages",
-              description: "Active pending supply gaps",
-              icon: <AlertTriangle />,
-            },
-            {
-              id: "reconciliation",
-              title: "Ledger Audit",
-              description: "Physical vs System inventory audit",
-              icon: <Activity />,
-            },
-          ]}
-          activeId={activeTab}
-          onSelect={(id) => {
-            setLoading(true);
-            setData([]);
-            setActiveTab(id as ReportType);
-          }}
-          className="w-full"
-        />
+      <div className="space-y-4">
+        <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as ReportType)} className="w-full">
+          <TabsList className="bg-app-surface/40 backdrop-blur-xl p-1 h-auto inline-flex rounded-2xl shadow-sm">
+            {[
+              { id: "sales", label: "Growth", icon: TrendingUp },
+              { id: "dc_register", label: "DC Register", icon: Truck },
+              { id: "invoice_register", label: "Invoices", icon: Receipt },
+              { id: "pending", label: "Shortages", icon: AlertTriangle },
+              { id: "reconciliation", label: "Ledger Audit", icon: Activity },
+            ].map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className={cn(
+                  "gap-2 px-6 py-2.5 rounded-xl transition-all duration-300",
+                  "data-[state=active]:bg-app-surface-elevated data-[state=active]:text-action-primary data-[state=active]:shadow-md data-[state=active]:scale-[1.02]",
+                  "data-[state=inactive]:text-app-fg-muted data-[state=inactive]:hover:bg-app-surface/60"
+                )}
+              >
+                <tab.icon size={15} className={cn(activeTab === tab.id ? "text-action-primary" : "text-app-fg-muted/60")} />
+                <span className="text-[12px] font-bold tracking-tight uppercase">{tab.label}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
-        {/* --- DYNAMIC CHART SECTION --- */}
-        <AnimatePresence mode="wait">
-          {data.length > 0 && (activeTab === "sales" || activeTab === "reconciliation") && (
-            <ReportsDataCard
-              title="Analytics Overview"
-              subtitle="Multi-dimensional trend analysis"
-              className="bg-app-accent/5 border-app-accent/10"
-            >
-              <ReportsCharts activeTab={activeTab} chartData={chartData} />
-            </ReportsDataCard>
-          )}
-        </AnimatePresence>
 
+        {/* --- DYNAMIC CONTENT SECTION --- */}
         <AnimatePresence mode="wait">
           <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            key={`${activeTab}-${viewMode}`}
+            initial={{ opacity: 0, scale: 0.99 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.99 }}
             transition={{ duration: 0.2 }}
-            className="w-full"
+            className="w-full space-y-4"
           >
-            <ReportsDataCard
-              title={
-                activeTab === "dc_register"
-                  ? "Distribution Flow"
-                  : activeTab === "invoice_register"
-                    ? "Revenue Ledger"
-                    : activeTab === "sales"
-                      ? "Growth Momentum"
-                      : activeTab === "pending"
-                        ? "Active Shortages"
-                        : "Quality Audit"
-              }
-              subtitle="Real-time multi-dimensional intelligence"
-              actions={
-                <Badge variant="outline" className="font-mono">
-                  {data.length} RECORDS
-                </Badge>
-              }
-            >
-              <DataTable
-                columns={activeColumns}
-                data={data}
-                keyField="unique_id"
-                page={page}
-                pageSize={pageSize}
-                totalItems={data.length}
-                onPageChange={handlePageChange}
-                loading={loading}
-              />
-            </ReportsDataCard>
+            {viewMode === "analytics" && (activeTab === "sales" || activeTab === "reconciliation") && (
+              <ReportsDataCard
+                title="Analytics Intelligence"
+                subtitle="Multi-dimensional trend analysis"
+                className="bg-app-surface/40 backdrop-blur-xl border-app-border/10"
+                actions={
+                  <div className="flex bg-app-surface/30 p-1 rounded-2xl shadow-inner-light border-0">
+                    <Button
+                      variant={viewMode === "analytics" ? "primary" : "ghost"}
+                      size="compact"
+                      onClick={() => setViewMode("analytics")}
+                      className={cn(
+                        "rounded-xl px-5 h-8 text-[10px] font-bold uppercase tracking-wider transition-all duration-300",
+                        viewMode === "analytics" ? "bg-app-surface-elevated text-action-primary shadow-md scale-[1.05]" : "text-app-fg-muted hover:bg-app-surface/40"
+                      )}
+                    >
+                      Analytics
+                    </Button>
+                    <Button
+                      variant={(viewMode as ViewMode) === "details" ? "primary" : "ghost"}
+                      size="compact"
+                      onClick={() => setViewMode("details")}
+                      className={cn(
+                        "rounded-xl px-5 h-8 text-[10px] font-bold uppercase tracking-wider transition-all duration-300",
+                        (viewMode as ViewMode) === "details" ? "bg-app-surface-elevated text-action-primary shadow-md scale-[1.05]" : "text-app-fg-muted hover:bg-app-surface/40"
+                      )}
+                    >
+                      Details
+                    </Button>
+                  </div>
+                }
+              >
+                <ReportsCharts activeTab={activeTab} chartData={chartData} />
+              </ReportsDataCard>
+            )}
+
+            {viewMode === "details" && (
+              <ReportsDataCard
+                title={
+                  activeTab === "dc_register"
+                    ? "Distribution Flow"
+                    : activeTab === "invoice_register"
+                      ? "Revenue Ledger"
+                      : activeTab === "sales"
+                        ? "Growth Momentum"
+                        : activeTab === "pending"
+                          ? "Active Shortages"
+                          : "Audit Ledger"
+                }
+                subtitle="Real-time multi-dimensional intelligence"
+                className="bg-app-surface/40 backdrop-blur-xl border-app-border/10"
+                actions={
+                  <Flex gap={3} align="center">
+                    {(activeTab === "sales" || activeTab === "reconciliation") && (
+                      <div className="flex bg-app-surface/60 p-1 rounded-xl shadow-inner">
+                        <Button
+                          variant={(viewMode as ViewMode) === "analytics" ? "primary" : "ghost"}
+                          size="compact"
+                          onClick={() => setViewMode("analytics")}
+                          className="rounded-lg px-4 h-8 text-[11px] font-bold uppercase tracking-wider"
+                        >
+                          Analytics
+                        </Button>
+                        <Button
+                          variant={viewMode === "details" ? "primary" : "ghost"}
+                          size="compact"
+                          onClick={() => setViewMode("details")}
+                          className="rounded-lg px-4 h-8 text-[11px] font-bold uppercase tracking-wider"
+                        >
+                          Details
+                        </Button>
+                      </div>
+                    )}
+                    <Badge variant="accent" className="font-mono bg-action-primary/10 text-action-primary py-1 px-2.5 rounded-md text-[9px] font-bold border-none">
+                      {data.length} RECORDS
+                    </Badge>
+                  </Flex>
+                }
+              >
+                <DataTable
+                  columns={activeColumns}
+                  data={data}
+                  keyField="unique_id"
+                  page={page}
+                  pageSize={pageSize}
+                  totalItems={data.length}
+                  onPageChange={handlePageChange}
+                  loading={loading}
+                />
+              </ReportsDataCard>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>

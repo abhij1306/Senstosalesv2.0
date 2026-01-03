@@ -25,11 +25,11 @@ export interface SummaryCardProps {
 }
 
 const variantStyles = {
-    default: "text-primary",
-    primary: "text-primary",
-    success: "text-primary",
-    warning: "text-primary",
-    error: "text-primary",
+    default: "text-primary bg-surface",
+    primary: "text-primary bg-gradient-to-br from-action-primary/10 to-action-primary/5",
+    success: "text-primary bg-gradient-to-br from-status-success/15 to-status-success/5",
+    warning: "text-primary bg-gradient-to-br from-status-warning/15 to-status-warning/5",
+    error: "text-primary bg-gradient-to-br from-status-error/15 to-status-error/5",
 };
 
 const iconBackgrounds = {

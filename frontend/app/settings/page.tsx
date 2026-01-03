@@ -96,7 +96,7 @@ export default function SettingsPage() {
     try {
       const batch = keys.map((key) => ({
         key,
-        value: settings[key]?.toString() || "",
+        value: settings[key]?.toString() || "0",
       }));
       await api.updateSettingsBatch(batch);
     } catch {
@@ -255,7 +255,7 @@ export default function SettingsPage() {
                             <Flex align="center" justify="between" className="mb-8">
                               <Title3>Business Profile</Title3>
                               <Button
-                                variant="primary"
+                                variant="success"
                                 onClick={() =>
                                   handleSaveSettings([
                                     "supplier_name",
@@ -416,8 +416,8 @@ export default function SettingsPage() {
                               <Title3>Buyer Identity</Title3>
                             </Stack>
                             <Button
-                              variant="primary"
-                              className="px-4 shadow-1"
+                              variant="success"
+                              className="px-4 shadow-1 font-medium"
                               onClick={() => {
                                 handleCancelBuyerForm();
                                 setIsAddingBuyer(true);
@@ -547,7 +547,7 @@ export default function SettingsPage() {
                                       Cancel
                                     </Button>
                                     <Button
-                                      variant="primary"
+                                      variant="success"
                                       onClick={handleSaveBuyer}
                                       disabled={saving}
                                       className="px-10 font-medium"
@@ -688,25 +688,46 @@ export default function SettingsPage() {
                     <div className="bg-app-surface rounded-3xl border-none p-8 elevation-2 relative overflow-hidden">
                       <Box className="absolute bottom-0 left-0 w-40 h-40 bg-app-status-error/5 rounded-full -ml-10 -mb-10 blur-2xl transition-all duration-700" />
                       <div className="relative z-10">
-                        <Box className="mt-4">
-                          <Label className="mb-4">Operational Invariants</Label>
-                          <Flex
-                            align="center"
-                            gap={4}
-                            className="p-5 bg-app-accent/5 rounded-2xl border-none elevation-1"
-                          >
-                            <div className="h-10 w-10 rounded-full bg-app-accent/10 flex items-center justify-center text-app-accent">
-                              <ShieldAlert size={20} />
-                            </div>
-                            <Stack gap={0.5}>
-                              <Body className="text-sm text-app-accent">
-                                Mandatory SRV Ingestion
-                              </Body>
-                              <SmallText className="text-app-accent/70">
-                                PO balances are strictly coupled with Stores Receipt Vouchers.
-                              </SmallText>
-                            </Stack>
+                        <Box className="mt-8 border-t border-app-border/10 pt-8">
+                          <Flex align="center" gap={2} className="mb-6">
+                            <Title3>Taxation Configuration</Title3>
+                            <Badge className="bg-app-accent/10 text-app-accent border-none rounded-full px-2 py-0">Statutory</Badge>
                           </Flex>
+
+                          <Grid cols={3} gap={6} className="items-end">
+                            <FormGroup label="Default CGST (%)" help="Used for Intra-state invoices">
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={settings.cgst_rate || "9.0"}
+                                onChange={(e) => setSettings({ ...settings, cgst_rate: e.target.value })}
+                                className="bg-app-surface-hover/30 h-9 font-mono"
+                              />
+                            </FormGroup>
+                            <FormGroup label="Default SGST (%)" help="Used for Intra-state invoices">
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={settings.sgst_rate || "9.0"}
+                                onChange={(e) => setSettings({ ...settings, sgst_rate: e.target.value })}
+                                className="bg-app-surface-hover/30 h-9 font-mono"
+                              />
+                            </FormGroup>
+                            <Box>
+                              <Button
+                                variant="success"
+                                className="w-full h-9 mb-1 font-medium"
+                                onClick={() => handleSaveSettings(["cgst_rate", "sgst_rate"])}
+                                disabled={saving}
+                              >
+                                {saving ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
+                                Update Tax
+                              </Button>
+                            </Box>
+                          </Grid>
+                          <SmallText className="mt-4 text-text-tertiary">
+                            Changes here apply to all newly created invoices. Existing invoices are not affected.
+                          </SmallText>
                         </Box>
                       </div>
                     </div>
@@ -791,7 +812,7 @@ export default function SettingsPage() {
           </AnimatePresence>
         </Tabs>
       </div>
-    </DocumentTemplate>
+    </DocumentTemplate >
   );
 }
 

@@ -328,6 +328,7 @@ class SRVListItem(BaseModel):
     total_order_qty: float = 0.0
     total_challan_qty: float = 0.0
     total_accepted_qty: float = 0.0
+    po_ordered_qty: float = 0.0  # Actual PO ordered quantity
     po_found: Optional[bool] = True  # Whether PO exists in database
     warning_message: Optional[str] = None  # Warning if PO not found
     challan_numbers: Optional[str] = None

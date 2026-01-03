@@ -394,6 +394,12 @@ class ExcelService:
         t_sgst = 0
         t_total = 0
 
+        # Fetch tax rates from settings for calculation
+        cgst_rate_val = float(settings.get("cgst_rate", 9.0))
+        sgst_rate_val = float(settings.get("sgst_rate", 9.0))
+        cgst_rate_str = f"{cgst_rate_val:.2f}%"
+        sgst_rate_str = f"{sgst_rate_val:.2f}%"
+
         for idx, item in enumerate(items):
             r = start_row + idx
             
@@ -401,9 +407,9 @@ class ExcelService:
             rate = float(item.get("rate", 0) or 0)
             taxable = qty * rate
             
-            # CGST/SGST 9% Logic per Blue requirements
-            cgst = taxable * 0.09
-            sgst = taxable * 0.09
+            # Use settings for tax calculation
+            cgst = taxable * (cgst_rate_val / 100)
+            sgst = taxable * (sgst_rate_val / 100)
             line_total = taxable + cgst + sgst
             
             t_qty += qty
@@ -423,9 +429,9 @@ class ExcelService:
             
             # Blue Logic Calculations
             set_val(f"O{r}", taxable)  # Taxable Value
-            set_val(f"P{r}", "9.00%")  # Rate
+            set_val(f"P{r}", cgst_rate_str)  # Rate
             set_val(f"Q{r}", cgst)     # Amount
-            set_val(f"R{r}", "9.00%")  # Rate
+            set_val(f"R{r}", sgst_rate_str)  # Rate
             set_val(f"S{r}", sgst)     # Amount
             set_val(f"T{r}", line_total)
 

@@ -116,7 +116,8 @@ def get_srv_list(
             (COALESCE(SUM(si.received_qty), 0) - COALESCE(SUM(si.rejected_qty), 0)) as total_accepted_qty,
             GROUP_CONCAT(DISTINCT si.challan_no) as challan_numbers,
             '' as invoice_numbers,
-            s.created_at
+            s.created_at,
+            (SELECT COALESCE(SUM(poi.ord_qty), 0) FROM purchase_order_items poi WHERE poi.po_number = s.po_number) as po_ordered_qty
         FROM srvs s
         LEFT JOIN srv_items si ON s.srv_number = si.srv_number
         LEFT JOIN purchase_orders po ON s.po_number = po.po_number
@@ -158,6 +159,7 @@ def get_srv_list(
                 "po_found": po_found,
                 "warning_message": warning_msg,
                 "created_at": row["created_at"],
+                "po_ordered_qty": float(row["po_ordered_qty"]),
             }
         )
 

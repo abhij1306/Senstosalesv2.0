@@ -24,11 +24,12 @@ import {
   DocumentJourney,
   MonoCode,
   ActionConfirmationModal,
-  Caption2
+  Caption2,
+  Autocomplete
 } from "@/components/design-system";
 import { useInvoiceStore } from "@/store/invoiceStore";
 
-const TAX_RATES = { cgst: 9.0, sgst: 9.0 };
+// No hardcoded TAX_RATES here, will be fetched from settings
 
 function CreateInvoicePageContent() {
   const router = useRouter();
@@ -52,11 +53,33 @@ function CreateInvoicePageContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [manualDcId, setManualDcId] = useState(dcIdFromUrl);
+  const [dcOptions, setDcOptions] = useState<any[]>([]);
+  const [isSearchingDC, setIsSearchingDC] = useState(false);
 
   // Multi-Buyer States
   const [buyers, setBuyers] = useState<Buyer[]>([]);
   const [selectedBuyerId, setSelectedBuyerId] = useState<string>("");
   const [showWarning, setShowWarning] = useState(false);
+
+  const handleDCSearch = async (query: string) => {
+    if (!query) return;
+    setIsSearchingDC(true);
+    try {
+      const results = await api.searchGlobal(query);
+      const options = results
+        .filter((r) => r.type === "DC")
+        .map((r) => ({
+          value: r.number,
+          label: `DC #${r.number}`,
+          subLabel: r.party,
+        }));
+      setDcOptions(options);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSearchingDC(false);
+    }
+  };
 
   const header = data?.header || {
     invoice_number: "",
@@ -91,10 +114,21 @@ function CreateInvoicePageContent() {
     fetchInitialData();
   }, [dcIdFromUrl]);
 
+  const [taxRates, setTaxRates] = useState({ cgst: 9.0, sgst: 9.0 });
+
   const fetchInitialData = async () => {
     try {
-      const buyerList = await api.getBuyers();
+      const [buyerList, settings] = await Promise.all([
+        api.getBuyers(),
+        api.getSettings()
+      ]);
       setBuyers(buyerList);
+
+      if (settings) {
+        const cgst = parseFloat((settings as any).cgst_rate) || 9.0;
+        const sgst = parseFloat((settings as any).sgst_rate) || 9.0;
+        setTaxRates({ cgst, sgst });
+      }
 
       const defaultBuyer = buyerList.find((b) => b.is_default);
       if (defaultBuyer) {
@@ -105,7 +139,7 @@ function CreateInvoicePageContent() {
         applyBuyerToStore(buyerList[0]);
       }
 
-      if (dcIdFromUrl) loadDC(dcIdFromUrl);
+      if (dcIdFromUrl) loadDC(dcIdFromUrl, settings);
     } catch {
       // Failure not critical
     }
@@ -141,7 +175,7 @@ function CreateInvoicePageContent() {
     }
   };
 
-  const loadDC = async (id: string) => {
+  const loadDC = async (id: string, existingSettings?: any) => {
     if (!id) return;
     setIsLoading(true);
     setError(null);
@@ -172,14 +206,22 @@ function CreateInvoicePageContent() {
       };
       setHeader(newHeader);
 
+      let currentCgst = taxRates.cgst;
+      let currentSgst = taxRates.sgst;
+
+      if (existingSettings) {
+        currentCgst = parseFloat(existingSettings.cgst_rate) || 9.0;
+        currentSgst = parseFloat(existingSettings.sgst_rate) || 9.0;
+      }
+
       if (dcDetail.items?.length > 0) {
         const mappedItems = dcDetail.items
           .map((item: any) => {
             const qty = item.dispatched_quantity || item.dispatch_qty || 0;
             const rate = item.po_rate || 0;
             const taxableValue = qty * rate;
-            const cgstAmount = (taxableValue * TAX_RATES.cgst) / 100;
-            const sgstAmount = (taxableValue * TAX_RATES.sgst) / 100;
+            const cgstAmount = (taxableValue * currentCgst) / 100;
+            const sgstAmount = (taxableValue * currentSgst) / 100;
 
             return {
               po_sl_no: item.lot_no?.toString() || "1",
@@ -262,7 +304,23 @@ function CreateInvoicePageContent() {
   };
 
   const topActions = (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3">
+      {/* DC Search - only show when no DC is preloaded */}
+      {!dcIdFromUrl && (
+        <div className="w-64">
+          <Autocomplete
+            placeholder="Search DC Number..."
+            value={manualDcId}
+            options={dcOptions}
+            onSearch={handleDCSearch}
+            loading={isSearchingDC}
+            onChange={(val) => {
+              setManualDcId(val);
+              if (val) loadDC(val);
+            }}
+          />
+        </div>
+      )}
       <Button variant="secondary" onClick={() => router.back()} disabled={isSaving}>
         Cancel
       </Button>
@@ -298,26 +356,7 @@ function CreateInvoicePageContent() {
           </Card>
         )}
 
-        {/* DC Selection */}
-        {!dcIdFromUrl && (
-          <Card className="p-6">
-            <Label className="mb-2 block">Delivery Challan Reference</Label>
-            <div className="flex gap-3 mt-1">
-              <div className="flex-1">
-                <Input
-                  value={manualDcId}
-                  onChange={(e) => setManualDcId(e.target.value)}
-                  placeholder="Enter DC number"
-                  className="text-text-primary text-lg"
-                />
-              </div>
-              <Button variant="secondary" onClick={() => loadDC(manualDcId)} disabled={!manualDcId || isLoading}>
-                {isLoading ? <Loader2 size={16} className="animate-spin mr-2" /> : <Search size={16} className="mr-2" />}
-                {isLoading ? "Loading..." : "Load DC"}
-              </Button>
-            </div>
-          </Card>
-        )}
+
 
         {/* Info Tabs */}
         <Tabs defaultValue="buyer" className="w-full">
@@ -482,7 +521,7 @@ function CreateInvoicePageContent() {
                       <Accounting className="text-xl text-text-primary">{header.total_taxable_value}</Accounting>
                     </div>
                     <div className="flex justify-between items-center text-text-tertiary">
-                      <Label className="uppercase tracking-wide">CGST (9%) + SGST (9%)</Label>
+                      <Label className="uppercase tracking-wide">CGST ({taxRates.cgst}%) + SGST ({taxRates.sgst}%)</Label>
                       <Accounting className="text-sm">{(header.cgst_total + header.sgst_total).toFixed(2)}</Accounting>
                     </div>
                     <div className="pt-6 mt-4 border-none flex justify-between items-end">

@@ -131,7 +131,7 @@ export default function GlobalSearch() {
       setLoading(true);
       try {
         const data = await api.searchGlobal(query);
-        setResults(data);
+        setResults(data || []);
       } catch (error) {
         setResults([]);
       } finally {
@@ -145,11 +145,11 @@ export default function GlobalSearch() {
   // --- Logic: Combined Items (Nav + Data) ---
   const filteredNavItems = useMemo(() => {
     if (!query) return [];
-    const q = query.toLowerCase();
+    const q = (query || "").toLowerCase();
     return NAV_COMMANDS.filter(
       (cmd) =>
-        cmd.label.toLowerCase().includes(q) ||
-        cmd.keywords.some((k) => k.includes(q)),
+        (cmd.label || "").toLowerCase().includes(q) ||
+        (cmd.keywords || []).some((k) => k.toLowerCase().includes(q)),
     );
   }, [query]);
 
@@ -219,7 +219,7 @@ export default function GlobalSearch() {
   // --- Global Ctrl+K ---
   useEffect(() => {
     const handleGlobalK = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "k" && (e.ctrlKey || e.metaKey)) {
+      if (e.key?.toLowerCase() === "k" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         e.stopPropagation();
         inputRef.current?.focus();

@@ -235,7 +235,7 @@ export function POListClient({ initialPOs, initialStats }: POListClientProps) {
                 </Button>
 
                 <Button
-                    variant="primary"
+                    variant="success"
                     onClick={() => router.push("/po/create")}
                     className="min-w-[170px] whitespace-nowrap"
                 >

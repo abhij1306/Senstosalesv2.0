@@ -95,16 +95,16 @@ export const DataTable = <T extends Record<string, any>>({
         <div className={cn("bg-surface rounded-xl overflow-hidden shadow-1 flex flex-col", className)}>
             <div className="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar flex-1">
                 <table className="w-full border-collapse text-left">
-                    {/* Header - M3 Label Large / Solid Surface */}
-                    <thead className="sticky top-0 z-20 shadow-sm bg-[#F9FAFB] text-slate-700">
-                        <tr className="bg-[#F9FAFB] border-none">
+                    {/* Header - Glassmorphic Blue (Solid for readability) */}
+                    <thead className="sticky top-0 z-20 shadow-sm bg-primary-container text-on-primary-container backdrop-blur-md">
+                        <tr className="bg-primary-container border-none">
                             {columns.map((column) => (
                                 <th
                                     key={column.key}
                                     className={cn(
-                                        // Standard M3 Header height: 56px (h-14)
-                                        "h-14 px-4 whitespace-nowrap",
-                                        "m3-label-large text-secondary",
+                                        // Standard M3 Header height: 44px (h-11)
+                                        "h-11 px-4 whitespace-nowrap",
+                                        "m3-label-large text-on-primary-container/90 contrast-more:text-on-primary-container",
                                         column.align === 'center' && 'text-center',
                                         column.align === 'right' && 'text-right'
                                     )}
@@ -132,8 +132,8 @@ export const DataTable = <T extends Record<string, any>>({
                                     <td
                                         key={`${column.key}-${rowIndex}`}
                                         className={cn(
-                                            // Standard M3 Row height: 52px (h-[52px])
-                                            "h-[52px] px-4",
+                                            // Standard M3 Row height: 52px (h-[52px]) -> Reduced to h-10 (40px)
+                                            "h-10 px-4",
                                             "m3-body-medium text-primary",
                                             column.align === 'center' && 'text-center',
                                             column.align === 'right' && 'text-right'

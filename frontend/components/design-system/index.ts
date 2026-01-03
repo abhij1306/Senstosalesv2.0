@@ -39,10 +39,12 @@ export { Flex, Stack, Grid, Box } from "./atoms/Layout";
 export { SpotlightCard } from "./atoms/SpotlightCard";
 export { DatePicker } from "./atoms/DatePicker";
 export type { DatePickerProps } from "./atoms/DatePicker";
+export { NumberInput } from "./atoms/NumberInput";
 
 // ==================== MOLECULES ====================
 export { FormField } from "./molecules/FormField";
 export type { FormFieldProps } from "./molecules/FormField";
+export { Autocomplete } from "./molecules/Autocomplete";
 export { SearchBar } from "./molecules/SearchBar";
 export { Pagination } from "./molecules/Pagination";
 export { EmptyState } from "./molecules/EmptyState";

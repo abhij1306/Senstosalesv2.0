@@ -12,6 +12,8 @@ import {
     AlertCircle,
     ChevronRight,
     Box,
+    ShieldCheck,
+    FileText,
 } from "lucide-react";
 import { api, SRVListItem, SRVStats } from "@/lib/api";
 import { formatDate, cn } from "@/lib/utils";
@@ -95,7 +97,7 @@ export function SRVListClient({ initialSRVs, initialStats }: SRVListClientProps)
                     id: `PO-${po}`,
                     po_number: po,
                     po_found: s.po_found ?? true,
-                    total_ord: s.total_order_qty,
+                    total_ord: (s as any).po_ordered_qty || 0,  // Use PO ordered qty from API
                     total_recd: 0,
                     total_rejd: 0,
                     last_srv_date: s.srv_date,
@@ -200,8 +202,11 @@ export function SRVListClient({ initialSRVs, initialStats }: SRVListClientProps)
                 width: "15%",
                 align: "right",
                 render: (v, row) => {
-                    const val = row.type === "PO_HEADER" ? row.total_ord : row.total_order_qty;
-                    return <Accounting className="text-right block text-app-fg-muted">{val}</Accounting>;
+                    // Only show ordered at PO level (SRV order_qty is unreliable)
+                    if (row.type === "PO_HEADER") {
+                        return <Accounting className="text-right block font-bold text-app-fg">{row.total_ord}</Accounting>;
+                    }
+                    return null;
                 }
             },
             {
@@ -299,17 +304,22 @@ export function SRVListClient({ initialSRVs, initialStats }: SRVListClientProps)
         {
             title: "Active Vouchers",
             value: stats?.total_srvs || 0,
-            variant: "primary" as const
+            variant: "primary" as const,
+            icon: <FileText size={20} />
         },
         {
-            title: "Receipt Volume",
-            value: (stats?.total_received_qty || 0).toLocaleString(),
+            title: "System Integrity",
+            value: stats?.total_srvs
+                ? `${Math.max(0, Math.min(100, ((stats.total_srvs - stats.missing_po_count) / stats.total_srvs) * 100)).toFixed(1)}%`
+                : "100%",
             variant: "success" as const,
+            icon: <ShieldCheck size={20} />
         },
         {
             title: "Rejection Rate",
             value: `${stats?.rejection_rate || 0}%`,
-            variant: Number(stats?.rejection_rate || 0) > 0 ? ("error" as const) : ("default" as const)
+            variant: Number(stats?.rejection_rate || 0) > 0 ? ("error" as const) : ("default" as const),
+            icon: <AlertCircle size={20} />
         },
     ];
 
