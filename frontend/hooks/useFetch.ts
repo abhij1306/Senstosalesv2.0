@@ -18,7 +18,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
  * ```tsx
  * const { data, loading, error, refetch } = useFetch<POListItem[]>('/api/po');
  *
- * if (loading) return <Skeleton />;
+ * if (loading) return <div>Loading...</div>;
  * if (error) return <ErrorMessage error={error} />;
  * return <DataTable data={data} />;
  * ```

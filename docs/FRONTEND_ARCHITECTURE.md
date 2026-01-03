@@ -15,7 +15,7 @@ SenstoSales uses a **Next.js 14 (App Router)** frontend, optimized for high-dens
   - **Server State**: React Query (TanStack Query) v5 - for caching and syncing with backend.
   - **URL State**: `nuqs` (Type-safe search params) - for filter/sort persistence.
   - **Local State**: `useState` / `useReducer` - for complex UI interactions.
-- **Forms**: React Hook Form + Zod (Schema Validation).
+- **Forms**: Component-level State / React Context.
 
 ### 1.2 Core Architectural Patterns
 
@@ -102,5 +102,5 @@ frontend/
 
 ### 4.3 Forms
 -   **Controlled**: All inputs are controlled components.
--   **Validation**: Zod Schemas mirror backend Pydantic models.
--   **Auto-Save**: long-forms (like PO Notes) implement debounce auto-save.
+-   **Validation**: Component-level state logic synchronized with Backend Pydantic models.
+-   **Auto-Save**: Long-forms (like PO Notes) implement debounced auto-save.

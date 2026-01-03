@@ -1,7 +1,7 @@
 # SenstoSales Application Analysis
-**Date**: 2026-01-02  
-**Version Analyzed**: 3.4.0  
-**Status**: Production Ready
+**Date**: 2026-01-03
+**Version Analyzed**: 4.0.0
+**Status**: Production Ready (macOS Tahoe)
 
 ---
 
@@ -64,8 +64,8 @@
 - **Language**: TypeScript 5+ (Strict Mode)
 - **Styling**: Tailwind CSS 4 + Semantic Design Tokens
 - **Animation**: Framer Motion 12.23.26
-- **State Management**: Zustand (local), React Query (server state)
-- **Forms**: React Hook Form + Zod validation
+- **State Management**: React Query (Server), `useState` / `useReducer` (Local)
+- **Forms**: Component-level state with precise validation
 - **Icons**: Lucide React 0.562.0
 - **Charts**: Recharts 3.6.0
 
@@ -143,8 +143,9 @@ SenstoSales/
 ### 2.2 Business Logic Enforcement
 
 **Triangle of Truth (TOT) Reconciliation:**
-- **TOT-1**: `delivered_qty = MAX(dispatched_qty, received_qty)` (High Water Mark)
-- **TOT-2**: Atomic inventory checks prevent over-dispatch
+- **TOT-1**: `delivered_qty = dispatched_qty` (Physical Dispatch Tracking)
+- **TOT-2**: `Balance = Ordered - Delivered` (De-coupled from Receipt)
+- **TOT-3**: `Received` quantity tracks customer acknowledgment (SRV)
 - **TOT-5**: Reconciliation service is the single source of truth
 - **P-01**: All quantities use DECIMAL(15,3) with 0.001 tolerance
 

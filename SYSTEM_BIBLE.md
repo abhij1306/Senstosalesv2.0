@@ -1,6 +1,6 @@
 # SYSTEM BIBLE
-**Version**: 3.4.0
-**Last Updated**: 2026-01-02
+**Version**: 4.0.0
+**Last Updated**: 2026-01-03
 
 ## 1. Numeric Reconciliation Invariants
 The following business rules are enforced strictly by the backend service layer (`backend/services/`).
@@ -25,7 +25,7 @@ The following business rules are enforced strictly by the backend service layer 
 ### Services (SRV)
 - **Constraint SRV-1 (Strict PO Linkage)**: SRV uploads strictly fail if the referenced PO does not exist.
 - **Constraint**: `received_qty` updates `purchase_order_items` (via reconciliation).
-- **Status Rule**: SRV (Receipt) moves a document from "Delivered" to "Closed" status but does not affect "Delivered" quantity calculations.
+- **Status Rule**: SRV (Receipt) moves a document from "Delivered" to "Closed" status but does not affect "Delivered" quantity calculations. Balance is strictly `Ordered - Delivered (Dispatch)`.
 
 ## 2. Active API Routes
 The following routes are active and registered in `backend/main.py`.
