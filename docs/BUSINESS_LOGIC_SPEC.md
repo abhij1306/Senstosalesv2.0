@@ -25,16 +25,20 @@ The lifecycle represents the "Order-to-Cash" process from the Supplier's perspec
 
 ---
 
-| Term | Definition | Source of Truth |
-| :--- | :--- | :--- |
-| **PO (Purchase Order)** | Buyer's contract. Supports Alphanumeric IDs. | `purchase_orders` |
-| **DC (Delivery Challan)** | Shipment proof. Linked 1:1 with Invoice. | `delivery_challans` |
-| **Invoice (GST Invoice)** | Tax bill. Linked 1:1 with DC. | `gst_invoices` |
-| **Ordered Qty (ORD)** | Total quantity (supports 3 decimal places). | `purchase_order_items.ord_qty` |
-| **Dispatched Qty (DSP)** | Quantity shipped via DCs (3 decimals). | `SUM(dispatch_qty)` |
-| **Received Qty (RECD)** | Quantity acknowledged by customer (3 decimals). | `SUM(received_qty)` |
-| **Delivered Qty (DLV)** | Physical Dispatch Status. `SUM(dispatch_qty)`. | `purchase_order_items.delivered_qty` |
-| **Balance (BAL)** | Remaining quantity. `ORD - DSP`. | Calculated (Decimal) |
+### 2.1 Definitions
+| Term | Definition | Formula | Source of Truth |
+| :--- | :--- | :--- | :--- |
+| **PO (Purchase Order)** | Buyer's contract. | - | `purchase_orders` |
+| **DC (Delivery Challan)** | Dispatch document. | - | `delivery_challans` |
+| **SRV (Receipt)** | Customer acknowledgment. | - | `srv_items` |
+| **Ordered Qty (ORD)** | Total quantity contracted. | - | `po_items.ord_qty` |
+| **Delivered Qty (DLV)** | Total quantity DISPATCHED. | `Sum(DC.dispatch_qty)` | `po_items.delivered_qty` |
+| **Received Qty (RECD)** | Total quantity RECEIVED. | `Sum(SRV.received_qty)` | `po_items.rcd_qty` |
+| **Balance (BAL)** | **Pending for Dispatch**. | **ORD - DLV** | Calculated |
+
+> [!IMPORTANT]
+> **THE CORE INVARIANT**: `BALANCE = ORDERED - DELIVERED`.
+> Receipt of goods (`RECD`) tracks whether the buyer got the items, but it **never** affects the `Balance` or `Delivered` quantities. Balance only tracks what is left to be shipped.
 
 ---
 
@@ -58,9 +62,9 @@ The system is architected to handle multiple distinct Buyers (Units) simultaneou
 - **Smart Scraper**: Auto-extraction of tables, merged rows, and nested delivery schedules.
 - **Amendment Handling (V6.0)**: Detects `Amnt No` revisions.
     - **Soft Cancellation**: Items missing in the latest amendment file are marked `status = 'Cancelled'`.
-    - **Pending Protection**: Cancelled items have their `pending_qty` forced to `0` regardless of previous fulfillment.
-    - **Item Preservation**: Existing delivery/receipt history for matching items is preserved and reconciled during refresh.
-- **TOT-2 (Reconciliation)**: `delivered_qty` is calculated solely from `total_dispatched_via_dc`.
+    - **Pending Protection**: Cancelled items have their `pending_qty` forced to `0`.
+- **TOT-2 (Reconciliation)**: `delivered_qty` is calculated solely from `DC.dispatch_qty`. 
+- **BALANCE RULE**: The system maintains `Balance = Ordered - Delivered` at all times.
 - **TOT-5 (Reconciliation Sync)**: `ReconciliationService.sync_po()` is the atomic authority on quantity state.
 - **Precision (P-01)**: All quantities processed with 15,3 decimal precision and 0.001 tolerance.
 
@@ -137,8 +141,8 @@ The system extracts and stores the following fields from every Purchase Order:
 - **DC-2 (Single Invoice)**: A DC can be linked to **max ONE Invoice**.
 
 ### 5.3 Store Receipt Voucher (SRV)
-- **SRV-1 (PO Link)**: **STRICTLY ENFORCED**. SRV uploads fail if PO number is not found in database.
-- **SRV-2 (De-coupled)**: `received_qty` does NOT affect `delivered_qty`.
+- **SRV-1 (PO Link)**: **STRICTLY ENFORCED**. SRV uploads fail if PO number is not found.
+- **SRV-2 (Balance Independence)**: `received_qty` has **NO IMPACT** on `delivered_qty` or `Balance`.
 
 ### 5.4 Invoice (INV)
 - **INV-1 (Uniqueness)**: Unique primary key is `(invoice_number, financial_year)`.

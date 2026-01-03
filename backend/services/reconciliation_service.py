@@ -72,7 +72,10 @@ class ReconciliationService:
         # total_item_dispatch = to_qty(db.execute(dispatch_query, dispatch_params).fetchone()[0]) (Unused)
 
         # Shared Received (where lot_no is NULL or 0)
-        shared_srv_query = "SELECT COALESCE(SUM(received_qty), 0) FROM srv_items WHERE po_number = ? AND po_item_no = ? AND (lot_no IS NULL OR lot_no = 0)"
+        shared_srv_query = (
+            "SELECT COALESCE(SUM(received_qty), 0) FROM srv_items "
+            "WHERE po_number = ? AND po_item_no = ? AND (lot_no IS NULL OR lot_no = 0)"
+        )
         shared_srv_params = [po_num, po_item_num]
         if exclude_srv_number:
             shared_srv_query += " AND srv_number != ?"
@@ -82,7 +85,10 @@ class ReconciliationService:
         )
 
         # Shared Dispatched (where lot_no is NULL or 0)
-        shared_dispatch_query = "SELECT COALESCE(SUM(dispatch_qty), 0) FROM delivery_challan_items WHERE po_item_id = ? AND (lot_no IS NULL OR lot_no = 0)"
+        shared_dispatch_query = (
+            "SELECT COALESCE(SUM(dispatch_qty), 0) FROM delivery_challan_items "
+            "WHERE po_item_id = ? AND (lot_no IS NULL OR lot_no = 0)"
+        )
         shared_dispatch_params = [po_item_id]
         if exclude_dc_number:
             shared_dispatch_query += " AND dc_number != ?"
@@ -132,9 +138,9 @@ class ReconciliationService:
                 l_total_received += remaining_shared_received
                 l_total_dispatched += remaining_shared_dispatch
 
-            # Decoupled Logic: Delivered is purely Dispatched (Triangle of Truth Fix)
-            # Previously: l_base_dlv = max(l_total_dispatched, l_total_received)
-            # New: l_base_dlv = l_total_dispatched
+            # Decoupled Logic: Delivered is strictly Physical Dispatch (DC).
+            # Balance = Ordered - Delivered.
+            # Received is tracked separately and does not affect the 'Delivered' (Dispatched) high water mark.
             l_base_dlv = l_total_dispatched
 
             # Manual override still applies if needed, but rarely used now.
@@ -149,6 +155,46 @@ class ReconciliationService:
             """,
                 (l_delivered, l_total_received, l_id),
             )
+
+            # NEW: Distribute received/accepted/rejected qty to Delivery Challan Items for this lot
+            # This ensures "Total Receipt" is correctly reflected in DC List/Detail views even without challan_no
+            l_total_rejected = to_qty(db.execute(
+                "SELECT COALESCE(SUM(rejected_qty), 0) FROM srv_items "
+                "WHERE po_number = ? AND po_item_no = ? AND lot_no = ?",
+                (po_num, po_item_num, l_no)
+            ).fetchone()[0])
+            
+            l_total_accepted = max(0, l_total_received - l_total_rejected)
+
+            dc_items = db.execute(
+                """
+                SELECT dci.id, dci.dispatch_qty 
+                FROM delivery_challan_items dci
+                JOIN delivery_challans dc ON dci.dc_number = dc.dc_number
+                WHERE dci.po_item_id = ? AND dci.lot_no = ?
+                ORDER BY dc.created_at ASC, dci.id ASC
+            """,
+                (po_item_id, l_no),
+            ).fetchall()
+
+            rem_rcd = l_total_received
+            rem_rejd = l_total_rejected
+            
+            for dci_id, dci_dispatch in dc_items:
+                share_rcd = min(rem_rcd, dci_dispatch)
+                share_rejd = min(rem_rejd, share_rcd)
+                share_acc = max(0, share_rcd - share_rejd)
+                
+                db.execute(
+                    """
+                    UPDATE delivery_challan_items 
+                    SET received_qty = ?, accepted_qty = ?, rejected_qty = ? 
+                    WHERE id = ?
+                    """,
+                    (share_rcd, share_acc, share_rejd, dci_id),
+                )
+                rem_rcd -= share_rcd
+                rem_rejd -= share_rejd
 
         # 2. Update Item Level (Aggregated as SUM of Lots)
         totals = db.execute(
@@ -278,8 +324,11 @@ class ReconciliationService:
                     db.execute(
                         """
                         UPDATE delivery_challan_items
-                        SET received_qty = received_qty + ?, accepted_qty = accepted_qty + ?, rejected_qty = rejected_qty + ?
-                        WHERE dc_number = ? AND po_item_id = ? AND (lot_no = ? OR ? IS NULL)
+                        SET received_qty = received_qty + ?, 
+                            accepted_qty = accepted_qty + ?, 
+                            rejected_qty = rejected_qty + ?
+                        WHERE dc_number = ? AND po_item_id = ? 
+                        AND (lot_no = ? OR ? IS NULL)
                     """,
                         (received, accepted, rejected, challan_no, po_item_id, lot_no, lot_no),
                     )
@@ -287,7 +336,8 @@ class ReconciliationService:
                 # 2. Update Lot Level (for received_qty only, delivered checked by recalc)
                 if lot_no:
                     db.execute(
-                        "UPDATE purchase_order_deliveries SET received_qty = received_qty + ? WHERE po_item_id = ? AND lot_no = ?",
+                        "UPDATE purchase_order_deliveries SET received_qty = received_qty + ? "
+                        "WHERE po_item_id = ? AND lot_no = ?",
                         (received, po_item_id, lot_no),
                     )
 

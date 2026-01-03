@@ -69,37 +69,26 @@ const columns: Column<DCListItem>[] = [
     },
     {
         key: "total_dispatched_quantity",
-        label: "Delivered",
+        label: "QTY",
         align: "right",
         width: "10%",
         isNumeric: true,
         render: (v) => (
-            <Accounting className="text-app-fg pr-2">
+            <Accounting className="text-app-accent pr-2">
                 {v || 0}
             </Accounting>
         ),
     },
     {
-        key: "total_pending_quantity",
-        label: "Balance",
+        key: "total_value",
+        label: "Value",
         align: "right",
-        width: "10%",
+        width: "15%",
         isNumeric: true,
         render: (v) => (
-            <Accounting className={Number(v) > 0 ? "text-app-fg pr-2" : "text-app-fg/30 pr-2"}>
-                {v || 0}
+            <Accounting className="text-app-fg font-medium pr-2">
+                {formatIndianCurrency(Number(v))}
             </Accounting>
-        ),
-    },
-    {
-        key: "total_received_quantity",
-        label: "Received",
-        sortable: true,
-        align: "right",
-        width: "10%",
-        isNumeric: true,
-        render: (v) => (
-            <Accounting className="text-text-primary pr-2">{v || 0}</Accounting>
         ),
     },
     {
@@ -107,7 +96,7 @@ const columns: Column<DCListItem>[] = [
         label: "Status",
         sortable: true,
         align: "center",
-        width: "11%",
+        width: "15%",
         render: (v) => (
             <div className="flex justify-center">
                 <StatusBadge status={String(v).toUpperCase()} className="w-24 border-none shadow-none bg-app-overlay/5" />

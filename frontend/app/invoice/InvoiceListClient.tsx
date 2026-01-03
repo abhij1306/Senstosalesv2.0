@@ -137,18 +137,6 @@ const columns: Column<InvoiceListItem>[] = [
         ),
     },
     {
-        key: "total_received_quantity",
-        label: "Received",
-        width: "8%",
-        align: "right",
-        isNumeric: true,
-        render: (v) => (
-            <Accounting className="text-right pr-2 text-text-primary">
-                {v}
-            </Accounting>
-        ),
-    },
-    {
         key: "total_invoice_value",
         label: "Value",
         sortable: true,

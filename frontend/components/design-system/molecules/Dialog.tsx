@@ -85,7 +85,7 @@ export const Dialog = ({
                             <Card
                                 className={cn(
                                     "overflow-hidden shadow-app-spotlight border border-app-border/30",
-                                    "bg-app-surface/90 backdrop-blur-xl",
+                                    "bg-app-surface",
                                     className
                                 )}
                             >

@@ -33,12 +33,12 @@ const variantStyles = {
 };
 
 const iconBackgrounds = {
-    default: "bg-gradient-to-b from-blue-50/50 to-white/30 dark:from-white/10 dark:to-white/5",
-    primary: "bg-gradient-to-b from-[#4facfe] to-[#00f2fe] shadow-blue-400/30", // Blue-Cyan (Morning Briefing)
-    success: "bg-gradient-to-b from-[#667eea] to-[#764ba2] shadow-indigo-500/30", // Indigo-Purple (Invoiced Sales)
-    warning: "bg-gradient-to-b from-[#a18cd1] to-[#fbc2eb] shadow-purple-500/30", // Purple-Pink (Active Orders)
-    error: "bg-gradient-to-b from-[#ff9a9e] to-[#fecfef] shadow-red-400/30", // Red-Pink fallback
-    info: "bg-gradient-to-b from-[#00c6fb] to-[#005bea] shadow-cyan-500/30", // Cyan-Blue (Purchase Commitment)
+    default: "bg-gradient-to-b from-system-blue/10 to-surface-primary/30 dark:from-surface-primary/10 dark:to-surface-primary/5",
+    primary: "bg-gradient-to-b from-[#4facfe] to-[#00f2fe] shadow-system-blue/30", // Blue-Cyan (Morning Briefing)
+    success: "bg-gradient-to-b from-[#667eea] to-[#764ba2] shadow-system-indigo/30", // Indigo-Purple (Invoiced Sales)
+    warning: "bg-gradient-to-b from-[#a18cd1] to-[#fbc2eb] shadow-system-purple/30", // Purple-Pink (Active Orders)
+    error: "bg-gradient-to-b from-[#ff9a9e] to-[#fecfef] shadow-system-red/30", // Red-Pink fallback
+    info: "bg-gradient-to-b from-[#00c6fb] to-[#005bea] shadow-system-blue/30", // Cyan-Blue (Purchase Commitment)
 };
 
 const glowColors = {
@@ -75,7 +75,7 @@ export const SummaryCard = React.memo(function SummaryCard({
             className={cn("tahoe-glass-card h-[145px] group transition-all duration-300 hover:scale-[1.01] hover:elevation-3 relative overflow-hidden will-change-transform", className)}
         >
             {/* Glow Blob - Added from Reference */}
-            <div className={cn("absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl transition-all duration-500 pointer-events-none", glowClass)} />
+            <div className={cn("absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl transition-all duration-500 pointer-events-none will-change-[filter,opacity]", glowClass)} />
 
             <div className="p-5 h-full flex flex-col justify-between relative z-10">
                 <div className="flex justify-between items-start">

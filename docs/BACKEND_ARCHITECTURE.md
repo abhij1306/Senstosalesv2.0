@@ -1,46 +1,47 @@
 # Backend Architecture & Services
 
-> **Framework**: FastAPI | **Database**: SQLite (SQLAlchemy) | **Async**: Yes
+> **Framework**: FastAPI | **Database**: SQLite (Direct `sqlite3`) | **Transaction Control**: Explicit
 
 ## 1. Core Principles
-The backend uses a layered architecture to ensure separation of concerns, testability, and scalability.
+The backend uses a layered architecture to ensure separation of concerns and high-density data integrity.
 
--   **Routers (`api/`)**: Handle HTTP Requests/Responses, Permissions, and Input Validation (Pydantic).
--   **Services (`services/`)**: Contain **PURE Business Logic**. No SQL queries here directly (use Repositories or Models).
--   **Models (`models/`)**: SQLAlchemy ORM definitions mapping to the Database Schema.
--   **Schemas (`schemas/`)**: Pydantic DTOs for data serialization.
+-   **Routers (`api/`)**: Handle HTTP Requests/Responses and Input Validation (Pydantic).
+-   **Services (`services/`)**: Contain **PURE Business Logic** and direct SQL interaction using the `sqlite3.Connection` object.
+-   **Database Access**: Uses `db.execute()` with atomic transactions and explicit commit/rollback for safety.
+-   **Invariants**: Business rules are enforced both in Python logic and via SQLite Triggers.
 
 ## 2. Service Catalog
 
 ### 2.1 Purchase Order Service (`po_service.py`)
--   **Responsibility**: CRUD for POs, Parsing HTML uploads.
+-   **Responsibility**: CRUD for POs, Scraper for HTML uploads.
 -   **Key Logic**:
-    -   Calculates `delivered_qty` based on linked documents.
-    -   Handles "Amendment" detection during ingestion.
+    -   Displays `delivered_qty` and `rcd_qty` from synchronized lots/items.
+    -   Implements Balance calculation: `Ordered - Delivered`.
+    -   Handles multi-item scraping and amendment detection.
 
-### 2.2 Delivery Challan Service (`dc_service.py`)
+### 2.2 Delivery Challan Service (`dc.py`)
 -   **Responsibility**: Creation of Dispatch Documents.
--   **Invariant**: Enforces `dispatch_qty <= (ordered - delivered)`.
+-   **Invariant**: Enforces `dispatch_qty <= Ordered Quantity`.
 -   **Locking**: Uses atomic transactions to prevent over-dispatch.
 
-### 2.3 Invoice Service (`invoice_service.py`)
--   **Responsibility**: GST Tax Calculation.
--   **Invariant**: Taxes are calculated Server-Side ONLY. Frontend values are ignored.
+### 2.3 Invoice Service (`invoice.py`)
+-   **Responsibility**: GST Tax Calculation and Template-based Excel Generation.
 -   **Logic**:
-    -   `IF Buyer_State == Supplier_State THEN CGST + SGST`
-    -   `ELSE IGST`
+    -   **Server-Side Tax**: Tax is re-calculated based on HSN codes at the point of creation.
+    -   **Excel Injection**: Uses `openpyxl` to inject data into `Invoice_4544.xlsx` while preserving layout and styles.
 
-### 2.4 Reconciliation Service (`reconciliation.py`)
--   **Responsibility**: The "Triangle of Truth".
--   **Logic**: Periodically (or event-based) syncs `purchase_order_items` status with `srvs` and `li_challans`.
+### 2.4 Reconciliation Service (`reconciliation_service.py`)
+-   **Responsibility**: The [Triangle of Truth](BUSINESS_LOGIC_SPEC.md).
+-   **Logic**: Synchronizes the entire document chain.
+    -   `Delivered = Sum(DC Dispatch)`
+    -   `Received = Sum(SRV Receipt)`
 
 ## 3. Data Integrity Strategy
 
 ### 3.1 Database Level
--   **SQLite WAL Mode**: Enabled for high concurrency.
+-   **SQLite WAL Mode**: Enabled for maximum concurrency.
 -   **Foreign Keys**: Strictly enforced (`PRAGMA foreign_keys = ON`).
--   **Check Constraints**:
-    -   `delivered_qty <= ord_qty` (In-Database Trigger/Check).
+-   **Schema Consistency**: Managed via versioned SQL migrations.
 
 ### 3.2 Application Level
 -   **Pydantic Validation**: Input data is strictly typed before processing.

@@ -1,6 +1,6 @@
 # Frontend Architecture & Systems
 
-> **Status**: Active | **Version**: 2.0 (Neon Obsidian) | **Last Updated**: 2025-12-30
+> **Status**: Active | **Version**: 4.0 (macOS Tahoe) | **Last Updated**: 2026-01-03
 
 ## 1. System Overview
 
@@ -8,7 +8,8 @@ SenstoSales uses a **Next.js 14 (App Router)** frontend, optimized for high-dens
 
 ### 1.1 Technology Stack
 - **Framework**: Next.js 14.1 (React 18 Server Components)
-- **Styling**: Tailwind CSS 3.4 (Utility-first) + CSS Modules (Tokens)
+- **Styling**: Tailwind CSS v4 (Alpha/Experimental capabilities) + CSS Modules
+- **Design Pattern**: **Tahoe Glassmorphism** (Claymorphism accents)
 - **Animation**: Framer Motion 11 (Layout transitions, AnimatePresence)
 - **State Management**:
   - **Server State**: React Query (TanStack Query) v5 - for caching and syncing with backend.

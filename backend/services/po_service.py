@@ -104,8 +104,8 @@ class POService:
             t_dispatched_raw = row["total_dispatched_raw"]
             t_received = row["total_received"]
 
-            # Pending calculated based on max of Dispatch or Receipt (Global Invariant)
-            t_pending = calculate_pending_quantity(t_ordered, max(t_delivered, t_received))
+            # Balance reflects remaining quantity to be DISPATCHED.
+            t_pending = calculate_pending_quantity(t_ordered, t_delivered)
 
             # Determine Status using centralized service
             status = calculate_entity_status(t_ordered, t_dispatched_raw, t_received)
@@ -166,8 +166,17 @@ class POService:
             """
             SELECT 
                 SUM(poi.ord_qty) as total_ord,
-                (SELECT SUM(dci.dispatch_qty) FROM delivery_challan_items dci JOIN purchase_order_items poi2 ON dci.po_item_id = poi2.id WHERE poi2.po_number = ?) as total_del,
-                (SELECT SUM(si.received_qty) FROM srv_items si WHERE si.po_number = ?) as total_recd
+                (
+                    SELECT SUM(dci.dispatch_qty) 
+                    FROM delivery_challan_items dci 
+                    JOIN purchase_order_items poi2 ON dci.po_item_id = poi2.id 
+                    WHERE poi2.po_number = ?
+                ) as total_del,
+                (
+                    SELECT SUM(si.received_qty) 
+                    FROM srv_items si 
+                    WHERE si.po_number = ?
+                ) as total_recd
             FROM purchase_order_items poi
             WHERE poi.po_number = ?
         """,

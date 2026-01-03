@@ -1,6 +1,6 @@
 # Database Schema Reference
 
-> **Engine**: SQLite | **Version**: 2.0 (Standardized Precision)
+> **Engine**: SQLite | **Version**: 4.0 (macOS Tahoe Alignment)
 
 ## 1. Core Tables
 
@@ -22,10 +22,10 @@ Line items within a PO.
 - `po_item_no` (INTEGER): Item number from PO document.
 - `status` (TEXT): 'Active' or 'Cancelled' (for Amendments).
 - `ord_qty` (DECIMAL 15,3).
-- `delivered_qty` (DECIMAL 15,3): High Water Mark (MAX of Dispatch/Received).
+- `delivered_qty` (DECIMAL 15,3): Physical dispatch total from DCs only.
 - `rcd_qty` (DECIMAL 15,3): Total Received from SRVs.
 - `rejected_qty` (DECIMAL 15,3): Total Rejected from SRVs.
-- `pending_qty` (DECIMAL 15,3): 0 if Cancelled, else (ORD - DLV).
+- `pending_qty` (DECIMAL 15,3): Balance for Dispatch (ORD - DLV).
 - `unit` (TEXT): UOM.
 - `po_rate` (DECIMAL 12,2): Unit Price.
 - `item_value` (DECIMAL 12,2): Total Item Value.
@@ -100,6 +100,6 @@ Global Configuration.
 
 ## 5. Constraints & Triggers
 
-- **`Triangle of Truth`**: Atomic triggers/service logic ensure `delivered_qty = MAX(dispatch_qty, received_qty)`.
+- **`Triangle of Truth`**: Atomic service logic ensures `delivered_qty` reflects physical dispatch and `rcd_qty` reflects customer receipt.
 - **`Atomic Inventory`**: `DC-1` prevents dispatching more than the PO ordered quantity.
 - **Foreign Keys**: `ON DELETE CASCADE` for items, `RESTRICT` for headers to maintain history.

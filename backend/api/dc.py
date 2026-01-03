@@ -102,14 +102,8 @@ def list_dcs(po: Optional[str] = None, db: sqlite3.Connection = Depends(get_db))
             -- Dispatch: This specific DC's total quantity
             COALESCE(SUM(dci.dispatch_qty), 0) as total_dispatched_quantity,
             
-            -- Received: Quantity accepted against THIS specific DC only
-            (
-                SELECT COALESCE(SUM(si.received_qty), 0)
-                FROM srv_items si
-                JOIN srvs s ON si.srv_number = s.srv_number
-                WHERE s.is_active = 1 
-                  AND si.challan_no = dc.dc_number
-            ) as total_received_quantity,
+            -- Received: Quantity accepted against THIS specific DC (summed from DC items)
+            COALESCE(SUM(dci.received_qty), 0) as total_received_quantity,
 
             -- Global Status: Current total quantity dispatched across ALL DCs for the items in THIS DC
             (

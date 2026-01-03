@@ -48,7 +48,8 @@ def validate_srv_data(srv_data: Dict, db: sqlite3.Connection) -> Tuple[bool, str
         # SRV-1: Strict PO Linkage Required.
         return (
             False,
-            f"Strict Error: PO {header['po_number']} not found. SRV cannot be processed without an existing PO.",
+            f"Strict Error: PO {header['po_number']} not found. "
+            f"SRV cannot be processed without an existing PO.",
             False,
         )
 
@@ -92,7 +93,9 @@ def validate_srv_data(srv_data: Dict, db: sqlite3.Connection) -> Tuple[bool, str
         if accepted_qty > 0 and abs(accepted_qty - calculated_accepted) > 0.001:
             return (
                 False,
-                f"Item {idx + 1}: Accounting invariant violated. Accepted ({accepted_qty}) must equal Received ({received_qty}) - Rejected ({rejected_qty}) = {calculated_accepted}",
+                f"Item {idx + 1}: Accounting invariant violated. Accepted ({accepted_qty}) "
+                f"must equal Received ({received_qty}) - Rejected ({rejected_qty}) "
+                f"= {calculated_accepted}",
                 po_found,
             )
 
@@ -111,7 +114,8 @@ def validate_srv_data(srv_data: Dict, db: sqlite3.Connection) -> Tuple[bool, str
         if not po_item_exists:
             return (
                 False,
-                f"Item {idx + 1}: PO item number {item['po_item_no']} not found in PO {header['po_number']}",
+                f"Item {idx + 1}: PO item number {item['po_item_no']} "
+                f"not found in PO {header['po_number']}",
                 po_found,
             )
 
@@ -136,7 +140,8 @@ def validate_srv_data(srv_data: Dict, db: sqlite3.Connection) -> Tuple[bool, str
                 if received_qty > dispatched_qty + 0.001:
                     return (
                         False,
-                        f"Item {idx + 1}: Received quantity ({received_qty}) exceeds DC {challan_no} dispatched quantity ({dispatched_qty})",
+                        f"Item {idx + 1}: Received quantity ({received_qty}) exceeds "
+                        f"DC {challan_no} dispatched quantity ({dispatched_qty})",
                         po_found,
                     )
 
@@ -166,8 +171,14 @@ def ingest_srv_to_db(srv_data: Dict, db: sqlite3.Connection, po_found: bool = Tr
         # 1. Insert NEW SRV header (Soft Delete logic removed as duplicates are rejected)
         db.execute(
             """
-            INSERT INTO srvs (srv_number, srv_date, po_number, invoice_number, is_active, created_at, updated_at)
-            VALUES (:srv_number, :srv_date, :po_number, :invoice_number, 1, :created_at, :updated_at)
+            INSERT INTO srvs (
+                srv_number, srv_date, po_number, invoice_number, 
+                is_active, created_at, updated_at
+            )
+            VALUES (
+                :srv_number, :srv_date, :po_number, :invoice_number, 
+                1, :created_at, :updated_at
+            )
         """,
             {
                 "srv_number": header["srv_number"],
@@ -305,7 +316,12 @@ def process_srv_file(
         srv_list = scrape_srv_html(html_content)
 
         if not srv_list:
-            return False, ["No valid SRVs found in file. Did you upload a PO instead?"], 0, 1
+            return (
+                False,
+                ["No valid SRVs found in file. Did you upload a PO instead?"],
+                0,
+                1,
+            )
 
         results = []
         for srv_data in srv_list:

@@ -221,7 +221,11 @@ async def process_po_update(po_data: PODetail, db: sqlite3.Connection):
                     if d.delivered_quantity and d.delivered_quantity > d.ordered_quantity:
                         raise HTTPException(
                             status_code=400,
-                            detail=f"Lot {d.lot_no}: Delivered quantity ({d.delivered_quantity}) cannot exceed ordered quantity ({d.ordered_quantity})",
+                            detail=(
+                                f"Lot {d.lot_no}: Delivered quantity "
+                                f"({d.delivered_quantity}) cannot exceed "
+                                f"ordered quantity ({d.ordered_quantity})"
+                            ),
                         )
 
                     item_map["deliveries"].append(

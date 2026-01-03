@@ -53,7 +53,7 @@ export default function BatchUploadCard() {
                 <div
                     className={cn(
                         "rounded-[2.5rem] transition-all duration-300 overflow-hidden",
-                        "glass-panel shadow-macos-soft border-none",
+                        "bg-white dark:bg-gray-900 shadow-macos-soft border-none",
                         minimized ? "p-2 pr-6" : "p-0"
                     )}
                 >
@@ -130,7 +130,7 @@ export default function BatchUploadCard() {
                                     <Button
                                         variant="ghost"
                                         size="compact"
-                                        className="h-9 w-9 rounded-full bg-blue-50/50 dark:bg-white/10 hover:bg-white/70 dark:hover:bg-white/20 text-text-secondary transition-all"
+                                        className="h-9 w-9 rounded-full bg-blue-50 dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 text-gray-900 dark:text-gray-400 transition-all"
                                         onClick={() => setMinimized(true)}
                                     >
                                         <Minimize2 size={16} />

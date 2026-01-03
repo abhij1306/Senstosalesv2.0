@@ -47,7 +47,7 @@ export const ActionConfirmationModal = ({
                             "rounded-[2.5rem] overflow-hidden transition-all duration-300",
                             "glass-panel shadow-macos-soft",
                             "border-2 border-gray-300/60 dark:border-white/10",
-                            "bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl",
+                            "bg-white dark:bg-gray-900",
                             "cursor-grab active:cursor-grabbing"
                         )}
                     >
@@ -79,7 +79,7 @@ export const ActionConfirmationModal = ({
                             <div className="flex gap-3">
                                 <Button
                                     variant="outline"
-                                    className="flex-1 h-12 rounded-[18px] font-regular text-[13px] uppercase tracking-wider border-2 border-gray-300 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5 text-gray-700 dark:text-white"
+                                    className="flex-1 h-12 rounded-[18px] font-regular text-[13px] uppercase tracking-wider border-2 border-gray-300 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5 text-gray-900 dark:text-white"
                                     onClick={onClose}
                                 >
                                     {cancelLabel}

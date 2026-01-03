@@ -71,3 +71,42 @@ async def reset_database(db: sqlite3.Connection = Depends(get_db)):
         logger.error(f"System reset failed: {e}", exc_info=True)
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.post("/reconcile-all")
+async def reconcile_all(db: sqlite3.Connection = Depends(get_db)):
+    """
+    Trigger a global reconciliation sync for all POs.
+    Useful for fixing data after logic updates (Triangle of Truth).
+    """
+    try:
+        from backend.services.reconciliation_service import ReconciliationService
+
+        # Get all unique PO numbers from purchase_orders
+        po_numbers = [
+            row[0] for row in db.execute("SELECT po_number FROM purchase_orders").fetchall()
+        ]
+
+        logger.info(f"Initiating Global Reconciliation for {len(po_numbers)} POs...")
+
+        for po_num in po_numbers:
+            try:
+                ReconciliationService.sync_po(db, str(po_num))
+            except Exception as sync_err:
+                logger.error(f"Failed to sync PO {po_num}: {sync_err}")
+                # Continue with others
+
+        db.commit()
+
+        logger.info("Global reconciliation completed.")
+
+        return {
+            "success": True,
+            "POs_synced": len(po_numbers),
+            "message": f"Successfully resynced all {len(po_numbers)} Purchase Orders.",
+        }
+
+    except Exception as e:
+        logger.error(f"Global reconciliation failed: {e}", exc_info=True)
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e)) from e

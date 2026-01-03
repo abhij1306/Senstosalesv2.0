@@ -8,6 +8,7 @@ import logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from backend.core.exceptions import ResourceNotFoundException, DomainError
 
 # Import Routers
 from backend.api import (
@@ -61,9 +62,6 @@ async def app_exception_handler(request: Request, exc: AppException):
             "details": exc.details,
         },
     )
-
-
-from backend.core.exceptions import ResourceNotFoundException
 
 
 @app.exception_handler(ResourceNotFoundException)

@@ -26,8 +26,17 @@ def global_search(q: str, db: sqlite3.Connection = Depends(get_db)):
             """
             SELECT po_number, po_date as date, supplier_name as party, po_value as amount,
                    (SELECT COALESCE(SUM(ord_qty), 0) FROM purchase_order_items WHERE po_number = po.po_number) as t_ord,
-                   (SELECT COALESCE(SUM(dispatch_qty), 0) FROM delivery_challan_items dci JOIN purchase_order_items poi ON dci.po_item_id = poi.id WHERE poi.po_number = po.po_number) as t_del,
-                   (SELECT COALESCE(SUM(received_qty), 0) FROM srv_items WHERE CAST(po_number AS TEXT) = CAST(po.po_number AS TEXT)) as t_recd
+                   (
+                       SELECT COALESCE(SUM(dispatch_qty), 0) 
+                       FROM delivery_challan_items dci 
+                       JOIN purchase_order_items poi ON dci.po_item_id = poi.id 
+                       WHERE poi.po_number = po.po_number
+                   ) as t_del,
+                   (
+                       SELECT COALESCE(SUM(received_qty), 0) 
+                       FROM srv_items 
+                       WHERE CAST(po_number AS TEXT) = CAST(po.po_number AS TEXT)
+                   ) as t_recd
             FROM purchase_orders po
             WHERE CAST(po_number AS TEXT) LIKE ? OR supplier_name LIKE ?
             LIMIT 5
@@ -53,10 +62,23 @@ def global_search(q: str, db: sqlite3.Connection = Depends(get_db)):
         cursor = db.execute(
             """
             SELECT dc_number, dc_date as date, consignee_name as party,
-                   (SELECT COALESCE(SUM(dispatch_qty), 0) FROM delivery_challan_items WHERE dc_number = dc.dc_number) as t_del,
-                   (SELECT COALESCE(SUM(received_qty), 0) FROM srv_items WHERE challan_no = dc.dc_number) as t_recd,
+                   (
+                       SELECT COALESCE(SUM(dispatch_qty), 0) 
+                       FROM delivery_challan_items 
+                       WHERE dc_number = dc.dc_number
+                   ) as t_del,
+                   (
+                       SELECT COALESCE(SUM(received_qty), 0) 
+                       FROM srv_items 
+                       WHERE challan_no = dc.dc_number
+                   ) as t_recd,
                    -- For DCs, total_ordered is essentially the sum of linked PO items ordered qty
-                   (SELECT COALESCE(SUM(poi.ord_qty), 0) FROM delivery_challan_items dci JOIN purchase_order_items poi ON dci.po_item_id = poi.id WHERE dci.dc_number = dc.dc_number) as t_ord
+                   (
+                       SELECT COALESCE(SUM(poi.ord_qty), 0) 
+                       FROM delivery_challan_items dci 
+                       JOIN purchase_order_items poi ON dci.po_item_id = poi.id 
+                       WHERE dci.dc_number = dc.dc_number
+                   ) as t_ord
             FROM delivery_challans dc
             WHERE CAST(dc_number AS TEXT) LIKE ? OR consignee_name LIKE ?
             LIMIT 5
@@ -83,9 +105,18 @@ def global_search(q: str, db: sqlite3.Connection = Depends(get_db)):
             """
             SELECT invoice_number, invoice_date as date, total_invoice_value as amount, dc_number,
                    (SELECT COALESCE(SUM(quantity), 0) FROM gst_invoice_items WHERE invoice_number = inv.invoice_number) as t_del,
-                   (SELECT COALESCE(SUM(si.received_qty), 0) FROM srv_items si JOIN srvs s ON si.srv_number = s.srv_number WHERE s.invoice_number = inv.invoice_number) as t_recd,
+                   (
+                       SELECT COALESCE(SUM(si.received_qty), 0) 
+                       FROM srv_items si 
+                       JOIN srvs s ON si.srv_number = s.srv_number 
+                       WHERE s.invoice_number = inv.invoice_number
+                   ) as t_recd,
                    -- Invoice total ordered volume is often same as delivered volume in its context
-                   (SELECT COALESCE(SUM(quantity), 0) FROM gst_invoice_items WHERE invoice_number = inv.invoice_number) as t_ord
+                   (
+                       SELECT COALESCE(SUM(quantity), 0) 
+                       FROM gst_invoice_items 
+                       WHERE invoice_number = inv.invoice_number
+                   ) as t_ord
             FROM gst_invoices inv
             WHERE CAST(invoice_number AS TEXT) LIKE ?
             LIMIT 5

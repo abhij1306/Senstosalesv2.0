@@ -212,7 +212,9 @@ def get_invoice_detail(invoice_number: str, db: sqlite3.Connection = Depends(get
         ).fetchone()
 
         if not invoice_row:
-            raise not_found(f"Invoice {invoice_number} not found", "Invoice")
+            raise not_found(
+                f"Invoice {invoice_number} not found", "Invoice"
+            )
 
         # CRITICAL FIX: Convert to dict IMMEDIATELY while DB is open
         header_dict = dict(invoice_row)

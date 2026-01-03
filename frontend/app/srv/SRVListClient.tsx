@@ -220,7 +220,7 @@ export function SRVListClient({ initialSRVs, initialStats }: SRVListClientProps)
                 width: "15%",
                 align: "right",
                 render: (v, row) => {
-                    const val = row.type === "PO_HEADER" ? row.total_rejd : row.total_received_qty;
+                    const val = row.type === "PO_HEADER" ? row.total_rejd : row.total_rejected_qty;
                     return (
                         <Accounting
                             className={cn("text-right block", Number(val) > 0 ? "text-app-status-error" : "text-app-fg-muted/40")}

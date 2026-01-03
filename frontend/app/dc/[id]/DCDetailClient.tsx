@@ -208,22 +208,17 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                                     <th className="py-2.5 px-3 text-left w-[110px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80">Drawing</Caption1></th>
                                     <th className="py-2.5 px-3 text-left border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80">Description</Caption1></th>
                                     <th className="py-2.5 px-3 text-left w-[60px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80">Unit</Caption1></th>
-                                    <th className="py-2.5 px-3 text-right w-[90px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80 block text-right">Rate</Caption1></th>
                                     <th className="py-2.5 px-3 text-right w-[80px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80 block text-right">Ord</Caption1></th>
-                                    <th className="py-2.5 px-3 text-right w-[80px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80 block text-right">Dlv</Caption1></th>
                                     <th className="py-2.5 px-3 text-right w-[90px] bg-blue-600/5 dark:bg-blue-400/5 border-none"><Caption1 className="text-app-accent uppercase tracking-widest text-[11px] opacity-80 block text-right">Qty</Caption1></th>
-                                    <th className="py-2.5 px-3 text-right w-[90px] bg-blue-600/5 dark:bg-blue-400/5 border-none"><Caption1 className="text-app-warning uppercase tracking-widest text-[11px] opacity-80 block text-right">Bal</Caption1></th>
-                                    <th className="py-2.5 px-3 text-right w-[80px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80 block text-right">Recd</Caption1></th>
+                                    <th className="py-2.5 px-3 text-right w-[90px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80 block text-right">Rate</Caption1></th>
+                                    <th className="py-2.5 px-3 text-right w-[100px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80 block text-right">Value</Caption1></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {groupedItems.map((group, groupIdx) => {
                                     const parentItem = group[0];
-                                    const totalOrd = group.reduce((sum, i) => sum + (i.ordered_quantity || (group.length === 1 ? parentItem.ordered_quantity : 0) || 0), 0);
-                                    const totalDlv = group.reduce((sum, i) => sum + (i.delivered_quantity || (group.length === 1 ? parentItem.delivered_quantity : 0) || 0), 0);
-                                    const totalRec = group.reduce((sum, i) => sum + (i.received_quantity || (group.length === 1 ? parentItem.received_quantity : 0) || 0), 0);
-                                    const totalBal = group.reduce((sum, i) => sum + (i.remaining_post_dc || 0), 0);
                                     const totalDisp = group.reduce((sum, i) => sum + (i.dispatch_quantity || (group.length === 1 ? parentItem.dispatch_quantity : 0) || 0), 0);
+                                    const totalValue = totalDisp * (parentItem.po_rate || 0);
 
                                     return (
                                         <React.Fragment key={parentItem.po_item_id || groupIdx}>
@@ -247,28 +242,26 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                                                 <td className="py-2.5 px-3 w-[60px] text-left border-none">
                                                     <Caption1 className="uppercase text-text-tertiary text-[12px] font-regular">{parentItem.unit}</Caption1>
                                                 </td>
-                                                <td className="py-2.5 px-3 w-[90px] text-right border-none">
-                                                    <Accounting className="text-base text-text-primary font-regular pr-0">{parentItem.po_rate?.toFixed(2) || "-"}</Accounting>
-                                                </td>
                                                 <td className="py-2.5 px-3 w-[80px] text-right border-none">
-                                                    <Accounting className="text-base text-text-tertiary font-regular pr-0">{totalOrd}</Accounting>
-                                                </td>
-                                                <td className="py-2.5 px-3 w-[80px] text-right border-none">
-                                                    <Accounting className="text-base text-text-tertiary font-regular pr-0">{totalDlv}</Accounting>
+                                                    <Accounting className="text-base text-text-tertiary font-regular pr-0">
+                                                        {group.reduce((sum, i) => sum + (i.ordered_quantity || 0), 0)}
+                                                    </Accounting>
                                                 </td>
                                                 <td className="py-2.5 px-3 w-[90px] text-right bg-blue-600/5 dark:bg-blue-400/5 border-none">
                                                     <Accounting className="text-base text-app-accent font-regular pr-0">{totalDisp}</Accounting>
                                                 </td>
-                                                <td className="py-2.5 px-3 w-[90px] text-right bg-blue-600/5 dark:bg-blue-400/5 border-none">
-                                                    <Accounting className="text-base text-app-warning font-regular pr-0">{totalBal}</Accounting>
+                                                <td className="py-2.5 px-3 w-[90px] text-right border-none">
+                                                    <Accounting className="text-base text-text-primary font-regular pr-0">{parentItem.po_rate?.toFixed(2) || "-"}</Accounting>
                                                 </td>
-                                                <td className="py-2.5 px-3 w-[80px] text-right border-none">
-                                                    <Accounting className="text-base text-text-tertiary font-regular pr-0">{totalRec}</Accounting>
+                                                <td className="py-2.5 px-3 w-[100px] text-right border-none">
+                                                    <Accounting className="text-base text-text-primary font-regular pr-0">
+                                                        {totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </Accounting>
                                                 </td>
                                             </tr>
 
                                             {group.map((item) => {
-                                                const originalIndex = items.findIndex(i => i.id === item.id);
+                                                const lotValue = (item.dispatch_quantity || 0) * (parentItem.po_rate || 0);
                                                 return (
                                                     <tr key={item.id} className="bg-transparent border-none">
                                                         <td className="py-2 px-3 text-center w-[50px] border-none">
@@ -282,23 +275,19 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                                                         <td className="py-2 px-3 w-[110px] border-none" />
                                                         <td className="py-2 px-3 border-none" />
                                                         <td className="py-2 px-3 w-[60px] border-none" />
-                                                        <td className="py-2 px-3 w-[90px] text-right border-none" />
                                                         <td className="py-2 px-3 w-[80px] text-right border-none">
                                                             <Accounting className="text-sm text-text-secondary font-regular pr-0">{item.ordered_quantity}</Accounting>
-                                                        </td>
-                                                        <td className="py-2 px-3 w-[80px] text-right border-none">
-                                                            <Accounting className="text-sm text-text-secondary font-regular pr-0">{item.delivered_quantity}</Accounting>
                                                         </td>
                                                         <td className="py-2 px-3 w-[90px] text-right bg-blue-600/5 dark:bg-blue-400/5 border-none">
                                                             <Accounting className="text-sm text-app-accent font-regular pr-0">
                                                                 {item.dispatch_quantity}
                                                             </Accounting>
                                                         </td>
-                                                        <td className="py-2 px-3 w-[90px] text-right bg-blue-600/5 dark:bg-blue-400/5 border-none">
-                                                            <Accounting className="text-sm text-app-warning font-regular pr-0">{(item.ordered_quantity || 0) - (item.dispatch_quantity || 0)}</Accounting>
-                                                        </td>
-                                                        <td className="py-2 px-3 w-[80px] text-right border-none">
-                                                            <Accounting className="text-sm text-text-secondary font-regular pr-0">{item.received_quantity}</Accounting>
+                                                        <td className="py-2 px-3 w-[90px] text-right border-none" />
+                                                        <td className="py-2 px-3 w-[100px] text-right border-none">
+                                                            <Accounting className="text-sm text-text-secondary font-regular pr-0">
+                                                                {lotValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </Accounting>
                                                         </td>
                                                     </tr>
                                                 );

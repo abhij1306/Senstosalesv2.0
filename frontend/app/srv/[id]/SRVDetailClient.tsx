@@ -49,9 +49,6 @@ export default function SRVDetailClient({ initialSRV }: SRVDetailClientProps) {
 
     const actions = (
         <Flex gap={2}>
-            <Button variant="secondary" size="sm" onClick={() => router.push("/srv")} className="border-app-border/20">
-                Registry
-            </Button>
             <Button variant="secondary" size="sm" onClick={() => window.print()} className="border-app-border/20">
                 PDF Export
             </Button>
@@ -63,6 +60,7 @@ export default function SRVDetailClient({ initialSRV }: SRVDetailClientProps) {
             title={`Store Receipt Voucher - ${header.srv_number}`}
             description="Official material receipt and inspection document"
             actions={actions}
+            onBack={() => router.push("/srv")}
             icon={<Box size={22} className="text-system-blue" />}
             iconLayoutId="srv-detail-icon"
         >

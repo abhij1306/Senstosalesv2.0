@@ -114,7 +114,12 @@ def get_recent_activity(
             SELECT 'PO' as type, po.po_number as number, po.po_date as date, po.supplier_name as party, po.po_value as amount, 
                    po.created_at,
                    (SELECT COALESCE(SUM(ord_qty), 0) FROM purchase_order_items WHERE po_number = po.po_number) as t_ord,
-                   (SELECT COALESCE(SUM(dispatch_qty), 0) FROM delivery_challan_items dci JOIN purchase_order_items poi ON dci.po_item_id = poi.id WHERE poi.po_number = po.po_number) as t_del,
+                   (
+                       SELECT COALESCE(SUM(dispatch_qty), 0) 
+                       FROM delivery_challan_items dci 
+                       JOIN purchase_order_items poi ON dci.po_item_id = poi.id 
+                       WHERE poi.po_number = po.po_number
+                   ) as t_del,
                    (
                        SELECT COALESCE(SUM(pod.received_qty), 0) 
                        FROM purchase_order_deliveries pod 
@@ -141,7 +146,12 @@ def get_recent_activity(
                        SELECT COALESCE(SUM(dci.dispatch_qty), 0) FROM delivery_challan_items dci 
                        WHERE inv.dc_number = dci.dc_number
                    ) as t_del,
-                   (SELECT COALESCE(SUM(si.received_qty), 0) FROM srv_items si JOIN srvs s ON si.srv_number = s.srv_number WHERE s.invoice_number = inv.invoice_number) as t_recd
+                   (
+                       SELECT COALESCE(SUM(si.received_qty), 0) 
+                       FROM srv_items si 
+                       JOIN srvs s ON si.srv_number = s.srv_number 
+                       WHERE s.invoice_number = inv.invoice_number
+                   ) as t_recd
             FROM gst_invoices inv
             ORDER BY inv.created_at DESC LIMIT ?
         """,
@@ -164,8 +174,16 @@ def get_recent_activity(
                        LEFT JOIN purchase_order_deliveries pod ON dci.po_item_id = pod.po_item_id AND dci.lot_no = pod.lot_no
                        WHERE dci.dc_number = dc.dc_number
                    ) as t_ord,
-                   (SELECT COALESCE(SUM(dispatch_qty), 0) FROM delivery_challan_items WHERE dc_number = dc.dc_number) as t_del,
-                   (SELECT COALESCE(SUM(received_qty), 0) FROM srv_items WHERE challan_no = dc.dc_number) as t_recd
+                   (
+                       SELECT COALESCE(SUM(dispatch_qty), 0) 
+                       FROM delivery_challan_items 
+                       WHERE dc_number = dc.dc_number
+                   ) as t_del,
+                   (
+                       SELECT COALESCE(SUM(received_qty), 0) 
+                       FROM srv_items 
+                       WHERE challan_no = dc.dc_number
+                   ) as t_recd
             FROM delivery_challans dc
             ORDER BY dc.created_at DESC LIMIT ?
         """,
