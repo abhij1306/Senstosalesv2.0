@@ -234,18 +234,20 @@ class POService:
                 if d["po_item_id"] == item_id:
                     d_dict = dict(d)
 
-                    # Logic: Lot DLV = High Water Mark (MAX(Dispatch, Receipt, Manual Override))
-                    # This ensures that received units are counted as delivered even if DC is missing.
+                    # Logic: Lot DLV = Dispatched (Physical) + Manual Override (if any)
+                    # HWM Logic REMOVED as per user request (Bal = Ord - Del)
                     dsp = d_dict["dispatched_qty"] or 0.0
                     recd = d_dict["rcd_qty"] or 0.0
                     lot_ord = d_dict["scheduled_qty"] or 0.0
                     manual = d_dict.get("manual_override_qty") or 0.0
-                    lot_dlv = max(dsp, recd, manual)
+                    
+                    # Strictly use Dispatched (or Manual if set) - Ignore Received for this calc
+                    lot_dlv = manual if manual > 0 else dsp
 
-                    d_dict["delivered_quantity"] = lot_dlv  # This maps to accounting 'DLV' (HWM)
-                    d_dict["physical_dispatched_qty"] = dsp  # Physical documents check
-                    d_dict["received_quantity"] = recd  # This maps to 'RECD' in UI
-                    d_dict["ordered_quantity"] = lot_ord  # This maps to 'ORD' in UI
+                    d_dict["delivered_quantity"] = lot_dlv
+                    d_dict["physical_dispatched_qty"] = dsp
+                    d_dict["received_quantity"] = recd
+                    d_dict["ordered_quantity"] = lot_ord
                     d_dict["manual_override_qty"] = manual
 
                     item_deliveries.append(d_dict)

@@ -47,15 +47,15 @@ export const ActionConfirmationModal = ({
                         className={cn(
                             "rounded-[2.5rem] overflow-hidden transition-all duration-300",
                             "shadow-macos-soft",
-                            "border-2 border-border-secondary",
-                            "bg-surface-primary",
+                            "border border-white/20",
+                            "tahoe-glass backdrop-blur-3xl",
                             "cursor-grab active:cursor-grabbing"
                         )}
                     >
                         <div className="p-8">
                             {/* Header Section */}
                             <div className="flex items-start gap-4 mb-6">
-                                <div className="w-14 h-14 rounded-[20px] bg-app-status-error/10 flex items-center justify-center shadow-sm border border-app-status-error/20">
+                                <div className="w-14 h-14 rounded-[20px] bg-red-500/10 flex items-center justify-center shadow-sm border border-red-500/20">
                                     <AlertCircle className="w-7 h-7 text-red-500" />
                                 </div>
                                 <div className="flex-1 space-y-1">
@@ -68,9 +68,9 @@ export const ActionConfirmationModal = ({
 
                             {/* Warning Content */}
                             {warningText && (
-                                <div className="p-5 rounded-[20px] bg-app-status-error/10 border-2 border-app-status-error/20 mb-8 relative overflow-hidden group">
-                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-app-status-error/60" />
-                                    <Body className="text-[13px] text-app-status-error leading-relaxed font-regular pl-2">
+                                <div className="p-5 rounded-[20px] bg-red-500/5 border border-red-500/10 mb-8 relative overflow-hidden group">
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500/30" />
+                                    <Body className="text-[13px] text-red-500/90 leading-relaxed font-regular pl-2">
                                         {warningText}
                                     </Body>
                                 </div>

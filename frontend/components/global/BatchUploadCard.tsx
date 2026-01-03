@@ -51,8 +51,8 @@ export default function BatchUploadCard() {
             >
                 <div
                     className={cn(
-                        "rounded-[2.5rem] transition-all duration-300 overflow-hidden",
-                        "bg-surface shadow-1 border-none",
+                        "rounded-[2.5rem] transition-all duration-300 overflow-hidden shadow-2xl",
+                        "tahoe-glass-card border-none backdrop-blur-3xl",
                         minimized ? "p-2 pr-6" : "p-0"
                     )}
                 >

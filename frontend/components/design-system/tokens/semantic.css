@@ -9,17 +9,20 @@
     /* ==========================================
      SURFACES
      ========================================== */
-    --bg-app: 235 242 255;
-    /* Soft Light Blue Background */
-    --bg-surface: 253 251 247;
-    /* Premium Off-White / Light Ivory Surface */
+    --bg-app: 242 247 255;
+    /* Softest layer (Deepest) */
+    --bg-surface: 255 255 255;
+    /* Base Content layer */
     --bg-surface-elevated: 255 255 255;
-    /* Pure White for highest depth */
-    --bg-surface-sunken: 226 232 240;
-    /* Muted sunken state (Slate 200) */
-    --bg-surface-variant: 236 232 225;
-    /* Off-white variant for contrast */
+    /* Floating layer */
+    --bg-surface-sunken: 248 250 252;
+    /* Table/Sunken layer */
+    --bg-surface-variant: 241 245 249;
     --bg-overlay: 0 0 0;
+
+    /* LAYER SPECIFIC */
+    --bg-sidebar: var(--bg-app);
+    --bg-header: 255 255 255 / 0.8;
 
     /* M3 COLOR ROLES */
     --primary-container: var(--blue-100);
@@ -49,8 +52,8 @@
     /* ==========================================
      ACTIONS
      ========================================== */
-    --action-primary: var(--blue-600);
-    --action-primary-hover: var(--blue-700);
+    --action-primary: var(--brand-primary);
+    --action-primary-hover: var(--brand-primary-hover);
     --action-primary-fg: 255 255 255;
 
     --action-secondary: 255 255 255;
@@ -115,5 +118,5 @@
      ========================================== */
     --action-primary: var(--blue-400);
     --action-primary-hover: var(--blue-300);
-    --action-primary-fg: var(--slate-900);
+    --action-primary-fg: var(--black);
 }

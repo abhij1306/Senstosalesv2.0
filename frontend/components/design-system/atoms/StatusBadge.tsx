@@ -9,28 +9,28 @@ interface StatusBadgeProps {
 
 const statusConfig: Record<Status, { label: string; color: string }> = {
     draft: {
-        label: 'Draft',
-        color: 'bg-secondary-container text-on-secondary-container'
+        label: 'DRAFT',
+        color: 'bg-slate-500/10 text-slate-600'
     },
     pending: {
-        label: 'Pending',
-        color: 'bg-[rgba(var(--status-warning),0.2)] text-[rgb(var(--status-warning))]'
+        label: 'PENDING',
+        color: 'bg-amber-500/10 text-amber-600'
     },
     delivered: {
-        label: 'Delivered',
-        color: 'bg-[rgba(var(--status-info),0.2)] text-[rgb(var(--status-info))]'
+        label: 'DELIVERED',
+        color: 'bg-blue-500/10 text-blue-600'
     },
     closed: {
-        label: 'Closed',
-        color: 'bg-[rgba(var(--status-success),0.2)] text-[rgb(var(--status-success))]'
+        label: 'CLOSED',
+        color: 'bg-green-500/10 text-green-600'
     },
     active: {
-        label: 'Active',
-        color: 'bg-[rgba(var(--status-success),0.2)] text-[rgb(var(--status-success))]'
+        label: 'ACTIVE',
+        color: 'bg-green-500/10 text-green-600'
     },
     cancelled: {
-        label: 'Cancelled',
-        color: 'bg-[rgba(var(--status-error),0.2)] text-[rgb(var(--status-error))]'
+        label: 'CANCELLED',
+        color: 'bg-red-500/10 text-red-600'
     },
 };
 
@@ -46,10 +46,10 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
         <span
             className={cn(
                 'inline-flex items-center',
-                'px-2 py-1', // Compact - 8px/4px
-                'rounded-[var(--radius-xs)]',
-                'type-caption-1', // 12px uppercase
-                config.color, // Safe access
+                'px-2.5 py-1', // Slightly wider padding
+                'rounded-full', // Full pill shape
+                'text-[11px] font-medium uppercase tracking-wide', // Clean typography
+                config.color,
                 className
             )}
         >

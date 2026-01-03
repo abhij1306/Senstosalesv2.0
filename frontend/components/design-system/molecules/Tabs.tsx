@@ -23,11 +23,7 @@ const TabsList = forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      'inline-flex items-center',
-      'surface-sunken', // Recessed appearance
-      'p-1', // 4px inner padding
-      'gap-1',
-      'rounded-[var(--radius-sm)]',
+      'inline-flex items-center justify-center p-1 bg-surface-sunken/50 backdrop-blur-md rounded-full border border-black/5 shadow-inner gap-1',
       className
     )}
     {...props}
@@ -42,23 +38,9 @@ const TabsTrigger = forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      'inline-flex items-center justify-center',
-      'px-3 py-1.5', // 12px/6px - Compact
-      'type-subhead', // 15px regular
-      'rounded-[var(--radius-xs)]',
-      'transition-all duration-150',
-
-      // Default state
-      'text-secondary',
-
-      // Active state - Elevated surface
-      'data-[state=active]:surface-elevated',
-      'data-[state=active]:text-primary',
-      'data-[state=active]:shadow-xs',
-
-      // Hover state
-      'hover:text-primary',
-
+      'inline-flex items-center justify-center px-4 py-1.5 text-[12px] font-medium transition-all duration-300 rounded-full relative z-10',
+      'text-text-tertiary hover:text-text-primary',
+      'data-[state=active]:text-white data-[state=active]:active-glow',
       className
     )}
     {...props}

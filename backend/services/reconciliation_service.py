@@ -147,11 +147,11 @@ class ReconciliationService:
                 l_system_received += remaining_shared_received
                 l_system_dispatched += remaining_shared_dispatch
 
-            # HIGH WATER MARK (HWM) LOGIC:
-            # - Received HWM: MAX(Physical Receipt, Invoiced Quantity, Existing Ingested Quantity)
-            # - Delivered HWM: MAX(Physical Dispatch, Received HWM, Invoiced Quantity, Manual Override)
-            l_received = max(l_system_received, l_invoiced, l_existing_recd)
-            l_delivered = max(l_system_dispatched, l_received, l_manual)
+            # HIGH WATER MARK (HWM) LOGIC REMOVED:
+            # - Received: Strictly from SRV inputs (System Received)
+            # - Delivered: Strictly from DC inputs (System Dispatched) + Manual Override
+            l_received = l_system_received
+            l_delivered = l_manual if l_manual > 0 else l_system_dispatched
 
             db.execute(
                 """
@@ -219,15 +219,11 @@ class ReconciliationService:
             (po_item_id,),
         ).fetchone()
 
-        # Final Item-Level Delivered: MAX(SUM(Lot DLVs), Item-Level Manual)
-        # Rule: Manual overrides only if ord > recd.
+        # Final Item-Level Delivered: Strictly Sum(Lots) or Manual Override
         item_system_dlv = to_qty(totals["total_dlv"])
         total_received = to_qty(totals["total_rcd"])
 
-        if item_ord > total_received:
-            item_delivered = max(item_system_dlv, item_manual)
-        else:
-            item_delivered = item_system_dlv
+        item_delivered = item_manual if item_manual > 0 else item_system_dlv
 
         # Calculate Total Rejected for Item (from SRVs)
         total_rejected = to_qty(

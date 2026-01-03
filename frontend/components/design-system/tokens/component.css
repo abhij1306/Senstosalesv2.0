@@ -12,9 +12,9 @@
     --btn-radius: var(--radius-md);
 
     /* Primary */
-    --btn-primary-bg: var(--action-primary);
-    --btn-primary-text: var(--action-primary-fg);
-    --btn-primary-hover: var(--action-primary-hover);
+    --btn-primary-bg: rgb(var(--blue-700));
+    --btn-primary-text: rgb(var(--action-primary-fg));
+    --btn-primary-hover: rgb(var(--blue-800));
 
     /* M3 Elevated */
     --btn-elevated-bg: var(--bg-surface);

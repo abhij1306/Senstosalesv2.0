@@ -33,11 +33,12 @@ const columns: Column<POListItem>[] = [
         key: "po_number",
         label: "Number",
         width: "15%",
+        align: "left",
         render: (_value, po) => (
             <Link href={`/po/${po.po_number}`} className="block group">
-                <Footnote className="group-hover:text-action-primary transition-colors">
+                <Accounting className="group-hover:text-action-primary transition-colors">
                     #{po.po_number}
-                </Footnote>
+                </Accounting>
             </Link>
         ),
     },
@@ -55,9 +56,9 @@ const columns: Column<POListItem>[] = [
         key: "total_items_count",
         label: "Items",
         width: "8%",
-        align: "center",
+        align: "right",
         render: (v) => (
-            <Footnote className="text-text-secondary">{v || 1}</Footnote>
+            <Footnote className="text-text-secondary pr-2">{v || 1}</Footnote>
         )
     },
     {
@@ -119,7 +120,6 @@ const columns: Column<POListItem>[] = [
             <div className="flex justify-center">
                 <StatusBadge
                     status={String(v || "Pending").toLowerCase() as any}
-                    className="border-none shadow-none bg-surface-variant/30"
                 />
             </div>
         ),
@@ -208,42 +208,44 @@ export function POListClient({ initialPOs, initialStats }: POListClientProps) {
     }, []);
 
     const toolbar = (
-        <Flex align="center" justify="between" className="w-full" gap={4}>
-            <SearchBar
-                value={searchQuery}
-                onChange={handleSearch}
-                placeholder="Search orders, items, or status..."
-                className="w-full max-w-sm"
-            />
-            <Flex align="center" gap={3}>
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept=".pdf,.html"
-                    onChange={handleFileSelect}
-                    className="hidden"
+        <div className="surface-glass p-3 rounded-2xl shadow-lg border border-white/20 mb-6 backdrop-blur-xl">
+            <Flex align="center" justify="between" className="w-full" gap={4}>
+                <SearchBar
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    placeholder="Search orders, items, or status..."
+                    className="w-full max-w-sm bg-surface-sunken/40 border-none shadow-inner"
                 />
+                <Flex align="center" gap={3}>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept=".pdf,.html"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                    />
 
-                <Button
-                    variant="secondary"
-                    onClick={handleUploadClick}
-                    className="min-w-[140px] whitespace-nowrap"
-                >
-                    <Upload size={16} />
-                    Upload PO
-                </Button>
+                    <Button
+                        variant="glass"
+                        onClick={handleUploadClick}
+                        className="min-w-[140px] whitespace-nowrap shadow-sm"
+                    >
+                        <Upload size={16} />
+                        Upload PO
+                    </Button>
 
-                <Button
-                    variant="success"
-                    onClick={() => router.push("/po/create")}
-                    className="min-w-[170px] whitespace-nowrap"
-                >
-                    <Plus size={18} />
-                    Create PO
-                </Button>
+                    <Button
+                        variant="primary"
+                        onClick={() => router.push("/po/create")}
+                        className="min-w-[170px] whitespace-nowrap shadow-md"
+                    >
+                        <Plus size={18} />
+                        Create PO
+                    </Button>
+                </Flex>
             </Flex>
-        </Flex>
+        </div>
     );
 
     return (

@@ -32,13 +32,14 @@ The lifecycle represents the "Order-to-Cash" process from the Supplier's perspec
 | **DC (Delivery Challan)** | Dispatch document. | - | `delivery_challans` |
 | **SRV (Receipt)** | Customer acknowledgment. | - | `srv_items` |
 | **Ordered Qty (ORD)** | Total quantity contracted. | - | `po_items.ord_qty` |
-| **Delivered Qty (DLV)** | Total quantity DISPATCHED. | `Sum(DC.dispatch_qty)` | `po_items.delivered_qty` |
+| **Delivered Qty (DLV)** | Total quantity DISPATCHED + Manual Override. | `Sum(DC.dispatch_qty)` | `po_items.delivered_qty` |
 | **Received Qty (RECD)** | Total quantity RECEIVED. | `Sum(SRV.received_qty)` | `po_items.rcd_qty` |
 | **Balance (BAL)** | **Pending for Dispatch**. | **ORD - DLV** | `reconciliation_ledger` |
 
 > [!IMPORTANT]
 > **THE CORE INVARIANT (BL-1)**: `BALANCE = ORDERED - DELIVERED`.
 > - `pending_qty = ord_qty - delivered_qty` (Same as Balance)
+> - **NO HIGH WATER MARK (HWM):** "Delivered" status is determined strictly by Dispatch (+ Manual Override). It does NOT auto-increment based on Receipt (SRV).
 > - Receipt of goods (`RECD`) tracks whether the buyer got the items, but it **never** affects the `Balance` or `Delivered` quantities.
 > - Rejected quantities are tracked separately via `rejected_qty` column and do NOT affect Balance.
 > - Balance only tracks what is left to be shipped.

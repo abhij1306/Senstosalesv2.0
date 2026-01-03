@@ -508,21 +508,21 @@ export default function GlobalSearch() {
 
   return (
     <>
-      <div ref={searchRef} className="relative max-w-[700px] w-full group z-50">
+      <div ref={searchRef} className="relative max-w-2xl w-full group z-50">
         <div
           className={cn(
-            "flex items-center gap-4 px-6 py-2 transition-all duration-300 ease-out",
-            "rounded-xl border-none shadow-lg shadow-black/10 dark:shadow-black/30",
-            isOpen && "shadow-xl shadow-black/15 dark:shadow-black/40",
+            "flex items-center gap-3 px-4 h-11 transition-all duration-300 ease-out",
+            "rounded-full bg-surface-sunken/50 backdrop-blur-md border border-white/40",
+            isOpen ? "bg-surface ring-2 ring-brand-primary/20 shadow-lg shadow-brand-primary/5" : "hover:bg-surface-sunken/80",
           )}
         >
           {loading ? (
-            <Loader2 className="w-5 h-5 text-app-accent animate-spin" />
+            <Loader2 className="w-4 h-4 text-brand-primary animate-spin" />
           ) : (
             <Search
               className={cn(
-                "w-5 h-5 transition-colors",
-                isOpen ? "text-app-accent" : "text-app-fg/40",
+                "w-4 h-4 transition-colors",
+                isOpen ? "text-brand-primary" : "text-text-tertiary",
               )}
             />
           )}
@@ -536,9 +536,16 @@ export default function GlobalSearch() {
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
-            placeholder="Search items, vendors, invoices..."
-            className="flex-1 bg-transparent border-none outline-none text-footnote font-regular text-text-primary placeholder:text-text-tertiary"
+            placeholder="Search orders, items or navigation..."
+            className="flex-1 bg-transparent border-none outline-none text-sm font-medium text-text-primary placeholder:text-text-tertiary/70"
           />
+
+          {!query && (
+            <div className="flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-black/20 rounded-md shadow-[inset_0_1px_1px_rgba(0,0,0,0.05)] pointer-events-none select-none">
+              <span className="text-[10px] font-bold text-text-tertiary opacity-70">CTRL</span>
+              <span className="text-[10px] font-bold text-text-tertiary opacity-70">K</span>
+            </div>
+          )}
 
           {query && (
             <button
@@ -546,17 +553,11 @@ export default function GlobalSearch() {
                 setQuery("");
                 inputRef.current?.focus();
               }}
-              className="p-1 hover:bg-app-overlay rounded-lg transition-colors"
+              className="p-1 hover:bg-black/5 rounded-full transition-colors"
             >
-              <X size={14} className="text-app-fg-muted" />
+              <X size={14} className="text-text-tertiary" />
             </button>
           )}
-
-          <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 bg-app-surface-elevated/50 rounded-lg shadow-sm pointer-events-none select-none">
-            <kbd className="font-mono text-[9px] font-bold text-app-fg-muted">
-              CTRL K
-            </kbd>
-          </div>
         </div>
       </div>
 

@@ -13,12 +13,9 @@ import {
 import { api } from "@/lib/api";
 import { formatDate, cn } from "@/lib/utils";
 import { PODetail, POItem, PODelivery, SRVListItem } from "@/types";
-import {
-    DocumentTemplate,
-    Button,
-    Flex,
-    Box,
-} from "@/components/design-system";
+import { Button } from "@/components/design-system/atoms/Button";
+import { Flex, Box } from "@/components/design-system/atoms/Layout";
+import { DocumentTemplate } from "@/components/design-system/templates/DocumentTemplate";
 import { PODetailCard } from "./PODetailCard";
 import { usePOStore } from "@/store/poStore";
 
@@ -35,15 +32,12 @@ export default function PODetailClient({
 }: PODetailClientProps) {
     const router = useRouter();
 
-    // Zustand Store Integration
-    const data = usePOStore((state) => state.data);
+    // Granular Store Selection to prevent total re-renders
+    const poNumber = usePOStore((state) => state.data?.header?.po_number);
+    const supplierName = usePOStore((state) => state.data?.header?.supplier_name);
+    const poDate = usePOStore((state) => state.data?.header?.po_date);
+
     const setPO = usePOStore((state) => state.setPO);
-    const updateHeader = usePOStore((state) => state.updateHeader);
-    const updateItem = usePOStore((state) => state.updateItem);
-    const addItem = usePOStore((state) => state.addItem);
-    const removeItem = usePOStore((state) => state.removeItem);
-    const addDelivery = usePOStore((state) => state.addDelivery);
-    const removeDelivery = usePOStore((state) => state.removeDelivery);
 
     // Initialize store with server data
     useEffect(() => {
@@ -62,6 +56,21 @@ export default function PODetailClient({
         new Set(initialPO?.items?.map((item: POItem) => item.po_item_no) || [])
     );
     const [activeTab, setActiveTab] = useState("basic");
+
+    const handleSave = useCallback(async () => {
+        const currentData = usePOStore.getState().data;
+        if (!currentData || !currentData.header) return;
+
+        setLoading(true);
+        try {
+            await api.updatePO(currentData.header.po_number, currentData.header, currentData.items);
+            setEditMode(false);
+        } catch {
+            // Error handling
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     // Handle Not Found State
     if (!initialPO || !initialPO.header) {
@@ -92,18 +101,6 @@ export default function PODetailClient({
         );
     }
 
-    const handleSave = useCallback(async () => {
-        if (!data || !data.header) return;
-        setLoading(true);
-        try {
-            await api.updatePO(data.header.po_number, data.header, data.items);
-            setEditMode(false);
-        } catch {
-            // console.error(err.message || "Failed to sync changes");
-        } finally {
-            setLoading(false);
-        }
-    }, [data]);
 
     const toggleItem = useCallback((itemNo: number) => {
         const s = new Set(expandedItems);
@@ -115,10 +112,7 @@ export default function PODetailClient({
         setExpandedItems(s);
     }, [expandedItems]);
 
-    // Safe destructuring after Not Found check
-    if (!data || !data.header) return null;
-
-    const { header, items } = data;
+    if (!poNumber) return null;
 
     const renderActions = () => {
         if (editMode) {
@@ -145,7 +139,7 @@ export default function PODetailClient({
             <Flex align="center" gap={2}>
                 <Button
                     variant="success"
-                    onClick={() => window.open(`/api/po/${header.po_number}/download`, '_blank')}
+                    onClick={() => window.open(`/api/po/${poNumber}/download`, '_blank')}
                     className="whitespace-nowrap shadow-1"
                 >
                     <FileDown size={16} /> Excel
@@ -166,9 +160,10 @@ export default function PODetailClient({
                     onClick={() =>
                         hasDC && dcId
                             ? router.push(`/dc/${dcId}`)
-                            : router.push(`/dc/create?po=${header.po_number}`)
+                            : router.push(`/dc/create?po=${poNumber}`)
                     }
                     className="whitespace-nowrap shadow-2"
+                    disabled={!hasDC && (usePOStore.getState().data?.items || []).every(i => (i.ordered_quantity || 0) - (i.delivered_quantity || 0) <= 0)}
                 >
                     <FileText size={16} />
                     {hasDC ? "View DC" : "Generate DC"}
@@ -179,13 +174,13 @@ export default function PODetailClient({
 
     return (
         <DocumentTemplate
-            title={`PO #${header.po_number}`}
-            description={`${header.supplier_name} • ${formatDate(header.po_date)}`}
+            title={`PO #${poNumber}`}
+            description={`${supplierName} • ${formatDate(poDate || "")}`}
             actions={renderActions()}
             onBack={() => router.back()}
-            layoutId={`po-title-${header.po_number}`}
+            layoutId={`po-title-${poNumber}`}
             icon={<ShoppingCart size={22} className="text-system-blue" />}
-            iconLayoutId={`po-icon-${header.po_number}`}
+            iconLayoutId={`po-icon-${poNumber}`}
         >
             <PODetailCard
                 srvs={srvs}

@@ -24,29 +24,22 @@ export function ThemeToggle() {
   if (!mounted) return null;
 
   return (
-    <div className="inline-flex p-1 bg-surface-variant/30 backdrop-blur-md rounded-xl border-none shadow-sm">
-      <div className="flex gap-1">
+    <div className="inline-flex p-1 bg-surface-sunken/80 backdrop-blur-md rounded-full border border-white/40 shadow-inner">
+      <div className="flex gap-0.5">
         {themes.map(({ value, icon: Icon, label }) => (
           <button
             key={value}
             onClick={() => setTheme(value)}
             className={cn(
-              "flex items-center justify-center p-2 rounded-lg transition-all duration-300 relative group will-change-[transform,opacity]",
+              "flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 relative group",
               theme === value
-                ? "text-action-primary-fg shadow-lg shadow-action-primary/20 scale-105 active-glow"
-                : "text-text-tertiary hover:bg-surface-variant/50 hover:text-text-primary"
+                ? "text-white active-glow"
+                : "text-text-tertiary hover:bg-black/5 dark:hover:bg-white/5 hover:text-text-primary"
             )}
             aria-label={`Switch to ${label} theme`}
             title={label}
           >
-            <Icon size={16} className={cn("transition-transform duration-300", theme === value && "scale-110")} />
-            {theme === value && (
-              <motion.div
-                layoutId="theme-active"
-                className="absolute inset-0 bg-action-primary rounded-lg -z-10"
-                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-              />
-            )}
+            <Icon size={14} className="relative z-10" />
           </button>
         ))}
       </div>

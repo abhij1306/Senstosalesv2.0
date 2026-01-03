@@ -97,10 +97,10 @@ export function PONoteListClient({ initialNotes }: PONoteListClientProps) {
             icon={<Quote className="w-5 h-5" />}
             actions={
                 <Button
+                    variant="glass"
                     onClick={handleCreate}
                     disabled={loading}
-                    size="compact"
-                    className="h-9 px-6 active-glow"
+                    className="min-w-[160px] whitespace-nowrap shadow-sm"
                 >
                     <Plus className="w-4 h-4 mr-2" />
                     Provision Clause
@@ -123,22 +123,22 @@ export function PONoteListClient({ initialNotes }: PONoteListClientProps) {
                         ))}
                     </Grid>
                 ) : (
-                    <Card className="p-16 flex flex-col items-center justify-center text-center tahoe-glass-card border-dashed">
-                        <div className="w-16 h-16 rounded-full bg-surface-secondary/50 flex items-center justify-center text-app-fg-muted mb-4">
-                            <FileText className="w-8 h-8 opacity-20" />
+                    <div className="tahoe-glass-card p-20 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-500">
+                        <div className="w-20 h-20 rounded-3xl bg-app-overlay/5 flex items-center justify-center text-action-primary shadow-inner mb-6 backdrop-blur-md border border-white/10">
+                            <FileText className="w-10 h-10 opacity-40" />
                         </div>
-                        <Title3 className="text-lg mb-2">Null Policy Matrix</Title3>
-                        <Body className="text-app-fg-muted mb-6 max-w-sm">
-                            No standardized clauses detected. Provision a new term to accelerate document lifecycle.
+                        <Title3 className="text-2xl font-bold tracking-tight text-text-primary mb-2">Null Policy Matrix</Title3>
+                        <Body className="text-text-secondary mb-8 max-w-sm leading-relaxed opacity-70">
+                            No standardized clauses detected. Provision a new term to accelerate your procurement document lifecycle.
                         </Body>
                         <Button
                             variant="primary"
                             onClick={handleCreate}
-                            className="active-glow"
+                            className="min-w-[180px] shadow-md"
                         >
-                            Start Provisioning
+                            <Plus className="w-5 h-5 mr-2" /> Start Provisioning
                         </Button>
-                    </Card>
+                    </div>
                 )}
             </Box>
 

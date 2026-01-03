@@ -92,19 +92,19 @@ export const DataTable = <T extends Record<string, any>>({
     const totalPages = totalItems && pageSize ? Math.ceil(totalItems / pageSize) : 0;
 
     return (
-        <div className={cn("bg-surface rounded-xl overflow-hidden shadow-1 flex flex-col", className)}>
+        <div className={cn("tahoe-glass-card overflow-hidden flex flex-col transition-all duration-300", className)}>
             <div className="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar flex-1">
-                <table className="w-full border-collapse text-left">
-                    {/* Header - Glassmorphic Blue (Solid for readability) */}
-                    <thead className="sticky top-0 z-20 shadow-sm bg-primary-container text-on-primary-container backdrop-blur-md">
-                        <tr className="bg-primary-container border-none">
+                <table className="w-full border-collapse text-left table-standard table-fixed">
+                    {/* Header - Fixed Height 48px */}
+                    <thead className="sticky top-0 z-20">
+                        <tr className="bg-surface-sunken/80 backdrop-blur-md">
                             {columns.map((column) => (
                                 <th
                                     key={column.key}
                                     className={cn(
-                                        // Standard M3 Header height: 44px (h-11)
-                                        "h-11 px-4 whitespace-nowrap",
-                                        "m3-label-large text-on-primary-container/90 contrast-more:text-on-primary-container",
+                                        "h-12 px-4 whitespace-nowrap transition-colors border-none",
+                                        "m3-label-large uppercase tracking-widest text-text-tertiary opacity-70 font-semibold",
+                                        "bg-transparent", // Background comes from <tr> for blur
                                         column.align === 'center' && 'text-center',
                                         column.align === 'right' && 'text-right'
                                     )}
@@ -116,42 +116,53 @@ export const DataTable = <T extends Record<string, any>>({
                         </tr>
                     </thead>
 
-                    {/* Body - M3 Body Medium */}
-                    <tbody className="">
+                    {/* Body - Alternating Rows */}
+                    <tbody>
                         {data.map((row, rowIndex) => (
-                            <tr
+                            <TableRow
                                 key={row[keyField] || rowIndex}
-                                onClick={() => onRowClick && onRowClick(row)}
-                                className={cn(
-                                    "transition-all duration-300 relative group",
-                                    "hover:z-10 hover:shadow-3 hover:scale-[1.002] hover:bg-surface-elevated/80",
-                                    onRowClick ? "cursor-pointer" : ""
-                                )}
-                            >
-                                {columns.map((column) => (
-                                    <td
-                                        key={`${column.key}-${rowIndex}`}
-                                        className={cn(
-                                            // M3 Row height: 52px
-                                            "h-[52px] px-4",
-                                            "m3-body-medium text-primary",
-                                            column.align === 'center' && 'text-center',
-                                            column.align === 'right' && 'text-right'
-                                        )}
-                                    >
-                                        {column.render
-                                            ? column.render(row[column.key], row)
-                                            : (row[column.key] !== null && row[column.key] !== undefined ? row[column.key] : "-")
-                                        }
-                                    </td>
-                                ))}
-                            </tr>
+                                row={row}
+                                rowIndex={rowIndex}
+                                columns={columns}
+                                onRowClick={onRowClick}
+                            />
                         ))}
                     </tbody>
                 </table>
             </div>
-
-
         </div>
     );
 };
+
+// Memoized Row for performance
+const TableRow = React.memo(({ row, rowIndex, columns, onRowClick }: any) => {
+    return (
+        <tr
+            onClick={() => onRowClick && onRowClick(row)}
+            className={cn(
+                "transition-all duration-200 group relative",
+                onRowClick ? "cursor-pointer" : "",
+                "hover:shadow-md hover:z-10 hover:bg-surface-elevated/50"
+            )}
+        >
+            {columns.map((column: any) => (
+                <td
+                    key={`${column.key}-${rowIndex}`}
+                    className={cn(
+                        "h-[52px] px-4 m3-body-medium text-primary transition-colors truncate",
+                        column.align === 'center' && 'text-center',
+                        column.align === 'right' && 'text-right'
+                    )}
+                    style={{ width: column.width }}
+                >
+                    {column.render
+                        ? column.render(row[column.key], row)
+                        : (row[column.key] !== null && row[column.key] !== undefined ? row[column.key] : "-")
+                    }
+                </td>
+            ))}
+        </tr>
+    );
+});
+
+TableRow.displayName = "TableRow";

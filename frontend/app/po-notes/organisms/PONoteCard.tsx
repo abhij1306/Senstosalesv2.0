@@ -21,8 +21,8 @@ interface PONoteCardProps {
 
 export const PONoteCard = ({ template, onEdit, onDelete }: PONoteCardProps) => {
     return (
-        <Card
-            className="group relative flex flex-col h-full bg-app-surface/50 border-none elevation-2 hover:elevation-3 transition-all duration-500 overflow-hidden"
+        <div
+            className="tahoe-glass-card group relative flex flex-col h-full bg-white/40 dark:bg-slate-900/40 border-none transition-all duration-500 overflow-hidden backdrop-blur-xl hover:translate-y-[-4px] hover:shadow-2xl"
         >
             {/* Background Decorative Element */}
             <div className="absolute -top-12 -right-12 w-32 h-32 bg-app-accent/5 rounded-full blur-3xl group-hover:bg-app-accent/10 transition-colors" />
@@ -89,6 +89,6 @@ export const PONoteCard = ({ template, onEdit, onDelete }: PONoteCardProps) => {
                     </Badge>
                 </Flex>
             </div>
-        </Card>
+        </div>
     );
 };

@@ -12,24 +12,24 @@ import {
     CheckCircle,
     Boxes,
     FileCheck,
+    FileDown,
 } from "lucide-react";
-import { api, InvoiceListItem, InvoiceStats } from "@/lib/api";
+import { api, API_BASE_URL, InvoiceListItem, InvoiceStats } from "@/lib/api";
 import { formatDate, formatIndianCurrency } from "@/lib/utils";
 import { useDebouncedValue } from "@/lib/hooks/useDebounce";
 import {
     Body,
     SmallText,
     Accounting,
-    StatusBadge,
-    ListPageTemplate,
-    type SummaryCardProps,
-    type Column,
-    Button,
-    Flex,
-    Box,
-    Label,
     Footnote,
-} from "@/components/design-system";
+} from "@/components/design-system/atoms/Typography";
+import { Button } from "@/components/design-system/atoms/Button";
+import { Flex, Box } from "@/components/design-system/atoms/Layout";
+import { Label } from "@/components/design-system/atoms/Label";
+import { StatusBadge } from "@/components/design-system/atoms/StatusBadge";
+import { ListPageTemplate } from "@/components/design-system/templates/ListPageTemplate";
+import { type SummaryCardProps } from "@/components/design-system/organisms/SummaryCards";
+import { type Column } from "@/components/design-system/organisms/DataTable";
 import { SearchBar } from "@/components/design-system/molecules/SearchBar";
 
 const columns: Column<InvoiceListItem>[] = [
@@ -38,6 +38,7 @@ const columns: Column<InvoiceListItem>[] = [
         label: "Invoice #",
         sortable: true,
         width: "12%",
+        align: "left",
         render: (_value, inv) => (
             <Link
                 href={`/invoice/${encodeURIComponent(inv.invoice_number)}`}
@@ -116,12 +117,13 @@ const columns: Column<InvoiceListItem>[] = [
         key: "total_items",
         label: "Items",
         width: "6%",
-        align: "right",
-        isNumeric: true,
-        render: (v) => (
-            <Accounting className="text-right pr-2 text-text-secondary">
-                {v}
-            </Accounting>
+        align: "left",
+        render: (v, row) => (
+            <Link href={`/invoice/${row.invoice_number}`} className="block group">
+                <Accounting className="group-hover:text-action-primary transition-colors">
+                    #{v}
+                </Accounting>
+            </Link>
         ),
     },
     {
@@ -150,15 +152,22 @@ const columns: Column<InvoiceListItem>[] = [
         ),
     },
     {
-        key: "status",
-        label: "Status",
-        sortable: true,
+        key: "actions" as any,
+        label: "Actions",
         width: "10%",
-        align: "center",
-        render: (v) => (
-            <div className="flex justify-center">
-                <StatusBadge status={String(v || "Pending").toLowerCase() as any} className="w-24 border-none shadow-none bg-app-overlay/5" />
-            </div>
+        align: "right",
+        render: (_: any, inv: InvoiceListItem) => (
+            <Flex justify="end" gap={2}>
+                <a
+                    href={`${API_BASE_URL}/api/invoice/${encodeURIComponent(inv.invoice_number)}/download`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2 rounded-lg hover:bg-app-accent/10 text-app-accent transition-all"
+                    title="Download Excel"
+                >
+                    <FileDown size={16} />
+                </a>
+            </Flex>
         ),
     },
 ];
@@ -173,7 +182,24 @@ export function InvoiceListClient({ initialInvoices, initialStats }: InvoiceList
     const [searchQuery, setSearchQuery] = useState("");
     const debouncedSearch = useDebouncedValue(searchQuery, 300);
     const [page, setPage] = useState(1);
+    const [isExporting, setIsExporting] = useState(false);
     const pageSize = 10;
+
+    const handleExportExcel = useCallback(async () => {
+        setIsExporting(true);
+        try {
+            // Call report export for invoices
+            const params = new URLSearchParams({
+                start_date: "2024-04-01", // Default FY start
+                end_date: new Date().toISOString().split("T")[0],
+            });
+            api.exportReport("invoice_register", params.toString());
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsExporting(false);
+        }
+    }, []);
 
     const filteredInvoices = useMemo(() => {
         const term = debouncedSearch.toLowerCase();
@@ -220,23 +246,37 @@ export function InvoiceListClient({ initialInvoices, initialStats }: InvoiceList
     }, []);
 
     const toolbar = (
-        <Flex align="center" justify="between" className="w-full" gap={4}>
-            <SearchBar
-                value={searchQuery}
-                onChange={handleSearch}
-                placeholder="Search invoices or GSTIN..."
-                className="w-full max-w-sm"
-            />
+        <div className="surface-glass p-3 rounded-2xl shadow-lg border border-white/20 mb-6 backdrop-blur-xl">
+            <Flex align="center" justify="between" className="w-full" gap={4}>
+                <SearchBar
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    placeholder="Search invoices or GSTIN..."
+                    className="w-full max-w-sm bg-surface-sunken/40 border-none shadow-inner"
+                />
 
-            <Button
-                variant="success"
-                onClick={() => router.push("/invoice/create")}
-                className="min-w-[140px] whitespace-nowrap"
-            >
-                <Plus size={16} />
-                Create Invoice
-            </Button>
-        </Flex>
+                <Flex align="center" gap={3}>
+                    <Button
+                        variant="success"
+                        onClick={handleExportExcel}
+                        disabled={isExporting}
+                        className="min-w-[140px] whitespace-nowrap shadow-sm text-white"
+                    >
+                        <FileDown size={16} />
+                        Excel
+                    </Button>
+
+                    <Button
+                        variant="primary"
+                        onClick={() => router.push("/invoice/create")}
+                        className="min-w-[140px] whitespace-nowrap shadow-md"
+                    >
+                        <Plus size={16} />
+                        Create Invoice
+                    </Button>
+                </Flex>
+            </Flex>
+        </div>
     );
 
     return (

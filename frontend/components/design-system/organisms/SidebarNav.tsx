@@ -47,7 +47,7 @@ export function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 flex-shrink-0 flex flex-col bg-surface shadow-2 z-20 m-4 ml-4 rounded-[24px] overflow-hidden border-none transition-smooth">
+    <aside className="w-64 flex-shrink-0 flex flex-col tahoe-glass-card z-20 m-4 ml-4 rounded-[32px] overflow-hidden border-none transition-smooth backdrop-blur-2xl">
       {/* Brand Header */}
       <div className="h-16 flex items-center px-6">
         <div className="flex items-center gap-3">
@@ -71,37 +71,26 @@ export function SidebarNav() {
                   (item.href !== "/" && pathname.startsWith(item.href + "/"));
 
                 return (
-                  <li key={item.href} className="relative">
+                  <li key={item.href} className="relative px-2">
                     <Link
                       href={item.href}
                       className={cn(
-                        "flex items-center px-3 py-2 rounded-lg transition-all duration-200 group relative z-10",
-                        "text-sm font-medium",
+                        "flex items-center px-3 py-2 rounded-xl transition-all duration-200 group relative z-10",
+                        "text-[13px] tracking-tight",
                         isActive
-                          ? "text-white font-medium shadow-md"
+                          ? "sidebar-item-active"
                           : "text-text-secondary hover:bg-black/5 dark:hover:bg-white/5 hover:text-text-primary"
                       )}
                     >
-                      {isActive && (
-                        <motion.div
-                          layoutId="sidebar-selection-capsule"
-                          className="absolute inset-0 bg-[rgb(var(--action-primary))]/90 backdrop-blur-md rounded-lg shadow-lg shadow-[rgb(var(--action-primary))]/30 -z-10 border border-white/10"
-                          transition={{
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 30
-                          }}
-                        />
-                      )}
                       <item.icon
                         size={18}
                         className={cn(
                           "mr-3 transition-colors",
-                          isActive ? "text-white/90" : "text-text-tertiary group-hover:text-text-primary"
+                          isActive ? "text-[rgb(var(--action-primary))]" : "text-text-tertiary group-hover:text-text-primary"
                         )}
-                        strokeWidth={2}
+                        strokeWidth={isActive ? 2.5 : 2}
                       />
-                      <span>
+                      <span className={cn(isActive && "font-semibold")}>
                         {item.name}
                       </span>
                     </Link>

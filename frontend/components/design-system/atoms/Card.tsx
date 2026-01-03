@@ -17,10 +17,10 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const variantClasses = {
-    elevated: 'bg-surface rounded-xl shadow-1 hover:shadow-2',
-    glass: 'bg-surface/90 backdrop-blur-md rounded-xl shadow-1',
-    muted: 'bg-surface-variant rounded-xl shadow-sm',
-    flat: 'bg-surface rounded-xl shadow-1',
+    elevated: 'bg-surface rounded-2xl shadow-1 hover:shadow-2',
+    glass: 'bg-surface/80 backdrop-blur-md rounded-2xl shadow-1',
+    muted: 'bg-surface-sunken/50 rounded-2xl shadow-none',
+    flat: 'bg-surface rounded-2xl shadow-none border border-black/5',
 };
 
 const paddingClasses = {

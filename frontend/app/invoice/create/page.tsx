@@ -13,20 +13,17 @@ import {
   SmallText,
   Body,
   Accounting,
-  Button,
-  Input,
-  Card,
-  DocumentTemplate,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-  DocumentJourney,
   MonoCode,
-  ActionConfirmationModal,
   Caption2,
-  Autocomplete
-} from "@/components/design-system";
+} from "@/components/design-system/atoms/Typography";
+import { Button } from "@/components/design-system/atoms/Button";
+import { Input } from "@/components/design-system/atoms/Input";
+import { Card } from "@/components/design-system/atoms/Card";
+import { DocumentTemplate } from "@/components/design-system/templates/DocumentTemplate";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/design-system/molecules/Tabs";
+import { DocumentJourney } from "@/components/design-system/molecules/DocumentJourney";
+import { ActionConfirmationModal } from "@/components/design-system/molecules/ActionConfirmationModal";
+import { Autocomplete } from "@/components/design-system/molecules/Autocomplete";
 import { useInvoiceStore } from "@/store/invoiceStore";
 
 // No hardcoded TAX_RATES here, will be fetched from settings
@@ -36,18 +33,16 @@ function CreateInvoicePageContent() {
   const searchParams = useSearchParams();
   const dcIdFromUrl = searchParams?.get("dc") || "";
 
-  const {
-    data,
-    dcData,
-    isCheckingNumber,
-    isDuplicateNumber,
-    setInvoice,
-    setHeader,
-    updateHeader,
-    setDCData,
-    setItems,
-    setNumberStatus,
-  } = useInvoiceStore();
+  const data = useInvoiceStore(s => s.data);
+  const dcData = useInvoiceStore(s => s.dcData);
+  const isCheckingNumber = useInvoiceStore(s => s.isCheckingNumber);
+  const isDuplicateNumber = useInvoiceStore(s => s.isDuplicateNumber);
+  const setInvoice = useInvoiceStore(s => s.setInvoice);
+  const setHeader = useInvoiceStore(s => s.setHeader);
+  const updateHeader = useInvoiceStore(s => s.updateHeader);
+  const setDCData = useInvoiceStore(s => s.setDCData);
+  const setItems = useInvoiceStore(s => s.setItems);
+  const setNumberStatus = useInvoiceStore(s => s.setNumberStatus);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -387,7 +382,7 @@ function CreateInvoicePageContent() {
                             checkNumberDuplicate(val, header.invoice_date);
                           }}
                           className={cn("tabular-nums text-lg", isDuplicateNumber ? "border-status-error ring-status-error/10" : "")}
-                          placeholder="INV/001/24-25"
+                          placeholder=""
                         />
                         {isDuplicateNumber && <SmallText className="text-status-error">This number already exists</SmallText>}
                       </div>
@@ -438,7 +433,7 @@ function CreateInvoicePageContent() {
                     <div className="space-y-1.5"><Label>Vehicle No</Label><Input value={header.vehicle_no || ""} onChange={(e) => updateHeader("vehicle_no", e.target.value)} /></div>
                     <div className="space-y-1.5"><Label>LR Number</Label><Input value={header.lr_no || ""} onChange={(e) => updateHeader("lr_no", e.target.value)} /></div>
                     <div className="space-y-1.5"><Label>Transporter</Label><Input value={header.transporter || ""} onChange={(e) => updateHeader("transporter", e.target.value)} /></div>
-                    <div className="space-y-1.5"><Label>Payment Terms</Label><Input value={header.payment_terms || "45 Days"} onChange={(e) => updateHeader("payment_terms", e.target.value)} /></div>
+                    <div className="space-y-1.5"><Label>Payment Terms</Label><Input value={header.payment_terms || ""} onChange={(e) => updateHeader("payment_terms", e.target.value)} placeholder="e.g. 45 Days" /></div>
                   </div>
                 </TabsContent>
               </Card>
@@ -452,17 +447,17 @@ function CreateInvoicePageContent() {
             <Label className="m-0 text-text-tertiary uppercase tracking-wide">
               Billing Structure ({items.length} Items)
             </Label>
-            <div className="overflow-hidden bg-surface shadow-1 rounded-xl">
-              <table className="w-full">
+            <div className="overflow-hidden bg-surface/60 backdrop-blur-md shadow-2 rounded-2xl border border-white/10">
+              <table className="w-full table-fixed border-collapse">
                 <thead>
-                  <tr className="bg-surface-variant border-none">
-                    <th className="py-3 px-4 text-left w-[60px]"><Caption2 className="uppercase tracking-widest opacity-100">Lot</Caption2></th>
-                    <th className="py-3 px-4 text-left"><Caption2 className="uppercase tracking-widest opacity-100">Description</Caption2></th>
-                    <th className="py-3 px-4 text-left w-[120px]"><Caption2 className="uppercase tracking-widest opacity-100">HSN/SAC</Caption2></th>
-                    <th className="py-3 px-4 text-right w-[100px]"><Caption2 className="uppercase tracking-widest opacity-100">Dlv</Caption2></th>
-                    <th className="py-3 px-4 text-right w-[100px]"><Caption2 className="uppercase tracking-widest opacity-100">Recd</Caption2></th>
-                    <th className="py-3 px-4 text-right w-[100px]"><Caption2 className="uppercase tracking-widest opacity-100">Rate</Caption2></th>
-                    <th className="py-3 px-4 text-right w-[120px] bg-action-primary/5"><Caption2 className="text-action-primary uppercase tracking-widest opacity-100">Taxable</Caption2></th>
+                  <tr className="bg-surface-sunken/80 backdrop-blur-md border-none">
+                    <th className="py-3 px-4 text-left w-[60px] bg-transparent"><Caption2 className="uppercase tracking-widest opacity-60 font-bold">Lot</Caption2></th>
+                    <th className="py-3 px-4 text-left bg-transparent"><Caption2 className="uppercase tracking-widest opacity-60 font-bold">Description</Caption2></th>
+                    <th className="py-3 px-4 text-left w-[120px] bg-transparent"><Caption2 className="uppercase tracking-widest opacity-60 font-bold">HSN/SAC</Caption2></th>
+                    <th className="py-3 px-4 text-right w-[100px] bg-transparent"><Caption2 className="uppercase tracking-widest opacity-60 font-bold block text-right">Dlv</Caption2></th>
+                    <th className="py-3 px-4 text-right w-[100px] bg-transparent"><Caption2 className="uppercase tracking-widest opacity-60 font-bold block text-right">Recd</Caption2></th>
+                    <th className="py-3 px-4 text-right w-[100px] bg-transparent"><Caption2 className="uppercase tracking-widest opacity-60 font-bold block text-right">Rate</Caption2></th>
+                    <th className="py-3 px-4 text-right w-[120px] bg-action-primary/10"><Caption2 className="text-action-primary uppercase tracking-widest opacity-100 font-bold block text-right">Taxable</Caption2></th>
                   </tr>
                 </thead>
                 <tbody>

@@ -289,12 +289,12 @@ export function SRVListClient({ initialSRVs, initialStats }: SRVListClientProps)
                     className="hidden"
                 />
                 <Button
-                    variant="primary"
+                    variant="glass"
                     onClick={handleUploadClick}
                     className="min-w-[170px]"
                 >
                     <Upload size={16} />
-                    Provision SRV
+                    Upload SRV
                 </Button>
             </Flex>
         </Flex>

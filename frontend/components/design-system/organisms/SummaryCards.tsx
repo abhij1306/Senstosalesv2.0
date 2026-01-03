@@ -32,13 +32,13 @@ const variantStyles = {
     error: "text-primary bg-gradient-to-br from-status-error/15 to-status-error/5",
 };
 
-const iconBackgrounds = {
-    default: "bg-surface-variant text-secondary",
-    primary: "bg-primary-container text-on-primary-container",
-    success: "bg-[rgba(var(--status-success),0.2)] text-[rgb(var(--status-success))]",
-    warning: "bg-[rgba(var(--status-warning),0.2)] text-[rgb(var(--status-warning))]",
-    error: "bg-[rgba(var(--status-error),0.2)] text-[rgb(var(--status-error))]",
-    info: "bg-primary-container text-on-primary-container",
+const iconColors = {
+    default: "text-secondary",
+    primary: "text-[rgb(var(--action-primary))]",
+    success: "text-[rgb(var(--status-success))]",
+    warning: "text-[rgb(var(--status-warning))]",
+    error: "text-[rgb(var(--status-error))]",
+    info: "text-[rgb(var(--action-primary))]",
 };
 
 const trendColors = {
@@ -57,70 +57,87 @@ export const SummaryCard = React.memo(function SummaryCard({
     variant = "default",
     className,
 }: SummaryCardProps) {
-    const iconClass = iconBackgrounds[variant as keyof typeof iconBackgrounds] || iconBackgrounds.default;
+    const iconColorClass = iconColors[variant as keyof typeof iconColors] || iconColors.default;
 
     return (
         <div
             className={cn(
-                "group relative overflow-hidden rounded-xl shadow-1 transition-all duration-300",
-                "bg-surface hover:scale-[1.02] hover:shadow-3 will-change-transform",
-                "h-[145px]",
+                "group relative overflow-hidden rounded-2xl shadow-1 transition-all duration-300",
+                "bg-surface hover:shadow-3",
+                "h-[140px]", // Reduced height for balanced padding
                 className
             )}
         >
-            {/* Glow Blob - Restored for premium feel */}
+            {/* Gradient Mesh / Radial Glow Background */}
             <div className={cn(
-                "absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl opacity-15 transition-all duration-500 pointer-events-none group-hover:opacity-25",
-                variant === 'default' ? "bg-primary/20" : "bg-primary-container"
+                "absolute inset-0 opacity-5 pointer-events-none transition-opacity duration-500 group-hover:opacity-10",
+                variant === 'default' ? "bg-[radial-gradient(circle_at_top_right,var(--action-primary-rgb),transparent_70%)]" :
+                    `bg-[radial-gradient(circle_at_top_right,var(--${variant === 'primary' ? 'action-primary' : 'status-' + variant}-rgb),transparent_70%)]`
             )} />
 
-            <div className="p-5 h-full flex flex-col justify-between relative z-10">
+            {/* Main Glow Blob */}
+            <div className={cn(
+                "absolute -right-8 -top-8 w-36 h-36 rounded-full blur-[60px] opacity-10 transition-all duration-700 pointer-events-none group-hover:opacity-30 group-hover:scale-125",
+                variant === 'default' ? "bg-action-primary" :
+                    variant === 'primary' ? "bg-action-primary" :
+                        `bg-status-${variant}`
+            )} />
+
+            <div className="p-6 h-full flex flex-col justify-between relative z-10">
                 <div className="flex justify-between items-start">
-                    <div className="min-w-0 flex-1">
-                        <Footnote className="uppercase tracking-wide text-secondary opacity-80 mb-1 block font-medium">
-                            {title}
-                        </Footnote>
-                        <div className={cn("m3-title-medium tracking-tight transition-colors", variantStyles[variant])}>
-                            {value}
-                        </div>
+                    <div className={cn(
+                        "text-2xl font-semibold tracking-tight transition-colors tabular-nums",
+                        variant === 'default' ? "text-text-primary" : "text-text-primary"
+                    )}>
+                        {value}
                     </div>
                     {icon && (
                         <div className={cn(
-                            "w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-500 shrink-0 shadow-1 group-hover:rotate-6 will-change-transform",
-                            iconClass
+                            "w-12 h-12 flex items-center justify-center transition-all duration-500 shrink-0",
+                            "group-hover:scale-125 group-hover:rotate-3",
+                            iconColorClass
                         )}>
-                            {icon}
+                            {React.cloneElement(icon as React.ReactElement<any>, {
+                                size: 28,
+                                strokeWidth: 1.5,
+                                className: "drop-shadow-sm"
+                            })}
                         </div>
                     )}
                 </div>
 
-                <div className="mt-4 flex items-center justify-between">
-                    {progress !== undefined ? (
-                        <div className="w-full bg-surface-variant rounded-full h-1.5 overflow-hidden">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${progress}%` }}
-                                transition={{ duration: 1, ease: "easeOut" }}
-                                className={cn(
-                                    "h-full rounded-full transition-all",
-                                    variant === "default" || variant === "primary" ? "bg-[rgb(var(--action-primary))]" :
-                                        variant === "success" ? "bg-[rgb(var(--status-success))]" :
-                                            variant === "warning" ? "bg-[rgb(var(--status-warning))]" : "bg-[rgb(var(--status-error))]"
-                                )}
-                            />
-                        </div>
-                    ) : trend ? (
-                        <div className={cn(
-                            "px-1.5 py-0.5 rounded-md m3-label-small tracking-tight flex items-center gap-1",
-                            trendColors[trend.direction]
-                        )}>
-                            <span className="text-[10px]">
-                                {trend.direction === "up" ? "↑" : trend.direction === "down" ? "↓" : "•"}
-                            </span>
-                            <span>{trend.value}</span>
-                        </div>
-                    ) : null}
+                <div className="flex flex-col gap-3">
+                    <Caption1 className="uppercase tracking-[0.1em] text-text-tertiary block font-bold text-[10px]">
+                        {title}
+                    </Caption1>
 
+                    <div className="flex items-center justify-between min-h-[1.5rem]">
+                        {progress !== undefined ? (
+                            <div className="w-full bg-surface-sunken/50 rounded-full h-1.5 overflow-hidden backdrop-blur-sm">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${progress}%` }}
+                                    transition={{ duration: 1, ease: "easeOut" }}
+                                    className={cn(
+                                        "h-full rounded-full transition-all",
+                                        variant === "default" || variant === "primary" ? "bg-action-primary" :
+                                            variant === "success" ? "bg-status-success" :
+                                                variant === "warning" ? "bg-status-warning" : "bg-status-error"
+                                    )}
+                                />
+                            </div>
+                        ) : trend ? (
+                            <div className={cn(
+                                "px-2 py-0.5 rounded-full text-[10px] font-bold tracking-tight flex items-center gap-1 shadow-sm",
+                                trendColors[trend.direction]
+                            )}>
+                                <span className="text-[12px]">
+                                    {trend.direction === "up" ? "↑" : trend.direction === "down" ? "↓" : "•"}
+                                </span>
+                                <span>{trend.value}</span>
+                            </div>
+                        ) : null}
+                    </div>
                 </div>
             </div>
         </div>
@@ -142,11 +159,10 @@ const container: Variants = {
 };
 
 const item: Variants = {
-    hidden: { opacity: 0, y: 10 },
+    hidden: { opacity: 0 },
     show: {
         opacity: 1,
-        y: 0,
-        transition: { type: "spring", stiffness: 400, damping: 25 },
+        transition: { duration: 0.4, ease: "easeOut" },
     },
 };
 

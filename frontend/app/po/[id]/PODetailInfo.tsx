@@ -24,7 +24,7 @@ import {
     Receipt,
     Calendar
 } from "lucide-react";
-import { formatDate, formatIndianCurrency } from "@/lib/utils";
+import { formatDate, formatIndianCurrency, cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { usePOStore } from "@/store/poStore";
@@ -51,7 +51,10 @@ const Field = ({ label, value, field, readonly = false, editMode }: FieldProps) 
                     />
                 ) : (
                     <div
-                        className="text-[12px] font-regular text-text-primary leading-tight py-0 truncate"
+                        className={cn(
+                            "text-[12px] font-medium text-text-primary leading-tight py-0 w-full",
+                            label === "Supplier Name" ? "truncate cursor-help" : "truncate"
+                        )}
                         title={value?.toString()}
                     >
                         {value || (

@@ -68,6 +68,7 @@ class PODelivery(BaseModel):
     lot_no: Optional[int] = None
     ordered_quantity: Optional[float] = 0.0
     delivered_quantity: Optional[float] = 0.0
+    physical_dispatched_qty: Optional[float] = 0.0     # Added to track physical dispatch (DC Sum)
     received_quantity: Optional[float] = 0.0
     manual_override_qty: Optional[float] = 0.0  # Added for TOT-5
     dely_date: Optional[str] = Field(None, description="YYYY-MM-DD")

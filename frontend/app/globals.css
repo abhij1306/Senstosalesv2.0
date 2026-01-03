@@ -94,6 +94,25 @@
   --m3-body-m-size: 0.875rem;
   --m3-body-s-size: 0.75rem;
   --m3-title-l-size: 1.375rem;
+
+  /* Inputs & Glass - Missing Variables */
+  --input-bg: #FFFFFF;
+  --input-border: #E2E8F0;
+  --input-placeholder: #94A3B8;
+  --input-text: #0F172A;
+  /* Always dark if inputs are always white */
+  --glass-surface: rgba(255, 255, 255, 0.85);
+  --glass-surface-dark: rgba(15, 23, 42, 0.8);
+}
+
+/* Ensure Dark Mode variables are correctly mapped */
+@layer base {
+  .dark {
+    --glass-surface: var(--glass-surface-dark);
+    --input-bg: #FFFFFF;
+    /* Enforcing White Inputs as requested */
+    --input-placeholder: #64748B;
+  }
 }
 
 /* M3 Utility Classes - Using @utility for TW4 support */
@@ -249,11 +268,16 @@
 /* Base Glass Material - NO BORDERS, ELEVATION ONLY */
 .tahoe-glass {
   background: var(--glass-surface);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: none !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  /* Subtle elevation */
+}
+
+/* Sunken Surface - macOS style text field background */
+.surface-sunken {
+  background-color: rgb(var(--bg-surface-sunken));
+  box-shadow: inset 0 1px 3px 0 rgba(0, 0, 0, 0.08);
 }
 
 /* Glass Panel - macOS Tahoe Style - SOLID WHITE */
@@ -286,8 +310,8 @@
 /* Glass Card - macOS Tahoe Style */
 .glass-card {
   background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(45px) saturate(180%);
-  -webkit-backdrop-filter: blur(45px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: none !important;
   border-radius: 18px;
   box-shadow:
@@ -305,22 +329,27 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Glass Card Variants - macOS Tahoe Style - SOLID WHITE */
+/* Glass Card Variants - macOS Tahoe Style - GLASSMORPHIC */
 .tahoe-glass-card {
-  background: rgba(255, 255, 255, 1.0);
-  border: none;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 20px;
   box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    0 1px 2px rgba(0, 0, 0, 0.04);
+    0 10px 30px -10px rgba(0, 0, 0, 0.08),
+    0 4px 10px -2px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .dark .tahoe-glass-card {
-  background: rgba(30, 41, 59, 1.0);
-  border: none;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.25),
-    0 2px 4px rgba(0, 0, 0, 0.15);
+    0 20px 40px -15px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .tahoe-glass-pill {
@@ -464,18 +493,22 @@
 }
 
 /* ============================================
-   SIDEBAR ACTIVE STATE
+   SIDEBAR ACTIVE STATE - macOS Style
    ============================================ */
 .sidebar-item-active {
-  background-color: rgba(0, 122, 255, 0.15);
-  color: #007AFF;
-  font-weight: 400;
-  /* REGULAR WEIGHT */
+  background: rgb(var(--action-primary));
+  color: rgb(255, 255, 255);
+  font-weight: 500;
+  box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.4);
 }
 
 .dark .sidebar-item-active {
-  background-color: rgba(10, 132, 255, 0.3);
-  color: #0A84FF;
+  background: rgb(255 255 255 / 0.12);
+  backdrop-filter: blur(12px);
+  color: #60a5fa;
+  box-shadow:
+    0 4px 12px -2px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 /* ============================================
@@ -542,8 +575,8 @@ h6 {
    ACTIVE & FOCUS STATES
    ============================================ */
 .active-glow {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 4px 15px 0 rgba(102, 126, 234, 0.4);
+  background: rgb(var(--brand-primary));
+  box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.3);
 }
 
 .focus-ring {
@@ -597,37 +630,53 @@ h6 {
 }
 
 .table-standard th {
-  padding: 6px 12px;
+  padding: 0 12px;
+  height: 48px;
+  /* Fixed Height */
   border: none;
-  background: rgba(59, 130, 246, 0.08);
-  font-size: var(--text-caption-1);
+  background: var(--surface-sunken);
+  /* Solid background */
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+  /* Subtle separation instead of border */
+  font-size: var(--text-xs);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(var(--text-secondary), 0.8);
-  font-weight: 400;
-  text-align: left;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 .table-standard td {
-  padding: 6px 12px;
+  padding: 8px 12px;
   border: none;
-  font-size: var(--text-caption-1);
+  font-size: var(--text-sm);
   color: rgb(var(--text-primary));
   font-weight: 400;
 }
 
 .table-standard tbody tr {
-  background: white;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
-  transition: background 0.15s ease;
+  background: transparent;
+  transition: all var(--transition-fast);
 }
 
-.dark .table-standard tbody tr {
-  background: rgba(20, 20, 20, 0.4);
+.table-standard tbody tr:nth-child(even) {
+  background: rgb(var(--bg-surface-sunken) / 0.3);
+}
+
+.dark .table-standard tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .table-standard tbody tr:hover {
-  background: rgba(0, 122, 255, 0.05);
+  background: rgb(var(--bg-surface-elevated));
+  box-shadow: var(--shadow-md);
+  /* Use standard shadow */
+  transform: translateY(-1px);
+  z-index: 10;
+  position: relative;
+  /* Ensure shadow shows over other rows */
 }
 
 /* Table Footer - Match Header Style */

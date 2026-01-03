@@ -59,7 +59,7 @@ const salesColumns: Column<any>[] = [
     label: "ORDERED VALUE",
     align: "right",
     render: (_v, row) => (
-      <Accounting className="table-cell-number font-medium font-mono text-right block">
+      <Accounting className="font-mono pr-2">
         {formatIndianCurrency(row.ordered_value)}
       </Accounting>
     ),
@@ -69,7 +69,7 @@ const salesColumns: Column<any>[] = [
     label: "DELIVERED VALUE",
     align: "right",
     render: (_v, row) => (
-      <Accounting className="table-cell-number text-app-status-success font-mono text-right block">
+      <Accounting className="text-app-status-success font-mono pr-2">
         {formatIndianCurrency(row.delivered_value)}
       </Accounting>
     ),
@@ -81,10 +81,10 @@ const salesColumns: Column<any>[] = [
     render: (_v, row) => {
       const diff = (row.ordered_value || 0) - (row.delivered_value || 0);
       return (
-        <Accounting className={cn("table-cell-number font-mono text-right block", diff > 0 ? "text-app-status-warning" : "text-app-fg-muted")}>
+        <Accounting className={cn("font-mono pr-2", diff > 0 ? "text-app-status-warning" : "text-app-fg-muted")}>
           {formatIndianCurrency(diff)}
         </Accounting>
-      )
+      );
     },
   },
 ];
@@ -125,7 +125,7 @@ const dcColumns: Column<any>[] = [
     label: "QTY",
     align: "right",
     render: (_v, row) => (
-      <Accounting className="font-medium font-mono text-right block">{row.total_qty}</Accounting>
+      <Accounting className="font-mono pr-2">{row.total_qty}</Accounting>
     ),
   },
 ];
@@ -155,7 +155,7 @@ const invoiceColumns: Column<any>[] = [
     label: "TAXABLE",
     align: "right",
     render: (_v, row) => (
-      <Accounting className="table-cell-number font-medium font-mono text-right block">
+      <Accounting className="font-mono pr-2">
         {formatIndianCurrency(row.taxable_value)}
       </Accounting>
     ),
@@ -165,7 +165,7 @@ const invoiceColumns: Column<any>[] = [
     label: "TOTAL",
     align: "right",
     render: (_v, row) => (
-      <Accounting className="table-cell-number text-app-fg font-mono text-right block">
+      <Accounting className="text-app-fg font-mono pr-2">
         {formatIndianCurrency(row.total_invoice_value)}
       </Accounting>
     ),
@@ -197,29 +197,25 @@ const pendingColumns: Column<any>[] = [
     width: "10%",
     align: "right",
     render: (_v, row) => (
-      <Accounting className="table-cell-number font-medium font-mono text-right block">{row.ord_qty}</Accounting>
+      <Accounting className="font-mono pr-2">{row.ord_qty}</Accounting>
     ),
   },
   {
-    key: "delivered_qty",
-    label: "DELIVERED",
-    width: "20%",
+    key: "del_qty",
+    label: "DEL",
+    width: "10%",
     align: "right",
     render: (_v, row) => (
-      <Accounting className="table-cell-number text-app-status-success font-mono text-right block">
-        {row.delivered_qty}
-      </Accounting>
+      <Accounting className="font-mono pr-2">{row.del_qty}</Accounting>
     ),
   },
   {
-    key: "pending_qty",
-    label: "PENDING",
-    width: "20%",
+    key: "pen_qty",
+    label: "PEN",
+    width: "10%",
     align: "right",
     render: (_v, row) => (
-      <Accounting className="table-cell-number text-app-status-warning font-mono text-right block">
-        {row.pending_qty}
-      </Accounting>
+      <Accounting className="text-app-status-error font-mono pr-2">{row.pen_qty}</Accounting>
     ),
   },
 ];
@@ -417,41 +413,42 @@ export default function ReportsPage() {
     <Flex align="center" gap={3}>
       <Flex
         align="center"
-        className="bg-app-surface/40 backdrop-blur-xl border-none rounded-2xl overflow-hidden shadow-sm p-1"
+        className="bg-app-overlay/5 backdrop-blur-md border border-white/5 rounded-full overflow-hidden shadow-inner gap-0.5 p-1"
       >
         <Flex
           align="center"
-          gap={3}
-          className="px-4 py-2 hover:bg-app-surface/40 transition-colors rounded-xl group"
+          gap={2}
+          className="px-4 py-1.5 hover:bg-white/5 transition-colors rounded-full group"
         >
           <Calendar
-            size={16}
-            className="text-app-accent group-hover:scale-110 transition-transform"
+            size={14}
+            className="text-app-accent group-hover:scale-110 transition-transform opacity-70"
           />
           <DatePicker
             value={startDate}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartDate(e.target.value)}
-            className="w-32 h-auto py-0 px-0 bg-transparent border-none shadow-none text-xs font-regular text-app-fg-muted uppercase tabular-nums focus:ring-0"
+            className="w-24 h-auto py-0 px-0 bg-transparent border-none shadow-none text-[11px] font-medium text-text-secondary uppercase tabular-nums focus:ring-0"
           />
         </Flex>
-        <Box className="w-[1px] h-6 bg-app-fg-muted/10 mx-1" />
+        <div className="w-[1px] h-4 bg-app-fg-muted/10 mx-1" />
         <Flex
           align="center"
-          gap={3}
-          className="px-4 py-2 hover:bg-app-surface/40 transition-colors rounded-xl group"
+          gap={2}
+          className="px-4 py-1.5 hover:bg-white/5 transition-colors rounded-full group"
         >
           <DatePicker
             value={endDate}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEndDate(e.target.value)}
-            className="w-32 h-auto py-0 px-0 bg-transparent border-none shadow-none text-xs font-regular text-app-fg-muted uppercase tabular-nums focus:ring-0"
+            className="w-24 h-auto py-0 px-0 bg-transparent border-none shadow-none text-[11px] font-medium text-text-secondary uppercase tabular-nums focus:ring-0"
           />
         </Flex>
       </Flex>
       <Button
-        variant="secondary"
+        variant="success"
         onClick={handleExport}
+        className="rounded-full h-10 px-5 shadow-sm text-white"
       >
-        <FileDown size={16} /> Export
+        <FileDown size={16} /> Excel
       </Button>
     </Flex>
   );
@@ -465,25 +462,21 @@ export default function ReportsPage() {
     >
       <div className="space-y-4">
         <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as ReportType)} className="w-full">
-          <TabsList className="bg-app-surface/40 backdrop-blur-xl p-1 h-auto inline-flex rounded-2xl shadow-sm">
+          <TabsList className="mb-4">
             {[
-              { id: "sales", label: "Growth", icon: TrendingUp },
-              { id: "dc_register", label: "DC Register", icon: Truck },
-              { id: "invoice_register", label: "Invoices", icon: Receipt },
-              { id: "pending", label: "Shortages", icon: AlertTriangle },
-              { id: "reconciliation", label: "Ledger Audit", icon: Activity },
+              { id: "sales", label: "GROWTH", icon: TrendingUp },
+              { id: "dc_register", label: "DC REGISTER", icon: Truck },
+              { id: "invoice_register", label: "INVOICES", icon: Receipt },
+              { id: "pending", label: "SHORTAGES", icon: AlertTriangle },
+              { id: "reconciliation", label: "LEDGER AUDIT", icon: Activity },
             ].map((tab) => (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className={cn(
-                  "gap-2 px-6 py-2.5 rounded-xl transition-all duration-300",
-                  "data-[state=active]:bg-app-surface-elevated data-[state=active]:text-action-primary data-[state=active]:shadow-md data-[state=active]:scale-[1.02]",
-                  "data-[state=inactive]:text-app-fg-muted data-[state=inactive]:hover:bg-app-surface/60"
-                )}
+                className="gap-2"
               >
-                <tab.icon size={15} className={cn(activeTab === tab.id ? "text-action-primary" : "text-app-fg-muted/60")} />
-                <span className="text-[12px] font-bold tracking-tight uppercase">{tab.label}</span>
+                <tab.icon size={13} className="opacity-70" />
+                <span className="uppercase tracking-widest">{tab.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>

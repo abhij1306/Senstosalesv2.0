@@ -15,24 +15,20 @@ import {
 } from "lucide-react";
 import { formatIndianCurrency, cn } from "@/lib/utils";
 import {
-    SmallText,
-    Body,
-    Accounting,
-    Button,
-    SummaryCards,
-    DataTable,
-    StatusBadge,
-    Flex,
-    Stack,
-    Box,
     Title1,
     Title2,
     Title3,
-    Caption1,
+    Body,
+    Accounting,
     Footnote,
-    Card,
-} from "@/components/design-system";
-import { type Column } from "@/components/design-system";
+    Caption1,
+} from "@/components/design-system/atoms/Typography";
+import { Button } from "@/components/design-system/atoms/Button";
+import { Card } from "@/components/design-system/atoms/Card";
+import { StatusBadge } from "@/components/design-system/atoms/StatusBadge";
+import { Flex, Stack, Box } from "@/components/design-system/atoms/Layout";
+import { SummaryCards } from "@/components/design-system/organisms/SummaryCards";
+import { DataTable, type Column } from "@/components/design-system/organisms/DataTable";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { motion } from "framer-motion";
 
@@ -103,7 +99,7 @@ const createActivityColumns = (router: AppRouterInstance): Column<ActivityItem>[
         align: "center",
         render: (_value, item) => (
             <div className="flex justify-center">
-                <StatusBadge status={String(item.status).toLowerCase() as any} className="border-none shadow-none bg-app-overlay/5" />
+                <StatusBadge status={String(item.status).toLowerCase() as any} />
             </div>
         ),
     },
@@ -138,7 +134,7 @@ function QuickActionCard({
             variant="elevated"
             padding="none"
             onClick={onClick}
-            className="cursor-pointer group relative overflow-hidden transition-all duration-300 active:scale-[0.98] hover:scale-[1.02] hover:shadow-3 p-6 min-h-[88px]"
+            className="cursor-pointer group relative overflow-hidden transition-all duration-300 active:scale-[0.98] hover:scale-[1.02] hover:shadow-3 px-6 w-full h-[96px] flex items-center"
         >
             <Flex align="center" gap={4} className="w-full">
                 {/* Icon Container - M3 Tonal */}
@@ -151,10 +147,10 @@ function QuickActionCard({
 
                 {/* Content */}
                 <Stack gap={1} className="flex-1 min-w-0">
-                    <Title3 className="text-primary leading-tight font-medium">
+                    <Title3 className="text-primary leading-tight font-medium line-clamp-1">
                         {title}
                     </Title3>
-                    <Footnote className="text-secondary leading-snug">
+                    <Footnote className="text-secondary leading-snug line-clamp-1">
                         {description}
                     </Footnote>
                 </Stack>
@@ -232,13 +228,13 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
                         {
                             title: "Morning Briefing",
                             value: (
-                                <Stack gap={1.5} className="pb-2">
-                                    <Footnote className="text-text-primary leading-snug font-medium">
+                                <Stack gap={1} className="py-1">
+                                    <div className="text-sm font-semibold text-text-primary leading-tight">
                                         {summary?.pending_pos || 0} POs pending
-                                    </Footnote>
-                                    <Footnote className="text-text-primary leading-snug font-medium">
+                                    </div>
+                                    <div className="text-sm font-semibold text-text-primary leading-tight">
                                         {summary?.active_challans || 0} DCs in transit
-                                    </Footnote>
+                                    </div>
                                 </Stack>
                             ),
                             icon: <Activity size={22} />,
@@ -246,31 +242,19 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
                         },
                         {
                             title: "Invoiced Sales",
-                            value: (
-                                <Accounting className="text-text-primary font-semibold">
-                                    {formatIndianCurrency(summary?.total_sales_month || 0)}
-                                </Accounting>
-                            ),
+                            value: formatIndianCurrency(summary?.total_sales_month || 0),
                             icon: <Receipt size={22} />,
                             variant: "success",
                         },
                         {
                             title: "Purchase Commitment",
-                            value: (
-                                <Accounting className="text-text-primary font-semibold">
-                                    {formatIndianCurrency(summary?.total_po_value || 0)}
-                                </Accounting>
-                            ),
+                            value: formatIndianCurrency(summary?.total_po_value || 0),
                             icon: <FileText size={22} />,
                             variant: "primary",
                         },
                         {
                             title: "Active Orders",
-                            value: (
-                                <Accounting className="text-text-primary font-semibold">
-                                    {summary?.active_po_count || 0}
-                                </Accounting>
-                            ),
+                            value: (summary?.active_po_count || 0).toString(),
                             icon: <Activity size={22} />,
                             variant: "warning",
                         },

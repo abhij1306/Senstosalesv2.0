@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Providers } from "./providers";
 import { GlobalSearch } from "@/components/design-system/organisms";
+import { Breadcrumbs } from "@/components/design-system/atoms";
+import { WebVitalsReporter } from "@/components/performance/WebVitalsReporter";
 
 export const metadata: Metadata = {
     title: "SenstoSales",
@@ -24,6 +26,7 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body className="font-sans antialiased text-app-fg">
+                <WebVitalsReporter />
                 <Providers>
                     {/* 
                       Sonoma Wallpaper Background
@@ -31,27 +34,44 @@ export default function RootLayout({
                       - Serves as the backdrop for all glassmorphic elements
                     */}
                     <div className="flex h-screen bg-transparent overflow-hidden relative">
-                        {/* Standardized Non-collapsible Sidebar */}
+                        {/* 
+                          Sonoma Abstract Wallpaper 
+                          - Deep layer background to provide depth for glass elements
+                        */}
+                        <div className="fixed inset-0 -z-50 pointer-events-none opacity-50 dark:opacity-30 overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-[#6366f1]/10 via-[#a855f7]/5 to-[#ec4899]/10" />
+                            <div className="absolute top-[-5%] left-[-5%] w-[35%] h-[35%] rounded-full bg-blue-400/15 blur-[80px]" />
+                            <div className="absolute bottom-[-5%] right-[-5%] w-[35%] h-[35%] rounded-full bg-purple-400/15 blur-[80px]" />
+                        </div>
+
+                        {/* Standardized Non-collapsible Sidebar - Deepest Layer */}
                         <Sidebar />
 
                         <div className="flex-1 flex flex-col relative overflow-hidden bg-transparent">
-                            {/* Tahoe Header */}
-                            <header className="h-16 flex items-center justify-between px-8 py-3 z-10 header-glass">
-                                {/* Master Search Bar */}
-                                <div className="flex-1 max-w-xl">
-                                    <GlobalSearch />
+                            {/* Floating Header Bar */}
+                            <header className="h-[72px] flex items-center justify-between px-8 z-30 transition-all duration-300">
+                                <div className="flex items-center gap-8 flex-1">
+                                    {/* Breadcrumbs for cognition support */}
+                                    <div className="hidden xl:block min-w-max">
+                                        <Breadcrumbs />
+                                    </div>
+
+                                    {/* Master Search Bar - Capsule Style */}
+                                    <div className="flex-1 max-w-2xl">
+                                        <GlobalSearch />
+                                    </div>
                                 </div>
 
-                                {/* Right Header: Contextual Actions */}
-                                <div className="flex items-center gap-5 ml-8">
+                                {/* Right Header Actions */}
+                                <div className="flex items-center gap-4 ml-8">
                                     <ThemeToggle />
                                     <div id="header-action-portal" />
                                 </div>
                             </header>
 
-                            {/* Main Content Area */}
+                            {/* Main Content Area - Mid Elevation */}
                             <main
-                                className="flex-1 overflow-y-auto px-8 pt-6 pb-6 scroll-smooth no-scrollbar"
+                                className="flex-1 overflow-y-auto px-8 pt-2 pb-8 scroll-smooth no-scrollbar"
                             >
                                 <div className="mx-auto max-w-[1400px] w-full relative">
                                     {children}

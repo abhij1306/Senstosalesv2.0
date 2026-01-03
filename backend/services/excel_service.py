@@ -314,10 +314,16 @@ class ExcelService:
         - Totals start Row 16+ (Shifted if items > 1)
         """
         import os
-
         import openpyxl
+        from openpyxl.styles import PatternFill
 
+        # Look for template in current directory (root)
         template_path = "Invoice_4544.xlsx"
+        
+        if not os.path.exists(template_path):
+            # Fallback to backend directory if not in root
+            template_path = "backend/Invoice_4544.xlsx"
+            
         if not os.path.exists(template_path):
             logger.error("Template Invoice_4544.xlsx not found.")
             return StreamingResponse(io.BytesIO(b"Template not found"), media_type="text/plain")
@@ -326,7 +332,6 @@ class ExcelService:
         ws = wb.active
 
         # Helper to set cell value safely and REMOVE reference colors
-        from openpyxl.styles import PatternFill
         no_fill = PatternFill(fill_type=None)
 
         def set_val(coord, value):
@@ -353,13 +358,13 @@ class ExcelService:
         set_val("L6", str(header.get("po_numbers", "") or ""))
         set_val("Q4", header.get("payment_terms") or "45 Days")
         
-        # Optional Logistics (found in screenshot)
+        # Optional Logistics
         set_val("L4", header.get("gemc_number", ""))
-        set_val("Q5", header.get("gemc_date", "")) # Assuming Date next to GEMC
+        set_val("Q5", header.get("gemc_date", ""))
         set_val("P7", header.get("srv_number", ""))
         set_val("Q7", header.get("srv_date", ""))
 
-        # 3. Seller Info (Green) - Explicitly from settings or preserved if missing
+        # 3. Seller Info (Green)
         if settings.get("supplier_name"):
             set_val("A3", settings["supplier_name"])
         if settings.get("supplier_address"):
@@ -380,13 +385,11 @@ class ExcelService:
             set_val("A11", f"Address: {b_addr or ''}")
             set_val("A12", f"Place of Supply : {header.get('place_of_supply', 'BHOPAL, MP')}")
 
-        # 5. Line Items (Yellow / Blue Logic)
+        # 5. Line Items
         start_row = 15
         num_items = len(items)
         if num_items > 1:
             ws.insert_rows(start_row + 1, amount=num_items - 1)
-            # Style copying is omitted for brevity as openpyxl insert_rows 
-            # might not copy merged cells correctly, but basic data insertion works.
 
         t_qty = 0
         t_taxable = 0
@@ -394,7 +397,7 @@ class ExcelService:
         t_sgst = 0
         t_total = 0
 
-        # Fetch tax rates from settings for calculation
+        # Fetch tax rates from settings
         cgst_rate_val = float(settings.get("cgst_rate", 9.0))
         sgst_rate_val = float(settings.get("sgst_rate", 9.0))
         cgst_rate_str = f"{cgst_rate_val:.2f}%"
@@ -407,7 +410,6 @@ class ExcelService:
             rate = float(item.get("rate", 0) or 0)
             taxable = qty * rate
             
-            # Use settings for tax calculation
             cgst = taxable * (cgst_rate_val / 100)
             sgst = taxable * (sgst_rate_val / 100)
             line_total = taxable + cgst + sgst
@@ -427,16 +429,15 @@ class ExcelService:
             set_val(f"M{r}", rate)
             set_val(f"N{r}", item.get("unit", "NOS"))
             
-            # Blue Logic Calculations
-            set_val(f"O{r}", taxable)  # Taxable Value
-            set_val(f"P{r}", cgst_rate_str)  # Rate
-            set_val(f"Q{r}", cgst)     # Amount
-            set_val(f"R{r}", sgst_rate_str)  # Rate
-            set_val(f"S{r}", sgst)     # Amount
+            # Calculations
+            set_val(f"O{r}", taxable)
+            set_val(f"P{r}", cgst_rate_str)
+            set_val(f"Q{r}", cgst)
+            set_val(f"R{r}", sgst_rate_str)
+            set_val(f"S{r}", sgst)
             set_val(f"T{r}", line_total)
 
         # 6. Totals & Tax Summary
-        # Note: Row indices shift by (num_items - 1)
         shift = num_items - 1
         total_row = 16 + shift
         
@@ -446,17 +447,17 @@ class ExcelService:
         set_val(f"S{total_row}", t_sgst)
         set_val(f"T{total_row}", t_total)
 
-        # Words Conversion
+        # Words
         set_val(f"A{17 + shift}", f"Total Amount (In Words):- {amount_to_words(t_total)}")
         
-        # Bottom Tax Summary (Row 20 + shift)
+        # Bottom Tax Summary
         sum_row = 20 + shift
         set_val(f"O{sum_row}", t_taxable)
         set_val(f"Q{sum_row}", t_cgst)
         set_val(f"S{sum_row}", t_sgst)
         set_val(f"T{sum_row}", t_cgst + t_sgst)
 
-        # Tax in Words (A22, A23 + shift)
+        # Tax in Words
         set_val(f"A{22 + shift}", f"CGST (in words) : {amount_to_words(t_cgst)}")
         set_val(f"A{23 + shift}", f"SGST (in words) : {amount_to_words(t_sgst)}")
 
