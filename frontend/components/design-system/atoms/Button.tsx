@@ -1,86 +1,113 @@
-"use client";
-
-import React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import { ButtonHTMLAttributes, forwardRef } from 'react';
+import { cn } from '@/lib/utils';
 import { Slot } from "@radix-ui/react-slot";
-import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
 
-/**
- * Button Atom - MacOS Tahoe Edition
- * Follows Apple Human Interface Guidelines for controls.
- */
-const buttonVariants = cva(
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-footnote font-medium transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] select-none",
-    {
-        variants: {
-            variant: {
-                primary: "bg-system-blue text-white shadow-lg elevation-2 hover:elevation-3 hover:brightness-110 active:brightness-95 active:shadow-inner font-semibold",
-                secondary: "bg-blue-50 text-blue-900 border border-blue-100 shadow-sm hover:bg-blue-100 active:bg-blue-200 font-medium",
-                ghost: "text-blue-700 hover:bg-blue-50 active:bg-blue-100",
-                glass: "bg-white/20 dark:bg-white/10 backdrop-blur-xl text-app-fg border-none shadow-lg elevation-1 hover:bg-white/30 dark:hover:bg-white/20 font-medium",
-                destructive: "bg-system-red text-white shadow-lg elevation-2 hover:brightness-110 active:brightness-95 font-semibold",
-                outline: "bg-transparent border-2 border-app-fg/30 text-app-fg hover:bg-app-fg/10 hover:border-app-fg/50 font-medium",
-                link: "text-system-blue underline-offset-4 hover:underline p-0 h-auto font-medium",
-                excel: "bg-[#1D6F42] text-white shadow-lg elevation-2 hover:brightness-110 active:brightness-95 font-semibold",
-                default: "bg-system-blue text-white shadow-lg elevation-2 font-semibold",
-            },
-            size: {
-                default: "h-9 px-4 py-2",  /* Compact ERP Standard */
-                sm: "h-7.5 px-3 text-[11px] tracking-tight", /* Row actions */
-                lg: "h-11 px-7 text-subhead tracking-tight", /* Hero actions */
-                xl: "h-13 px-8 text-body font-semibold tracking-tight", /* Onboarding */
-                icon: "h-9 w-9",
-                compact: "h-6 px-2 text-[10px] uppercase font-bold tracking-widest",
-            },
-        },
-        defaultVariants: {
-            variant: "primary",
-            size: "default",
-        },
-    }
-);
-
-export interface ButtonProps
-    extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: 'primary' | 'secondary' | 'ghost' | 'destructive' | 'glass' | 'elevated' | 'tonal' | 'success';
+    size?: 'sm' | 'md' | 'lg' | 'compact' | 'icon';
     asChild?: boolean;
     loading?: boolean;
 }
 
-const ButtonInternal = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, asChild = false, loading = false, children, ...props }, ref) => {
-        if (asChild) {
-            return (
-                <Slot
-                    className={cn(buttonVariants({ variant, size, className }))}
-                    ref={ref}
-                    {...props}
-                >
-                    {children}
-                </Slot>
-            );
-        }
-
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+    ({ variant = 'elevated', size = 'md', className, asChild = false, loading = false, children, ...props }, ref) => {
+        const Comp = asChild ? Slot : "button";
         return (
-            <button
-                className={cn(buttonVariants({ variant, size, className }), loading && "relative !text-transparent transition-none")}
+            <Comp
                 ref={ref}
-                disabled={props.disabled || loading}
+                className={cn(
+                    // Base styles
+                    'inline-flex items-center justify-center gap-2',
+                    'font-medium',
+                    'transition-all duration-150 ease-out',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+
+                    // Token-based Radius - M3 Standard (Rounded Rectangle)
+                    'rounded-lg',
+
+                    // Size variants - Optimized for M3 Touch Targets
+                    (size === 'sm' || size === 'compact') && 'h-8 px-4 text-[var(--text-caption-1)]',
+                    size === 'md' && 'h-10 px-6 text-[var(--text-footnote)]',
+                    size === 'lg' && 'h-12 px-8 text-[var(--text-subhead)]',
+                    size === 'icon' && 'h-10 w-10 p-0 rounded-full',
+
+                    // Variant styles - M3 SPECIFIC
+                    variant === 'primary' && [
+                        'bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)]',
+                        'shadow-1',
+                        'hover:bg-[var(--action-primary-hover)] hover:shadow-2',
+                        'focus-visible:ring-[var(--action-primary)]',
+                    ],
+
+                    variant === 'success' && [
+                        'bg-emerald-600 text-white',
+                        'shadow-1',
+                        'hover:bg-emerald-700 hover:shadow-2',
+                        'focus-visible:ring-emerald-600',
+                    ],
+
+                    variant === 'elevated' && [
+                        'bg-[var(--btn-elevated-bg)] text-[var(--btn-elevated-text)]',
+                        'shadow-1',
+                        'hover:bg-[var(--bg-surface-sunken)] hover:shadow-2',
+                        'active:shadow-1',
+                        'focus-visible:ring-[var(--action-primary)]',
+                    ],
+
+                    variant === 'tonal' && [
+                        'bg-[var(--btn-tonal-bg)] text-[var(--btn-tonal-text)]',
+                        'hover:bg-[rgba(var(--primary-container), 0.8)]',
+                        'focus-visible:ring-[var(--action-primary)]',
+                    ],
+
+                    variant === 'secondary' && [
+                        'bg-[var(--btn-secondary-bg)] text-[var(--btn-secondary-text)]',
+                        'shadow-1',
+                        'hover:bg-[var(--bg-surface-sunken)] hover:shadow-2',
+                        'active:shadow-1',
+                        'focus-visible:ring-[var(--border-strong)]',
+                    ],
+
+                    variant === 'ghost' && [
+                        'bg-transparent text-[var(--text-primary)]',
+                        'hover:bg-[var(--bg-surface-sunken)]',
+                        'focus-visible:ring-[var(--action-primary)]',
+                    ],
+
+                    variant === 'destructive' && [
+                        'bg-[var(--action-destructive)] text-[var(--action-destructive-fg)]',
+                        'shadow-1',
+                        'hover:opacity-90 hover:shadow-2',
+                        'focus-visible:ring-[var(--action-destructive)]',
+                    ],
+
+                    variant === 'glass' && [
+                        'bg-[var(--input-glass-bg)] backdrop-blur-md',
+                        'text-[var(--text-primary)] shadow-sm',
+                        'hover:bg-[rgba(255,255,255,0.6)]'
+                    ],
+
+                    // Disabled state
+                    'disabled:opacity-40 disabled:pointer-events-none',
+
+                    className
+                )}
                 {...props}
             >
-                {loading && (
-                    <div className="absolute inset-0 flex items-center justify-center text-current">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                    </div>
+                {loading ? (
+                    <span className="flex items-center gap-2">
+                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        {children}
+                    </span>
+                ) : (
+                    children
                 )}
-                {children}
-            </button>
+            </Comp>
         );
     }
 );
 
-ButtonInternal.displayName = "Button";
-
-export const Button = React.memo(ButtonInternal);
-export { buttonVariants };
+Button.displayName = 'Button';

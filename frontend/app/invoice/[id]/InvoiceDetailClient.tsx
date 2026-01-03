@@ -7,7 +7,7 @@ import { API_BASE_URL } from "@/lib/api";
 import { formatDate, formatIndianCurrency, cn, amountInWords } from "@/lib/utils";
 import { dcRoute } from "@/lib/routes";
 import {
-    H3,
+    Title3,
     Body,
     SmallText,
     Label,
@@ -87,7 +87,7 @@ export default function InvoiceDetailClient({ data: initialData }: InvoiceDetail
     const topActions = (
         <div className="flex gap-3">
             <Button
-                variant="excel"
+                variant="secondary"
                 asChild
             >
                 <a
@@ -111,14 +111,14 @@ export default function InvoiceDetailClient({ data: initialData }: InvoiceDetail
             actions={topActions}
             onBack={() => router.back()}
             layoutId={`inv-title-${header?.invoice_number}`}
-            icon={<Receipt size={22} className="text-system-blue" />}
+            icon={<Receipt size={22} className="text-action-primary" />}
             iconLayoutId={`inv-icon-${header?.invoice_number}`}
         >
             <div className="space-y-6">
                 <DocumentJourney currentStage="Invoice" className="mb-2" />
 
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="mb-4 bg-blue-500/5 p-1 rounded-xl inline-flex border-none">
+                    <TabsList className="mb-4 bg-surface p-1 rounded-xl inline-flex border-none shadow-1">
                         <TabsTrigger value="buyer">Buyer</TabsTrigger>
                         <TabsTrigger value="references">References</TabsTrigger>
                         <TabsTrigger value="logistics">Logistics</TabsTrigger>
@@ -132,24 +132,24 @@ export default function InvoiceDetailClient({ data: initialData }: InvoiceDetail
                             exit={{ opacity: 0, y: -5 }}
                             transition={{ duration: 0.15 }}
                         >
-                            <Card className="p-4 mt-0 border-none elevation-2 bg-blue-500/5 backdrop-blur-md">
+                            <Card className="p-4 mt-0 bg-surface shadow-1">
                                 <TabsContent value="buyer" className="mt-0">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div className="space-y-1">
-                                            <Label className="uppercase tracking-widest text-app-fg-muted text-[9px] opacity-70">Buyer Name</Label>
-                                            <div className="text-text-primary px-3 py-1.5 bg-blue-500/5 rounded-lg border-none text-[12px] font-medium transition-all">
+                                            <Label className="uppercase tracking-widest text-text-tertiary text-[9px] opacity-70">Buyer Name</Label>
+                                            <div className="text-text-primary px-3 py-1.5 bg-surface-variant/30 rounded-lg text-[12px] font-medium">
                                                 {header.buyer_name || "-"}
                                             </div>
                                         </div>
                                         <div className="space-y-1">
-                                            <Label className="uppercase tracking-widest text-app-fg-muted text-[9px] opacity-70">Buyer GSTIN</Label>
-                                            <div className="text-text-primary px-3 py-1.5 bg-blue-500/5 rounded-lg border-none text-[12px] font-medium transition-all">
+                                            <Label className="uppercase tracking-widest text-text-tertiary text-[9px] opacity-70">Buyer GSTIN</Label>
+                                            <div className="text-text-primary px-3 py-1.5 bg-surface-variant/30 rounded-lg text-[12px] font-medium">
                                                 {header.buyer_gstin || "-"}
                                             </div>
                                         </div>
                                         <div className="space-y-1">
-                                            <Label className="uppercase tracking-widest text-app-fg-muted text-[9px] opacity-70">Billing Address</Label>
-                                            <div className="text-text-primary px-3 py-1.5 bg-blue-500/5 rounded-lg border-none min-h-[50px] text-[12px] leading-snug transition-all">
+                                            <Label className="uppercase tracking-widest text-text-tertiary text-[9px] opacity-70">Billing Address</Label>
+                                            <div className="text-text-primary px-3 py-1.5 bg-surface-variant/30 rounded-lg min-h-[50px] text-[12px] leading-snug">
                                                 {header.buyer_address || "-"}
                                             </div>
                                         </div>
@@ -158,21 +158,21 @@ export default function InvoiceDetailClient({ data: initialData }: InvoiceDetail
 
                                 <TabsContent value="references" className="mt-0">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[9px] opacity-70">Order Number</Label><Accounting className="text-app-fg text-[12px] font-mono block transition-all">{header.buyers_order_no || "-"}</Accounting></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[9px] opacity-70">Order Date</Label><Body className="text-app-fg text-[12px] block transition-all">{header.buyers_order_date ? formatDate(header.buyers_order_date) : "-"}</Body></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[9px] opacity-70">Linked DC</Label><Accounting className="text-app-accent cursor-pointer hover:underline text-[12px] font-mono block transition-all" onClick={() => router.push(header.dc_number ? dcRoute(header.dc_number) : "#")}>{header.dc_number || "-"}</Accounting></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[9px] opacity-70">Challan Date</Label><Body className="text-app-fg text-[12px] block transition-all">{header.dc_date ? formatDate(header.dc_date) : "-"}</Body></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[9px] opacity-70">GEMC Number</Label><Body className="text-app-fg text-[12px] block transition-all">{header.gemc_number || "-"}</Body></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[9px] opacity-70">SRV Number</Label><Body className="text-app-fg text-[12px] block transition-all">{header.srv_no || "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-text-tertiary text-[9px] opacity-70">Order Number</Label><Accounting className="text-text-primary text-[12px] font-mono block">{header.buyers_order_no || "-"}</Accounting></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-text-tertiary text-[9px] opacity-70">Order Date</Label><Body className="text-text-secondary text-[12px] block">{header.buyers_order_date ? formatDate(header.buyers_order_date) : "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-text-tertiary text-[9px] opacity-70">Linked DC</Label><Accounting className="text-app-accent cursor-pointer hover:underline text-[12px] font-mono block" onClick={() => router.push(header.dc_number ? dcRoute(header.dc_number) : "#")}>{header.dc_number || "-"}</Accounting></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-text-tertiary text-[9px] opacity-70">Challan Date</Label><Body className="text-text-secondary text-[12px] block">{header.dc_date ? formatDate(header.dc_date) : "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-text-tertiary text-[9px] opacity-70">GEMC Number</Label><Body className="text-text-secondary text-[12px] block">{header.gemc_number || "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-text-tertiary text-[9px] opacity-70">SRV Number</Label><Body className="text-text-secondary text-[12px] block">{header.srv_no || "-"}</Body></div>
                                     </div>
                                 </TabsContent>
 
                                 <TabsContent value="logistics" className="mt-0">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[9px] opacity-70">Vehicle No</Label><Body className="text-app-fg text-[12px] transition-all">{header.vehicle_no || "-"}</Body></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[9px] opacity-70">LR Number</Label><Body className="text-app-fg text-[12px] transition-all">{header.lr_no || "-"}</Body></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[9px] opacity-70">Transporter</Label><Body className="text-app-fg text-[12px] transition-all">{header.transporter || "-"}</Body></div>
-                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-app-fg-muted text-[9px] opacity-70">Payment Terms</Label><Body className="text-app-fg text-app-accent text-[12px] transition-all">{header.payment_terms || "45 Days"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-text-tertiary text-[9px] opacity-70">Vehicle No</Label><Body className="text-text-primary text-[12px]">{header.vehicle_no || "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-text-tertiary text-[9px] opacity-70">LR Number</Label><Body className="text-text-primary text-[12px]">{header.lr_no || "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-text-tertiary text-[9px] opacity-70">Transporter</Label><Body className="text-text-primary text-[12px]">{header.transporter || "-"}</Body></div>
+                                        <div className="space-y-1.5"><Label className="uppercase tracking-widest text-text-tertiary text-[9px] opacity-70">Payment Terms</Label><Body className="text-app-accent text-[12px]">{header.payment_terms || "45 Days"}</Body></div>
                                     </div>
                                 </TabsContent>
                             </Card>
@@ -182,16 +182,16 @@ export default function InvoiceDetailClient({ data: initialData }: InvoiceDetail
 
                 {/* Items Table */}
                 <div className="space-y-2">
-                    <div className="tahoe-glass-card elevation-1 overflow-hidden">
-                        <table className="table-standard w-full table-fixed">
+                    <Card padding="none" className="overflow-hidden bg-surface shadow-1">
+                        <table className="w-full table-fixed border-collapse">
                             <thead>
-                                <tr className="header-glass">
+                                <tr className="bg-surface-variant/50 border-none">
                                     <th className="py-2.5 px-3 text-center w-[50px] border-none"><Label className="text-[11px] uppercase tracking-widest font-regular opacity-80">#</Label></th>
                                     <th className="py-2.5 px-3 text-left border-none"><Label className="text-[11px] uppercase tracking-widest font-regular opacity-80">Description</Label></th>
                                     <th className="py-2.5 px-3 text-left w-[120px] border-none"><Label className="text-[11px] uppercase tracking-widest font-regular opacity-80">HSN/SAC</Label></th>
-                                    <th className="py-2.5 px-3 text-right w-[90px] bg-blue-600/5 dark:bg-blue-400/5 border-none"><Label className="text-app-accent text-[11px] uppercase tracking-widest font-regular opacity-80 block text-right">Qty</Label></th>
+                                    <th className="py-2.5 px-3 text-right w-[90px] bg-action-primary/5 border-none"><Label className="text-action-primary text-[11px] uppercase tracking-widest font-regular opacity-80 block text-right">Qty</Label></th>
                                     <th className="py-2.5 px-3 text-right w-[110px] border-none"><Label className="text-[11px] uppercase tracking-widest font-regular opacity-80 block text-right">Rate</Label></th>
-                                    <th className="py-2.5 px-3 text-right w-[130px] bg-blue-600/5 dark:bg-blue-400/5 border-none"><Label className="text-blue-600 dark:text-blue-400 text-[11px] uppercase tracking-widest font-regular opacity-80 block text-right">Taxable</Label></th>
+                                    <th className="py-2.5 px-3 text-right w-[130px] bg-action-primary/5 border-none"><Label className="text-action-primary text-[11px] uppercase tracking-widest font-regular opacity-80 block text-right">Taxable</Label></th>
                                     <th className="py-2.5 px-3 w-[50px] border-none"></th>
                                 </tr>
                             </thead>
@@ -205,7 +205,7 @@ export default function InvoiceDetailClient({ data: initialData }: InvoiceDetail
 
                                     return (
                                         <React.Fragment key={parentKey}>
-                                            <tr className={cn("transition-colors border-none", isExpanded ? "bg-blue-500/15" : "bg-blue-500/5")}>
+                                            <tr className={cn("transition-colors border-none", isExpanded ? "bg-surface-variant/50 shadow-sm z-10" : "bg-surface-variant/20")}>
                                                 <td className="py-2.5 px-3 w-[50px] text-center border-none">
                                                     <MonoCode className="border-none bg-transparent p-0 text-[11px] opacity-70 font-regular">
                                                         #{groupIdx + 1}
@@ -224,14 +224,14 @@ export default function InvoiceDetailClient({ data: initialData }: InvoiceDetail
                                                 <td className="py-2.5 px-3 w-[120px] text-left border-none">
                                                     <SmallText className="text-text-tertiary uppercase tracking-widest text-[11px] font-regular">{parent.hsn_sac || "-"}</SmallText>
                                                 </td>
-                                                <td className="py-2.5 px-3 w-[90px] text-right bg-blue-600/5 dark:bg-blue-400/5 border-none">
+                                                <td className="py-2.5 px-3 w-[90px] text-right bg-action-primary/5 border-none">
                                                     <Accounting className="text-base text-app-accent font-regular pr-0 w-full text-right">{tQty}</Accounting>
                                                 </td>
                                                 <td className="py-2.5 px-3 w-[110px] text-right border-none">
                                                     <Accounting className="text-text-tertiary text-base font-regular pr-0 w-full text-right">{parent.rate?.toFixed(2) || parent.rate}</Accounting>
                                                 </td>
-                                                <td className="py-2.5 px-3 w-[130px] text-right bg-blue-600/5 dark:bg-blue-400/5 border-none">
-                                                    <Accounting className="text-blue-600 dark:text-blue-400 text-base font-regular pr-0 w-full text-right">
+                                                <td className="py-2.5 px-3 w-[130px] text-right bg-action-primary/5 border-none">
+                                                    <Accounting className="text-action-primary text-base font-regular pr-0 w-full text-right">
                                                         {formatIndianCurrency(tVal)}
                                                     </Accounting>
                                                 </td>
@@ -255,12 +255,12 @@ export default function InvoiceDetailClient({ data: initialData }: InvoiceDetail
                                                         </div>
                                                     </td>
                                                     <td className="py-2 px-3 w-[120px] border-none" />
-                                                    <td className="py-2 px-3 w-[90px] text-right bg-blue-600/5 dark:bg-blue-400/5 border-none">
+                                                    <td className="py-2.5 px-3 w-[90px] text-right bg-action-primary/5 border-none">
                                                         <Accounting className="text-sm text-app-accent font-regular pr-0 w-full text-right">{item.quantity}</Accounting>
                                                     </td>
                                                     <td className="py-2 px-3 w-[110px] text-right border-none" />
-                                                    <td className="py-2 px-3 w-[130px] text-right bg-blue-600/5 dark:bg-blue-400/5 border-none">
-                                                        <Accounting className="text-blue-400 text-sm font-regular pr-0 w-full text-right">{formatIndianCurrency(item.taxable_value || item.amount)}</Accounting>
+                                                    <td className="py-2.5 px-3 w-[130px] text-right bg-action-primary/5 border-none">
+                                                        <Accounting className="text-action-primary text-sm font-regular pr-0 w-full text-right">{formatIndianCurrency(item.taxable_value || item.amount)}</Accounting>
                                                     </td>
                                                     <td className="w-[50px] border-none" />
                                                 </tr>
@@ -270,30 +270,30 @@ export default function InvoiceDetailClient({ data: initialData }: InvoiceDetail
                                 })}
                             </tbody>
                         </table>
-                    </div>
+                    </Card>
                 </div>
 
                 {/* Totals */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
                     <div className="lg:col-start-2">
-                        <Card className="p-8 bg-blue-500/5 border-none shadow-none elevation-2 backdrop-blur-xl">
+                        <Card className="p-8 bg-surface shadow-1">
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center pb-2 border-none">
-                                    <Label className="uppercase tracking-wide text-app-fg-muted text-[10px]">Net Taxable Value</Label>
-                                    <Accounting className="text-lg font-semibold text-app-fg">{header.total_taxable_value || header.taxable_value}</Accounting>
+                                    <Label className="uppercase tracking-widest text-[10px] text-text-tertiary">Net Taxable Value</Label>
+                                    <Accounting className="text-lg font-semibold text-text-primary">{header.total_taxable_value || header.taxable_value}</Accounting>
                                 </div>
-                                <div className="flex justify-between items-center text-app-fg-muted">
-                                    <Label className="uppercase tracking-wide text-[10px]">Total GST (CGST + SGST)</Label>
-                                    <Accounting className="text-sm">{((header.cgst_total || header.cgst || 0) + (header.sgst_total || header.sgst || 0)).toFixed(2)}</Accounting>
+                                <div className="flex justify-between items-center">
+                                    <Label className="uppercase tracking-widest text-[10px] text-text-tertiary">Total GST (CGST + SGST)</Label>
+                                    <Accounting className="text-sm text-text-secondary">{((header.cgst_total || header.cgst || 0) + (header.sgst_total || header.sgst || 0)).toFixed(2)}</Accounting>
                                 </div>
                                 <div className="pt-6 mt-4 border-none flex justify-between items-end">
                                     <div className="space-y-2">
-                                        <Label className="uppercase text-app-accent tracking-wide text-[10px]">Grand Total</Label>
-                                        <SmallText className="text-app-fg-muted block max-w-[280px] leading-snug italic lowercase first-letter:uppercase text-xs">
+                                        <Label className="uppercase text-app-accent tracking-widest text-[10px] font-medium">Grand Total</Label>
+                                        <SmallText className="text-text-tertiary block max-w-[280px] leading-snug italic lowercase first-letter:uppercase text-[11px]">
                                             {amountInWords(header.total_invoice_value || 0)} Only
                                         </SmallText>
                                     </div>
-                                    <Accounting className="text-3xl text-app-fg tracking-tighter leading-none">
+                                    <Accounting className="text-3xl text-text-primary tracking-tighter leading-none font-bold">
                                         {header.total_invoice_value || 0}
                                     </Accounting>
                                 </div>

@@ -9,8 +9,8 @@ interface DownloadButtonProps {
     url: string;
     filename: string;
     label?: string;
-    variant?: "primary" | "secondary" | "outline" | "ghost" | "link";
-    size?: "default" | "sm" | "lg" | "icon";
+    variant?: "primary" | "secondary" | "ghost" | "destructive" | "glass";
+    size?: "sm" | "md" | "lg" | "icon" | "compact";
     className?: string;
 }
 

@@ -6,6 +6,8 @@ All notable changes to the SenstoSales project will be documented in this file.
 
 ### Added
 - **macOS Tahoe System**: Migrated entire UI to the Tahoe design system (v4.0) with Claymorphism and premium Glassmorphism.
+- **3-Tier Token System**: Implemented strict Primitives -> Semantic -> Component token hierarchy via Tailwind 4 `@theme`.
+- **Documentation Consolidation**: Replaced fragmented reference files with a single `docs/design_guide.md` and updated `README.md`.
 - **Template-Based Invoices**: Support for injecting data into `Invoice_4544.xlsx` while preserving original branding and layouts.
 - **Quantity Audit Report**: Automated quantity audit system with de-coupled balance tracking.
 - **Global Data Resync**: Added `/api/system/reconcile-all` for mass synchronization of historical PO/DC/SRV data.

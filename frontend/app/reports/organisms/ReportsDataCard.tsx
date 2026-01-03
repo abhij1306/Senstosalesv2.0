@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { H3, SmallText } from "@/components/design-system/atoms/Typography";
+import { Title3, SmallText } from "@/components/design-system/atoms/Typography";
 import { Stack, Flex } from "@/components/design-system/atoms/Layout";
 import { cn } from "@/lib/utils";
 
@@ -21,12 +21,12 @@ export const ReportsDataCard = ({
     className,
 }: ReportsDataCardProps) => {
     return (
-        <div className={cn("bg-app-surface border-none rounded-xl elevation-2 p-6 space-y-6", className)}>
+        <div className={cn("tahoe-glass-card p-6 space-y-6", className)}>
             <Flex justify="between" align="start">
                 <Stack gap={1}>
-                    <H3 className="m-0 text-app-accent font-bold tracking-tight uppercase leading-none">
+                    <Title3 className="m-0 text-app-accent font-bold tracking-tight uppercase leading-none">
                         {title}
-                    </H3>
+                    </Title3>
                     {subtitle && (
                         <SmallText className="text-app-fg-muted font-medium opacity-70">
                             {subtitle}

@@ -81,3 +81,34 @@ def to_qty(value: Optional[Union[str, int, float]]) -> Optional[float]:
     if val is None:
         return None
     return round(val, 3)
+
+
+# ============================================================
+# TOLERANCE-BASED COMPARISONS (Per BUSINESS_LOGIC_SPEC)
+# ============================================================
+
+TOLERANCE = 0.001  # Global tolerance for quantity comparisons
+
+
+def qty_equal(a: float, b: float) -> bool:
+    """
+    Check if two quantities are equal within tolerance.
+    Used to prevent floating-point comparison errors.
+    """
+    return abs(float(a or 0) - float(b or 0)) < TOLERANCE
+
+
+def qty_gte(a: float, b: float) -> bool:
+    """
+    Check if quantity a >= b within tolerance.
+    Returns True if a is greater than or equal to b (minus tolerance).
+    """
+    return float(a or 0) >= float(b or 0) - TOLERANCE
+
+
+def qty_gt(a: float, b: float) -> bool:
+    """
+    Check if quantity a > b (plus tolerance).
+    Returns True if a is strictly greater than b.
+    """
+    return float(a or 0) > float(b or 0) + TOLERANCE

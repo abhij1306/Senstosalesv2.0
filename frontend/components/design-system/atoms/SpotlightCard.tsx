@@ -10,7 +10,7 @@ interface SpotlightCardProps extends CardProps {
 }
 
 const SpotlightCardInternal = React.forwardRef<HTMLDivElement, SpotlightCardProps>(
-    ({ children, className, active = false, variant = "default", ...props }, ref) => {
+    ({ children, className, active = false, variant = "elevated", ...props }, ref) => {
         const divRef = useRef<HTMLDivElement>(null);
         const [position, setPosition] = useState({ x: 0, y: 0 });
         const [opacity, setOpacity] = useState(0);

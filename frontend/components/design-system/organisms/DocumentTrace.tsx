@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Card } from "../atoms/Card";
-import { H3, Body, SmallText } from "../atoms/Typography";
+import { Title3, Body, SmallText } from "../atoms/Typography";
 import { Badge } from "../atoms/Badge";
 import { ArrowRight, FileText, Truck, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -105,7 +105,7 @@ export const DocumentTrace: React.FC<DocumentTraceProps> = ({
 }) => {
     return (
         <Card className={cn("p-6 bg-app-surface/40 backdrop-blur-md border-app-border/30", className)}>
-            <H3 className="mb-2 text-app-fg uppercase tracking-tight">Document Traceability</H3>
+            <Title3 className="mb-2 text-app-fg uppercase tracking-tight">Document Traceability</Title3>
             <Body className="text-app-fg-muted mb-6 font-medium">
                 Track the complete document flow from purchase order to invoice
             </Body>

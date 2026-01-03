@@ -1,0 +1,72 @@
+/* ============================================
+   TIER 3: COMPONENT TOKENS
+   Context Specifics. The "Implementation".
+   ============================================ */
+
+@import './semantic.css';
+
+:root {
+    /* ==========================================
+     BUTTONS
+     ========================================== */
+    --btn-radius: var(--radius-md);
+
+    /* Primary */
+    --btn-primary-bg: var(--action-primary);
+    --btn-primary-text: var(--action-primary-fg);
+    --btn-primary-hover: var(--action-primary-hover);
+
+    /* M3 Elevated */
+    --btn-elevated-bg: var(--bg-surface);
+    --btn-elevated-text: var(--action-primary);
+    --btn-elevated-shadow: var(--elevation-1);
+    --btn-elevated-shadow-hover: var(--elevation-2);
+
+    /* M3 Tonal */
+    --btn-tonal-bg: var(--secondary-container);
+    --btn-tonal-text: var(--on-secondary-container);
+
+    /* Secondary (Elevated Surface) */
+    --btn-secondary-bg: var(--bg-surface);
+    --btn-secondary-text: var(--text-primary);
+    --btn-secondary-border: transparent;
+
+    /* ==========================================
+     INPUTS
+     ========================================== */
+    --input-bg: var(--bg-surface-elevated);
+    /* Solid white/slate */
+    --input-border: transparent;
+    --input-radius: var(--radius-sm);
+    --input-text: var(--text-primary);
+    --input-placeholder: var(--text-tertiary);
+
+    /* Glass Input Variant */
+    --input-glass-bg: rgba(255, 255, 255, 0.45);
+    --input-glass-border: transparent;
+
+    /* ==========================================
+     CARDS
+     ========================================== */
+    --card-bg: var(--bg-surface-elevated);
+    --card-radius: var(--radius-xl);
+    --card-border: transparent;
+    --card-shadow: var(--shadow-sm);
+
+    /* Glass Card */
+    --card-glass-bg: rgba(255, 255, 255, 0.65);
+    --card-glass-blur: var(--blur-xl);
+
+    /* ==========================================
+     BADGES
+     ========================================== */
+    --badge-radius: var(--radius-full);
+    --badge-text-size: var(--text-xs);
+    --badge-px: var(--space-2);
+    --badge-py: var(--space-0);
+}
+
+.dark {
+    --input-glass-bg: rgba(0, 0, 0, 0.25);
+    --card-glass-bg: rgba(30, 41, 59, 0.65);
+}

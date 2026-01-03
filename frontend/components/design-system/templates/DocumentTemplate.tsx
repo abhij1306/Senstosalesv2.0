@@ -52,19 +52,19 @@ export const DocumentTemplate = ({
                     {icon && (
                         <motion.div
                             layoutId={iconLayoutId}
-                            className="w-12 h-12 rounded-2xl bg-white/70 dark:bg-surface-primary/50 elevation-2 flex items-center justify-center text-system-blue backdrop-blur-[50px] backdrop-saturate-[200%] transition-all duration-300"
+                            className="w-12 h-12 rounded-2xl bg-surface shadow-2 flex items-center justify-center text-system-blue transition-smooth"
                         >
                             {icon}
                         </motion.div>
                     )}
                     <div className="space-y-0.5">
                         <motion.div layoutId={layoutId}>
-                            <Title1 className="text-text-primary font-semibold tracking-tight">
+                            <Title1 className="text-text-primary font-medium tracking-tight">
                                 {title}
                             </Title1>
                         </motion.div>
                         {description && (
-                            <Caption1 className="text-text-secondary">
+                            <Caption1 className="text-text-secondary opacity-70">
                                 {description}
                             </Caption1>
                         )}
@@ -73,7 +73,7 @@ export const DocumentTemplate = ({
                 {actions && <div className="flex items-center gap-3">{actions}</div>}
             </div>
 
-            {/* Content Area */}
+            {/* Content Area - Clean separation */}
             <div className="w-full">
                 {children}
             </div>

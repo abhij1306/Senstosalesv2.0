@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Save, Plus, Trash2, Package, Loader2, FileText, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  H3,
+  Title3,
   Label,
   Body,
   Accounting,
@@ -19,6 +19,7 @@ import {
   TabsTrigger,
   TabsContent,
   SmallText,
+  Caption2,
 } from "@/components/design-system";
 import { api } from "@/lib/api";
 import { usePOStore } from "@/store/poStore";
@@ -119,7 +120,7 @@ function CreatePOPageContent() {
 
   if (!data || !data.header) return (
     <div className="flex items-center justify-center min-h-[400px]">
-      <Loader2 className="animate-spin text-app-accent" size={32} />
+      <Loader2 className="animate-spin text-action-primary" size={32} />
     </div>
   );
 
@@ -147,7 +148,7 @@ function CreatePOPageContent() {
       description="Enter procurement contract details manually"
       actions={topActions}
       onBack={() => router.back()}
-      icon={<FileText size={20} className="text-app-accent" />}
+      icon={<FileText size={20} className="text-action-primary" />}
       iconLayoutId="create-po-icon"
     >
       <div className="space-y-6">
@@ -155,7 +156,7 @@ function CreatePOPageContent() {
 
         {/* Info Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4 bg-app-overlay/5 p-1 rounded-xl inline-flex overflow-x-auto max-w-full border-none shadow-none">
+          <TabsList className="mb-4 p-1 rounded-xl inline-flex overflow-x-auto max-w-full border-none">
             <TabsTrigger value="basic" className="px-6 py-2 rounded-lg data-[state=active]:bg-app-surface data-[state=active]:elevation-1 transition-all whitespace-nowrap">Basic Info</TabsTrigger>
             <TabsTrigger value="supplier" className="px-6 py-2 rounded-lg data-[state=active]:bg-app-surface data-[state=active]:elevation-1 transition-all whitespace-nowrap">Supplier</TabsTrigger>
             <TabsTrigger value="references" className="px-6 py-2 rounded-lg data-[state=active]:bg-app-surface data-[state=active]:elevation-1 transition-all whitespace-nowrap">References</TabsTrigger>
@@ -172,7 +173,7 @@ function CreatePOPageContent() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              <Card className="p-6 mt-0 border-none elevation-2 bg-app-surface/50 backdrop-blur-md">
+              <Card className="p-6 mt-0">
                 <TabsContent value="basic" className="mt-0">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="space-y-2">
@@ -373,11 +374,11 @@ function CreatePOPageContent() {
             <div className="table-container border-none shadow-none overflow-visible">
               <table className="w-full">
                 <thead>
-                  <tr className="border-none bg-app-overlay/5">
-                    <th className="py-3 px-6 text-left w-16 px-6"><Label>#</Label></th>
-                    <th className="py-3 px-6 text-left"><Label>Material Details</Label></th>
-                    <th className="py-3 px-6 text-right w-32"><Label>Ordered Qty</Label></th>
-                    <th className="py-3 px-6 text-right w-40"><Label>Value / Rate</Label></th>
+                  <tr className="header-glass">
+                    <th className="py-3 px-6 text-left w-16 px-6"><Caption2 className="uppercase tracking-widest opacity-100">#</Caption2></th>
+                    <th className="py-3 px-6 text-left"><Caption2 className="uppercase tracking-widest opacity-100">Material Details</Caption2></th>
+                    <th className="py-3 px-6 text-right w-32"><Caption2 className="uppercase tracking-widest opacity-100">Ordered Qty</Caption2></th>
+                    <th className="py-3 px-6 text-right w-40"><Caption2 className="uppercase tracking-widest opacity-100">Value / Rate</Caption2></th>
                     <th className="py-3 px-6 w-16"></th>
                   </tr>
                 </thead>
@@ -390,10 +391,10 @@ function CreatePOPageContent() {
                           initial={{ opacity: 0, scale: 0.98 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, x: -20 }}
-                          className="border-none hover:bg-app-surface-hover/30 transition-colors bg-app-surface"
+                          className="border-none hover:bg-app-surface-hover/30 transition-colors bg-transparent border-b border-white/5 last:border-0"
                         >
                           <td className="py-6 px-6 align-top">
-                            <Accounting className="text-app-accent text-center block">
+                            <Accounting className="text-action-primary text-center block">
                               {item.po_item_no}
                             </Accounting>
                           </td>
@@ -444,7 +445,7 @@ function CreatePOPageContent() {
                                 type="number"
                                 value={item.ordered_quantity}
                                 onChange={(e) => updateItem(idx, "ordered_quantity", parseFloat(e.target.value))}
-                                className="text-right tabular-nums border-app-accent/20 focus:border-app-accent"
+                                className="text-right tabular-nums border-action-primary/20 focus:border-action-primary"
                               />
                             </div>
                           </td>
@@ -461,7 +462,7 @@ function CreatePOPageContent() {
                               </div>
                               <div className="pt-2 border-none">
                                 <Label className="tracking-wide text-xs font-semibold text-app-fg-muted block mb-1">ITEM VALUE</Label>
-                                <Accounting isCurrency className="text-app-accent text-right block text-base">
+                                <Accounting isCurrency className="text-action-primary text-right block text-base">
                                   {item.item_value}
                                 </Accounting>
                               </div>
@@ -481,7 +482,7 @@ function CreatePOPageContent() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={5} className="py-32 text-center bg-app-surface">
+                        <td colSpan={5} className="py-32 text-center bg-transparent">
                           <div className="flex flex-col items-center justify-center gap-4 opacity-50">
                             <div className="w-16 h-16 rounded-2xl bg-app-overlay/5 flex items-center justify-center">
                               <Package className="w-8 h-8 text-app-fg-muted mb-0 stroke-[1.5]" />
@@ -507,7 +508,7 @@ function CreatePOPageContent() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
               <div className="lg:col-start-2">
                 <Card className="p-10 bg-app-surface/50 border-none shadow-premium-hover backdrop-blur-md relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-app-accent/5 rounded-bl-full -mr-16 -mt-16 pointer-events-none" />
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-action-primary/5 rounded-bl-full -mr-16 -mt-16 pointer-events-none" />
                   <div className="flex justify-between items-end">
                     <div className="space-y-2">
                       <Label className="uppercase tracking-wide font-semibold text-xs text-app-fg-muted">Estimated Contract Value</Label>
@@ -540,7 +541,7 @@ export default function CreatePOPage() {
       fallback={
         <div className="flex items-center justify-center min-h-screen bg-app-bg">
           <div className="flex flex-col items-center gap-4">
-            <Loader2 className="animate-spin text-app-accent" size={48} />
+            <Loader2 className="animate-spin text-action-primary" size={48} />
             <Body className="text-app-fg-muted animate-pulse uppercase tracking-wide text-xs font-medium">Preparing Workspace</Body>
           </div>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { H1, H2, Body } from "../atoms/Typography";
+import { Title1, Title2, Body } from "../atoms/Typography";
 import { Button } from "../atoms/Button";
 import { ActionButtonGroup, Action } from "../molecules/ActionButtonGroup";
 import { ChevronRight } from "lucide-react";
@@ -85,7 +85,7 @@ export const CreateEditFormTemplate: React.FC<CreateEditFormTemplateProps> = ({
 
             {/* Page Header */}
             <div className="space-y-2 pb-6 border-b border-app-border">
-                <H1 className="text-app-fg tracking-tight">{title}</H1>
+                <Title1 className="text-app-fg tracking-tight">{title}</Title1>
                 {subtitle && <Body className="text-app-fg-muted font-bold tracking-tight">{subtitle}</Body>}
             </div>
 
@@ -94,7 +94,7 @@ export const CreateEditFormTemplate: React.FC<CreateEditFormTemplateProps> = ({
                 {sections.map((section, index) => (
                     <div key={index} className="space-y-4">
                         <div className="space-y-1">
-                            <H2 className="text-app-fg uppercase tracking-tight">{section.title}</H2>
+                            <Title2 className="text-app-fg uppercase tracking-tight">{section.title}</Title2>
                             {section.description && (
                                 <Body className="text-app-fg-muted font-bold">{section.description}</Body>
                             )}

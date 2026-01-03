@@ -37,8 +37,11 @@ The lifecycle represents the "Order-to-Cash" process from the Supplier's perspec
 | **Balance (BAL)** | **Pending for Dispatch**. | **ORD - DLV** | `reconciliation_ledger` |
 
 > [!IMPORTANT]
-> **THE CORE INVARIANT**: `BALANCE = ORDERED - DELIVERED`.
-> Receipt of goods (`RECD`) tracks whether the buyer got the items, but it **never** affects the `Balance` or `Delivered` quantities. Balance only tracks what is left to be shipped.
+> **THE CORE INVARIANT (BL-1)**: `BALANCE = ORDERED - DELIVERED`.
+> - `pending_qty = ord_qty - delivered_qty` (Same as Balance)
+> - Receipt of goods (`RECD`) tracks whether the buyer got the items, but it **never** affects the `Balance` or `Delivered` quantities.
+> - Rejected quantities are tracked separately via `rejected_qty` column and do NOT affect Balance.
+> - Balance only tracks what is left to be shipped.
 
 ---
 
@@ -63,6 +66,7 @@ The system is architected to handle multiple distinct Buyers (Units) simultaneou
 - **Amendment Handling (V6.0)**: Detects `Amnt No` revisions.
     - **Soft Cancellation**: Items missing in the latest amendment file are marked `status = 'Cancelled'`.
     - **Pending Protection**: Cancelled items have their `pending_qty` forced to `0`.
+    - **Re-activation**: If an item reappears in a later amendment, it is restored to `status='Active'` and `pending_qty` is recalculated.
 - **TOT-2 (Reconciliation)**: `delivered_qty` is calculated solely from `DC.dispatch_qty`. 
 - **BALANCE RULE**: The system maintains `Balance = Ordered - Delivered` at all times.
 - **TOT-5 (Reconciliation Sync)**: `ReconciliationService.sync_po()` is the atomic authority on quantity state.
@@ -144,11 +148,28 @@ The system extracts and stores the following fields from every Purchase Order:
 - **SRV-1 (PO Link)**: **STRICTLY ENFORCED**. SRV uploads fail if PO number is not found.
 - **SRV-2 (Balance Independence)**: `received_qty` has **NO IMPACT** on `delivered_qty` or `Balance`.
 
+### 5.4 SRV Rejection Workflow
+1.  **Receipt Entry**: SRV contains `received_qty` (Total), `accepted_qty`, and `rejected_qty`.
+2.  **System Behavior**: 
+    -   `rcd_qty` = `accepted_qty`.
+    -   Rejected units logically return to pending balance if the buyer requires replacement (Configurable policy).
+3.  **Status Impact**: If all units are rejected, the item status reverts to "Pending/Delivered" depending on replacement policy, but "Closed" requires acceptance.
+
 ### 5.4 Invoice (INV)
 - **INV-1 (Uniqueness)**: Unique primary key is `(invoice_number, financial_year)`.
 - **INV-2 (Server Tax)**: Taxes (CGST/SGST/IGST) are calculated **Server-Side Only**.
 - **INV-3 (Total)**: `Grand Total = Sum(Line Items) + Taxes`. Rounded to 2 decimals.
 - **INV-4 (DC Link)**: Strictly enforced 1:1 relationship with a Delivery Challan.
+
+### 5.5 Invoice-DC Linking Timing (BL-4)
+1.  **Prerequisites**: DC must exist and be in "Dispatched" status.
+2.  **Timing**: Invoice CAN be created immediately after DC dispatch; SRV is NOT required.
+3.  **State Machine**: `DC Created → Invoice Generated → SRV Received → Status "Closed"`
+
+### 5.6 Multi-Lot Dispatch Rules (BL-5)
+1.  **Lot Creation**: Each delivery schedule in PO generates a lot.
+2.  **Partial Dispatch**: Single lot can span multiple DCs (e.g., Lot 1 (100 units) → DC1 (60) + DC2 (40)).
+3.  **Lot Completion**: Lot marked complete when `sum(dispatch_qty) = delivery_qty`.
 
 ---
 
@@ -188,3 +209,15 @@ All quantity updates MUST go through the **Reconciliation Service**. Ad-hoc `UPD
 | `A_DSP > 0` AND `A_DSP < A_ORD` | **Pending** | Amber |
 | `A_DSP >= A_ORD` AND `A_RECD < A_ORD` | **Delivered** | Blue |
 | `A_RECD >= A_ORD` | **Closed** | Green |
+
+### 7.3 Edge Case Handling (BL-2)
+1.  **Over-Delivery**: If `delivered_qty > ord_qty`:
+    - Status = "Delivered"
+    - `pending_qty = Max(0, ord_qty - delivered_qty)` (clamped in UI)
+    - Alert triggers: "Over-delivery warning"
+2.  **Negative Pending Prevention**:
+    - UI: `pending_qty` clamped to `Max(0, value)`
+    - DB: `CHECK (pending_qty >= 0)` constraint enforced
+    ```sql
+    ALTER TABLE po_items ADD CONSTRAINT chk_pending_positive CHECK (pending_qty >= 0);
+    ```

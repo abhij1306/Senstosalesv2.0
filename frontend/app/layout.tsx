@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "@/components/design-system/tokens/primitives.css";
+import "@/components/design-system/tokens/semantic.css";
+import "@/components/design-system/tokens/component.css";
 import { SidebarNav as Sidebar } from "@/components/design-system/organisms/SidebarNav";
 import { UploadProvider } from "@/components/providers/UploadContext";
 import BatchUploadCard from "@/components/global/BatchUploadCard";

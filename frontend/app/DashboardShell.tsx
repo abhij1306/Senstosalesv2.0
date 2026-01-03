@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardSummary, ActivityItem } from "@/lib/api";
 import {
@@ -27,6 +27,7 @@ import {
     Box,
     Title1,
     Title2,
+    Title3,
     Caption1,
     Footnote,
     Card,
@@ -102,7 +103,7 @@ const createActivityColumns = (router: AppRouterInstance): Column<ActivityItem>[
         align: "center",
         render: (_value, item) => (
             <div className="flex justify-center">
-                <StatusBadge status={String(item.status).toUpperCase()} className="border-none shadow-none bg-app-overlay/5" />
+                <StatusBadge status={String(item.status).toLowerCase() as any} className="border-none shadow-none bg-app-overlay/5" />
             </div>
         ),
     },
@@ -112,7 +113,7 @@ const createActivityColumns = (router: AppRouterInstance): Column<ActivityItem>[
         width: "15%",
         align: "right",
         render: (_value, item) => (
-            <Footnote className="text-text-secondary whitespace-nowrap leading-none font-regular">
+            <Footnote className="text-text-secondary whitespace-nowrap leading-none font-regular tabular-nums">
                 {item.date}
             </Footnote>
         ),
@@ -134,38 +135,38 @@ function QuickActionCard({
 }: QuickActionCardProps) {
     return (
         <Card
-            variant="glass"
-            padding="md"
+            variant="elevated"
+            padding="none"
             onClick={onClick}
-            className="cursor-pointer group relative overflow-hidden transition-all duration-300 active:scale-[0.98] !bg-white min-h-[88px] shadow-[8px_8px_16px_rgba(163,177,198,0.15),-8px_-8px_16px_rgba(255,255,255,0.7)] hover:shadow-[4px_4px_8px_rgba(163,177,198,0.2),-4px_-4px_8px_rgba(255,255,255,0.8)] border-none"
+            className="cursor-pointer group relative overflow-hidden transition-all duration-300 active:scale-[0.98] hover:scale-[1.02] hover:shadow-3 p-6 min-h-[88px]"
         >
             <Flex align="center" gap={4} className="w-full">
-                {/* Icon Container - Blue gradient */}
+                {/* Icon Container - M3 Tonal */}
                 <motion.div
                     whileHover={{ scale: 1.05, rotate: 2 }}
-                    className="p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-600/30 flex items-center justify-center shrink-0 transition-all duration-300"
+                    className="p-3 rounded-2xl bg-primary-container text-on-primary-container shadow-1 flex items-center justify-center shrink-0 transition-transform"
                 >
                     {icon}
                 </motion.div>
 
                 {/* Content */}
                 <Stack gap={1} className="flex-1 min-w-0">
-                    <Body className="text-text-primary leading-tight font-medium">
+                    <Title3 className="text-primary leading-tight font-medium">
                         {title}
-                    </Body>
-                    <Caption1 className="text-text-secondary leading-snug">
+                    </Title3>
+                    <Footnote className="text-secondary leading-snug">
                         {description}
-                    </Caption1>
+                    </Footnote>
                 </Stack>
 
-                {/* Arrow Indicator */}
+                {/* Arrow Indicator - M3 Subhead */}
                 <motion.div
                     whileHover={{ x: 2 }}
-                    className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center transition-colors group-hover:bg-blue-50 shrink-0 shadow-inner"
+                    className="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center transition-colors group-hover:bg-primary-container shrink-0"
                 >
                     <ArrowRight
                         size={14}
-                        className="text-text-tertiary transition-colors group-hover:text-system-blue"
+                        className="text-secondary transition-colors group-hover:text-on-primary-container"
                     />
                 </motion.div>
             </Flex>
@@ -187,8 +188,10 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
     const handleNewDC = useCallback(() => router.push("/dc/create"), [router]);
     const handleNewInvoice = useCallback(() => router.push("/invoice/create"), [router]);
 
+
+
     return (
-        <div className="relative z-0 min-h-screen space-y-10">
+        <div className="relative z-0 min-h-screen flex flex-col gap-6">
             {/* Header Section - macOS Style */}
             <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -200,19 +203,19 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
                     <motion.div
                         layoutId="dashboard-icon"
                         whileHover={{ scale: 1.05 }}
-                        className="w-12 h-12 rounded-2xl bg-white/70 dark:bg-surface-primary/50 elevation-2 flex items-center justify-center text-system-blue backdrop-blur-[50px] backdrop-saturate-[200%] transition-all duration-300"
+                        className="w-12 h-12 rounded-2xl bg-surface shadow-2 flex items-center justify-center text-primary backdrop-blur-xl transition-smooth"
                     >
                         <LayoutDashboard size={22} />
                     </motion.div>
                     <Stack gap={0.5}>
                         <motion.div layoutId="dashboard-title">
-                            <Title1 className="text-text-primary font-semibold tracking-tight">
+                            <Title1 className="text-primary font-medium tracking-tight">
                                 Dashboard
                             </Title1>
                         </motion.div>
-                        <Caption1 className="text-text-secondary">
+                        <Footnote className="text-secondary uppercase tracking-wider font-medium opacity-70">
                             Business intelligence overview
-                        </Caption1>
+                        </Footnote>
                     </Stack>
                 </Flex>
             </motion.div>
@@ -277,7 +280,7 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
             </motion.div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Transaction Ledger Section */}
                 <motion.div
                     initial={{ opacity: 0, x: -20 }}
@@ -299,14 +302,13 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
                         </Button>
                     </Flex>
 
-                    {/* Transaction Ledger Table */}
-                    <div className="overflow-hidden rounded-2xl border-none">
+                    {/* Transaction Ledger Table - Scroll Enabled */}
+                    <div className="overflow-y-auto h-[360px] rounded-2xl bg-surface shadow-1 hover:shadow-2 transition-all duration-300 custom-scrollbar">
                         <DataTable
                             columns={activityColumns}
                             data={activity}
                             keyField="number"
-                            pageSize={8}
-                            className="h-full border-none shadow-none bg-transparent"
+                            className="h-full border-none shadow-none"
                             density="compact"
                         />
                     </div>
@@ -317,9 +319,9 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.4, delay: 0.3 }}
-                    className="space-y-5"
+                    className="flex flex-col gap-6"
                 >
-                    <Title2 className="text-text-primary font-semibold">
+                    <Title2 className="text-text-primary font-medium tracking-tight">
                         Execution Center
                     </Title2>
                     <Stack gap={3}>

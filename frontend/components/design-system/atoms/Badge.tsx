@@ -9,20 +9,20 @@ import { cn } from "@/lib/utils";
  * Subtle semantic indicators using system colors.
  */
 const badgeVariants = cva(
-    "inline-flex items-center px-2 py-0.5 rounded-full text-caption-2 font-regular transition-colors focus:outline-none border border-transparent",
+    "inline-flex items-center rounded-md px-2 py-0.5 m3-label-small transition-colors focus:outline-none border-none shadow-sm",
     {
         variants: {
             variant: {
-                default: "bg-system-gray/15 text-text-secondary hover:bg-system-gray/25",
-                secondary: "bg-surface-secondary text-text-secondary border-border-quaternary",
-                destructive: "bg-system-red/15 text-system-red hover:bg-system-red/25",
-                outline: "text-text-primary border-border-tertiary",
-                success: "bg-system-green/15 text-system-green hover:bg-system-green/25",
-                warning: "bg-system-orange/15 text-system-orange hover:bg-system-orange/25",
-                info: "bg-system-blue/15 text-system-blue hover:bg-system-blue/25",
-                accent: "bg-system-blue/15 text-system-blue hover:bg-system-blue/25",
-                glass: "bg-surface-primary/50 backdrop-blur-md border-white/20 text-text-primary shadow-sm",
-                error: "bg-system-red/15 text-system-red hover:bg-system-red/25", // Alias for destructive
+                default: "bg-surface-variant text-secondary",
+                secondary: "bg-secondary-container text-on-secondary-container",
+                destructive: "bg-status-error/15 text-status-error",
+                outline: "bg-transparent text-primary shadow-none", // Purposefully clean
+                success: "bg-status-success/15 text-status-success",
+                warning: "bg-status-warning/15 text-status-warning",
+                info: "bg-status-info/15 text-status-info",
+                accent: "bg-primary-container text-on-primary-container",
+                glass: "bg-surface/90 backdrop-blur-sm text-primary",
+                error: "bg-status-error/15 text-status-error",
             },
         },
         defaultVariants: {

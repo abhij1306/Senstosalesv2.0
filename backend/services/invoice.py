@@ -276,6 +276,7 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
 
             invoice_items.append(
                 {
+                    "po_item_id": dc_item["po_item_id"],  # NEW: Critical for HWM
                     "po_sl_no": str(dc_item.get("po_item_no") or dc_item.get("lot_no") or ""),
                     "description": dc_item["description"] or "",
                     "hsn_sac": dc_item["hsn_code"] or "",
@@ -377,8 +378,8 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
                 INSERT INTO gst_invoice_items (
                     id, invoice_number, financial_year, description, quantity, unit, rate, 
                     taxable_value, cgst_amount, sgst_amount, 
-                    igst_amount, total_amount, po_sl_no, hsn_sac
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    igst_amount, total_amount, po_sl_no, hsn_sac, po_item_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 (
                     str(uuid.uuid4()),
@@ -395,6 +396,7 @@ def create_invoice(invoice_data: dict, db: sqlite3.Connection) -> ServiceResult[
                     item["total_amount"],
                     item["po_sl_no"],  # CRITICAL: Required for PO linking
                     item["hsn_sac"],  # CRITICAL: Required for Tax
+                    item["po_item_id"],  # NEW: Required for HWM
                 ),
             )
 

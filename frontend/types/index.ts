@@ -102,8 +102,15 @@ export interface SupplierSummary {
 }
 
 // ============================================================
+// ============================================================
 // PURCHASE ORDER TYPES
 // ============================================================
+
+export interface LinkedDC {
+    dc_number: string;
+    dc_date: string | null;
+    dispatch_quantity: number;
+}
 
 export interface PODelivery {
     id?: string;
@@ -111,10 +118,12 @@ export interface PODelivery {
     ordered_quantity?: number;
     delivered_quantity?: number;
     received_quantity?: number;
+    physical_dispatched_qty?: number;
     manual_override_qty?: number;
     dely_date?: string;
     entry_allow_date?: string;
     dest_code?: number;
+    linked_dcs?: LinkedDC[];
 }
 
 export interface POItem {
@@ -132,6 +141,7 @@ export interface POItem {
     item_value?: number;
     hsn_code?: string;
     delivered_quantity?: number;
+    physical_dispatched_qty?: number;
     pending_quantity?: number;
     deliveries: PODelivery[];
 }
@@ -221,12 +231,15 @@ export interface DCItemRow {
     dispatched_quantity?: number;
     received_quantity?: number;
     delivered_quantity?: number;
+    physical_dispatched_qty?: number;
     dispatch_quantity: number;
     hsn_code?: string;
     hsn_rate?: number;
     remaining_post_dc?: number;
     drg_no?: string;
     original_remaining?: number;
+    dely_date?: string;
+    linked_dcs?: LinkedDC[];
 }
 
 export interface DCHeader {

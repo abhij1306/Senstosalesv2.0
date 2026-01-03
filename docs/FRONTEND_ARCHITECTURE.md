@@ -7,10 +7,10 @@
 SenstoSales uses a **Next.js 14 (App Router)** frontend, optimized for high-density data interactions and "Apple-level" aesthetic precision.
 
 ### 1.1 Technology Stack
-- **Framework**: Next.js 14.1 (React 18 Server Components)
-- **Styling**: Tailwind CSS v4 (Alpha/Experimental capabilities) + CSS Modules
-- **Design Pattern**: **Tahoe Glassmorphism** (Claymorphism accents)
-- **Animation**: Framer Motion 11 (Layout transitions, AnimatePresence)
+- **Framework**: Next.js 16.0.10 (React 19 Server Components)
+- **Styling**: Tailwind CSS v4 (@theme configuration)
+- **Design Pattern**: **3-Tier Token System** ([design_guide.md](./design_guide.md))
+- **Animation**: Framer Motion 12 (Layout transitions, AnimatePresence)
 - **State Management**:
   - **Server State**: React Query (TanStack Query) v5 - for caching and syncing with backend.
   - **URL State**: `nuqs` (Type-safe search params) - for filter/sort persistence.
@@ -35,12 +35,12 @@ SenstoSales uses a **Next.js 14 (App Router)** frontend, optimized for high-dens
   - Handle interactivity (Forms, Toggles).
   - Use `useQuery` to hydrate data.
 
-#### B. The "Organic" Composition Pattern
-We avoid rigid "Card" classes. Instead, we compose UI using atomic tokens:
-1.  **Surface**: `bg-app-surface` (Base layer) or `bg-app-surface-hover/5` (Glass).
-2.  **Elevation**: `shadow-sm` or `shadow-app-lifted`.
-3.  **Border**: `border border-app-border` (Subtle 1px separation).
-*Result*: A hierarchy defined by light and depth, not thick borders.
+#### B. 3-Tier Token Architecture
+We follow a strict 3-tier hierarchy for all styles:
+1.  **Primitives**: Raw color/spacing values (`primitives.css`).
+2.  **Semantic**: Intent-based tokens (`semantic.css`) mapping primitives to roles (`--bg-surface`, `--text-primary`). Accessible via Tailwind utilities.
+3.  **Component**: Component-specific overrides (`component.css`) mapping semantic tokens to UI elements (`--btn-primary-bg`).
+*Result*: A perfectly synchronized system that supports Dark Mode and high-density ERP layouts via Tahoe aesthetics.
 
 ---
 
@@ -115,5 +115,6 @@ frontend/
 ## 5. UI Hardening & Standardization
 1. **Z-Index Layering**: Standardized on macOS hierarchy (Modals @ 1000+, Toasts @ 2000+).
 2. **Focus Management**: All interactive elements support keyboard Focus rings (`focus:ring-2`).
-3. **Empty States**: Enforced use of `DataTable.emptyMessage` for all data-driven views.
-4. **Contrast Guard**: Raw Tailwind colors are prohibited in favor of semantic variables to ensure legible Dark/Light mode transitions.
+3. **Empty States**: Enforced use of `EmptyState` molecule for all data-driven views.
+4. **Tokenization**: Raw Tailwind colors (e.g., `bg-blue-500`) are prohibited. Use semantic tokens (`bg-action-primary`).
+5. **Atomic Consistency**: Strictly use Typography atoms (Title1-3, Label, Body) instead of raw `<hX>` or `<span>` tags.

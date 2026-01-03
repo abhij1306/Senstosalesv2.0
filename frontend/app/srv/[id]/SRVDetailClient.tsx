@@ -74,7 +74,7 @@ export default function SRVDetailClient({ initialSRV }: SRVDetailClientProps) {
                     </SmallText>
                 </div>
 
-                <div className="table-container border rounded-md">
+                <div className="table-container border bg-surface rounded-lg shadow-1">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
@@ -113,8 +113,8 @@ export default function SRVDetailClient({ initialSRV }: SRVDetailClientProps) {
                                     <td className="p-1 text-[10px] whitespace-nowrap text-right font-mono text-muted-foreground">{item.order_qty}</td>
                                     <td className="p-1 text-[10px] whitespace-nowrap text-right font-mono text-muted-foreground">{item.challan_qty}</td>
                                     <td className="p-1 text-[10px] whitespace-nowrap text-right font-mono font-medium text-app-fg">{item.received_qty}</td>
-                                    <td className="p-1 text-[10px] whitespace-nowrap text-right font-mono text-emerald-600 font-medium">{item.accepted_qty}</td>
-                                    <td className="p-1 text-[10px] whitespace-nowrap text-right font-mono text-red-500 font-medium">{item.rejected_qty || 0}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-right font-mono text-status-success font-medium">{item.accepted_qty}</td>
+                                    <td className="p-1 text-[10px] whitespace-nowrap text-right font-mono text-status-error font-medium">{item.rejected_qty || 0}</td>
                                 </tr>
                             ))}
                         </tbody>

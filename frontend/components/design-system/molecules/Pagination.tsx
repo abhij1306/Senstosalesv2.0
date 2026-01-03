@@ -1,129 +1,105 @@
+"use client";
 
-import React from "react";
-import {
-    ChevronLeft,
-    ChevronRight,
-    ChevronsLeft,
-    ChevronsRight,
-} from "lucide-react";
+import { Button } from '@/components/design-system/atoms/Button';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/design-system/atoms/Select';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface PaginationProps {
     currentPage: number;
-    totalItems: number;
+    totalPages: number;
     pageSize: number;
+    totalItems: number;
     onPageChange: (page: number) => void;
     onPageSizeChange: (size: number) => void;
-    pageSizeOptions?: number[];
+    className?: string;
 }
 
 export function Pagination({
     currentPage,
-    totalItems,
+    totalPages,
     pageSize,
+    totalItems,
     onPageChange,
     onPageSizeChange,
-    pageSizeOptions = [10, 25, 50, 100],
+    className,
 }: PaginationProps) {
-    const totalPages = Math.ceil(totalItems / pageSize);
-    const startItem = Math.min((currentPage - 1) * pageSize + 1, totalItems);
+    const startItem = (currentPage - 1) * pageSize + 1;
     const endItem = Math.min(currentPage * pageSize, totalItems);
 
-    if (totalItems === 0) return null;
-
     return (
-        <div className="flex items-center justify-between px-2 py-4 border-t border-app-border/30">
-            {/* Mobile: Simple Prev/Next */}
-            <div className="flex flex-1 justify-between sm:hidden">
-                <button
-                    onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-app-border font-medium rounded-md text-app-fg bg-app-surface hover:bg-app-overlay disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    Previous
-                </button>
-                <button
-                    onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-app-border font-medium rounded-md text-app-fg bg-app-surface hover:bg-app-overlay disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    Next
-                </button>
+        <div className={cn('flex items-center justify-between px-4 py-3 bg-surface-variant/20 backdrop-blur-md transition-all duration-300', className)}>
+            {/* Items count */}
+            <div className="m3-label-medium text-secondary">
+                Showing <span className="text-primary font-medium">{startItem}-{endItem}</span> of <span className="text-primary font-medium">{totalItems}</span>
             </div>
-            {/* Desktop: Full Controls */}
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                    <p className="text-app-fg">
-                        Showing <span className="font-medium">{startItem}</span> to{" "}
-                        <span className="font-medium">{endItem}</span> of{" "}
-                        <span className="font-medium">{totalItems}</span> results
-                    </p>
-                </div>
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <span className="text-app-fg-muted whitespace-nowrap">
-                            Rows per page:
-                        </span>
-                        <select
-                            value={pageSize}
-                            onChange={(e) => {
-                                onPageSizeChange(Number(e.target.value));
-                                onPageChange(1); // Reset to first page on size change
-                            }}
-                            className="block w-full pl-3 pr-8 py-1 bg-app-surface border border-app-border text-app-fg focus:outline-none focus:ring-app-accent focus:border-app-accent sm:text-xs rounded-md"
-                        >
-                            {pageSizeOptions.map((option) => (
-                                <option key={option} value={option}>
-                                    {option}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <nav
-                        className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                        aria-label="Pagination"
+
+            {/* Controls */}
+            <div className="flex items-center gap-6">
+                {/* Page size selector */}
+                <div className="flex items-center gap-2">
+                    <span className="m3-label-medium text-secondary">Rows per page</span>
+                    <Select
+                        value={String(pageSize)}
+                        onValueChange={(value) => onPageSizeChange(Number(value))}
                     >
-                        <button
-                            onClick={() => onPageChange(1)}
-                            disabled={currentPage === 1}
-                            className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-app-border bg-app-surface font-medium text-app-fg-muted hover:bg-app-overlay disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="First Page"
-                        >
-                            <span className="sr-only">First</span>
-                            <ChevronsLeft className="h-4 w-4" />
-                        </button>
-                        <button
-                            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-                            disabled={currentPage === 1}
-                            className="relative inline-flex items-center px-2 py-2 border border-app-border bg-app-surface font-medium text-app-fg-muted hover:bg-app-overlay disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Previous Page"
-                        >
-                            <span className="sr-only">Previous</span>
-                            <ChevronLeft className="h-4 w-4" />
-                        </button>
-                        <div className="relative inline-flex items-center px-4 py-2 border border-app-border bg-app-surface font-medium text-app-fg">
-                            Page {currentPage} of {totalPages}
-                        </div>
-                        <button
-                            onClick={() =>
-                                onPageChange(Math.min(totalPages, currentPage + 1))
-                            }
-                            disabled={currentPage === totalPages}
-                            className="relative inline-flex items-center px-2 py-2 border border-app-border bg-app-surface font-medium text-app-fg-muted hover:bg-app-overlay disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Next Page"
-                        >
-                            <span className="sr-only">Next</span>
-                            <ChevronRight className="h-4 w-4" />
-                        </button>
-                        <button
-                            onClick={() => onPageChange(totalPages)}
-                            disabled={currentPage === totalPages}
-                            className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-app-border bg-app-surface font-medium text-app-fg-muted hover:bg-app-overlay disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Last Page"
-                        >
-                            <span className="sr-only">_Last</span>
-                            <ChevronsRight className="h-4 w-4" />
-                        </button>
-                    </nav>
+                        <SelectTrigger className="w-[70px] h-8 bg-surface/50">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="25">25</SelectItem>
+                            <SelectItem value="50">50</SelectItem>
+                            <SelectItem value="100">100</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Page navigation */}
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="elevated"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onPageChange(1)}
+                        disabled={currentPage === 1}
+                    >
+                        <ChevronsLeft size={14} />
+                    </Button>
+
+                    <Button
+                        variant="elevated"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onPageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    >
+                        <ChevronLeft size={14} />
+                    </Button>
+
+                    <div className="m3-label-medium text-secondary px-2 min-w-[80px] text-center">
+                        Page <span className="text-primary font-medium">{currentPage}</span> / {totalPages}
+                    </div>
+
+                    <Button
+                        variant="elevated"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onPageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                    >
+                        <ChevronRight size={14} />
+                    </Button>
+
+                    <Button
+                        variant="elevated"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onPageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                    >
+                        <ChevronsRight size={14} />
+                    </Button>
                 </div>
             </div>
         </div>

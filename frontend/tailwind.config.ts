@@ -63,79 +63,71 @@ const config: Config = {
                COLORS
                ========================================== */
             colors: {
+                // SEMANTIC TOKENS (TIER 2)
+
                 // Surfaces
                 surface: {
-                    primary: 'rgb(var(--surface-primary) / <alpha-value>)',
-                    secondary: 'rgb(var(--surface-secondary) / <alpha-value>)',
-                    tertiary: 'rgb(var(--surface-tertiary) / <alpha-value>)',
-                    overlay: 'rgb(var(--surface-overlay) / <alpha-value>)',
-                    elevated: 'rgb(var(--surface-elevated) / <alpha-value>)',
+                    DEFAULT: 'rgb(var(--bg-surface))',
+                    elevated: 'rgb(var(--bg-surface-elevated))',
+                    sunken: 'rgb(var(--bg-surface-sunken))',
+                    overlay: 'rgb(var(--bg-overlay) / <alpha-value>)',
                 },
 
-                // Backgrounds
-                bg: {
-                    primary: 'rgb(var(--bg-primary) / <alpha-value>)',
-                    secondary: 'rgb(var(--bg-secondary) / <alpha-value>)',
-                    tertiary: 'rgb(var(--bg-tertiary) / <alpha-value>)',
+                // Actions
+                action: {
+                    primary: {
+                        DEFAULT: 'rgb(var(--action-primary))',
+                        hover: 'rgb(var(--action-primary-hover))',
+                        fg: 'rgb(var(--action-primary-fg))',
+                    },
+                    secondary: {
+                        DEFAULT: 'rgb(var(--action-secondary))',
+                        hover: 'rgb(var(--action-secondary-hover))',
+                        fg: 'rgb(var(--action-secondary-fg))',
+                    },
+                    destructive: {
+                        DEFAULT: 'rgb(var(--action-destructive))',
+                        fg: 'rgb(var(--action-destructive-fg))',
+                    }
                 },
 
                 // Text
                 text: {
-                    primary: 'rgb(var(--text-primary) / <alpha-value>)',
-                    secondary: 'rgb(var(--text-secondary) / <alpha-value>)',
-                    tertiary: 'rgb(var(--text-tertiary) / <alpha-value>)',
-                    quaternary: 'rgb(var(--text-quaternary) / <alpha-value>)',
-                    placeholder: 'rgb(var(--text-placeholder) / <alpha-value>)',
+                    primary: 'rgb(var(--text-primary))',
+                    secondary: 'rgb(var(--text-secondary))',
+                    tertiary: 'rgb(var(--text-tertiary))',
+                    inverse: 'rgb(var(--text-inverse))',
+                    brand: 'rgb(var(--text-brand))',
                 },
 
                 // Borders
                 border: {
-                    primary: 'rgb(var(--border-primary) / <alpha-value>)',
-                    secondary: 'rgb(var(--border-secondary) / <alpha-value>)',
-                    tertiary: 'rgb(var(--border-tertiary) / <alpha-value>)',
-                    quaternary: 'rgb(var(--border-quaternary) / <alpha-value>)',
-                    separator: 'rgb(var(--border-separator) / <alpha-value>)',
+                    DEFAULT: 'rgb(var(--border-default))',
+                    subtle: 'rgb(var(--border-subtle))',
+                    strong: 'rgb(var(--border-strong))',
+                    focus: 'rgb(var(--border-focus))',
                 },
 
-                // System Colors
-                system: {
-                    blue: 'rgb(var(--system-blue) / <alpha-value>)',
-                    green: 'rgb(var(--system-green) / <alpha-value>)',
-                    indigo: 'rgb(var(--system-indigo) / <alpha-value>)',
-                    orange: 'rgb(var(--system-orange) / <alpha-value>)',
-                    pink: 'rgb(var(--system-pink) / <alpha-value>)',
-                    purple: 'rgb(var(--system-purple) / <alpha-value>)',
-                    red: 'rgb(var(--system-red) / <alpha-value>)',
-                    teal: 'rgb(var(--system-teal) / <alpha-value>)',
-                    yellow: 'rgb(var(--system-yellow) / <alpha-value>)',
-                    gray: 'rgb(var(--system-gray) / <alpha-value>)',
-                },
-
-                // Semantic
-                accent: 'rgb(var(--color-accent) / <alpha-value>)',
-                success: 'rgb(var(--color-success) / <alpha-value>)',
-                warning: 'rgb(var(--color-warning) / <alpha-value>)',
-                error: 'rgb(var(--color-error) / <alpha-value>)',
-                info: 'rgb(var(--color-info) / <alpha-value>)',
-            },
-            // Legacy/App aliases to map to Atomic/System tokens
-            app: {
-                fg: {
-                    DEFAULT: 'rgb(var(--text-primary) / <alpha-value>)',
-                    muted: 'rgb(var(--text-secondary) / <alpha-value>)',
-                },
-                bg: 'rgb(var(--bg-primary) / <alpha-value>)',
-                surface: {
-                    DEFAULT: 'rgb(var(--surface-primary) / <alpha-value>)',
-                    hover: 'rgb(var(--surface-secondary) / <alpha-value>)',
-                },
-                border: 'rgb(var(--border-primary) / <alpha-value>)',
-                accent: 'rgb(var(--system-blue) / <alpha-value>)',
-                overlay: 'rgba(255, 255, 255, 0.5)', // Fallback for glass calls
+                // Status (Direct mapping to semantic vars)
                 status: {
-                    error: 'rgb(var(--system-red) / <alpha-value>)',
-                    success: 'rgb(var(--system-green) / <alpha-value>)',
-                    warning: 'rgb(var(--system-yellow) / <alpha-value>)',
+                    success: 'rgb(var(--status-success))',
+                    warning: 'rgb(var(--status-warning))',
+                    error: 'rgb(var(--status-error))',
+                    info: 'rgb(var(--status-info))',
+                },
+
+                // Legacy Support (Mapped to new system)
+                app: {
+                    accent: 'rgb(var(--action-primary))',
+                    fg: {
+                        DEFAULT: 'rgb(var(--text-primary))',
+                        muted: 'rgb(var(--text-secondary))',
+                    },
+                    bg: 'rgb(var(--bg-app))',
+                    surface: {
+                        DEFAULT: 'rgb(var(--bg-surface))',
+                        hover: 'rgb(var(--bg-surface-elevated))',
+                    },
                 }
             },
 

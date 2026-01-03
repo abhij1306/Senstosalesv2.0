@@ -142,39 +142,37 @@ export default function PODetailClient({
             );
         }
         return (
-            <Flex align="center" gap={3}>
-                <Flex align="center" gap={3}>
-                    <Button
-                        variant="excel"
-                        asChild
-                    >
-                        <a
-                            href={`/api/po/${header.po_number}/download`}
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            <FileDown size={16} /> Excel
-                        </a>
-                    </Button>
-                    <Button
-                        variant="secondary"
-                        onClick={() =>
-                            hasDC && dcId
-                                ? router.push(`/dc/${dcId}`)
-                                : router.push(`/dc/create?po=${header.po_number}`)
-                        }
-                    >
-                        <FileText size={16} />
-                        {hasDC ? "View DC" : "Generate DC"}
-                    </Button>
-                    <div className="w-[1px] h-4 bg-app-border/20 mx-1" />
-                    <Button
-                        variant="secondary"
-                        onClick={() => setEditMode(true)}
-                    >
-                        <Edit2 size={16} /> Modify Record
-                    </Button>
-                </Flex>
+            <Flex align="center" gap={2}>
+                <Button
+                    variant="success"
+                    onClick={() => window.open(`/api/po/${header.po_number}/download`, '_blank')}
+                    className="whitespace-nowrap shadow-1"
+                >
+                    <FileDown size={16} /> Excel
+                </Button>
+
+                <div className="w-[1px] h-6 bg-border-subtle mx-1" />
+
+                <Button
+                    variant="secondary"
+                    onClick={() => setEditMode(true)}
+                    className="whitespace-nowrap text-text-primary hover:bg-surface-variant"
+                >
+                    <Edit2 size={16} /> Modify
+                </Button>
+
+                <Button
+                    variant="primary"
+                    onClick={() =>
+                        hasDC && dcId
+                            ? router.push(`/dc/${dcId}`)
+                            : router.push(`/dc/create?po=${header.po_number}`)
+                    }
+                    className="whitespace-nowrap shadow-2"
+                >
+                    <FileText size={16} />
+                    {hasDC ? "View DC" : "Generate DC"}
+                </Button>
             </Flex>
         );
     };

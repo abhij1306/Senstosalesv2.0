@@ -12,8 +12,6 @@ from backend.core.exceptions import ResourceNotFoundError
 from backend.db.models import PODetail, POHeader, POItem, POListItem, POStats
 from backend.services.status_service import (
     calculate_entity_status,
-    calculate_pending_quantity,
-    translate_raw_status,
 )
 
 logger = logging.getLogger(__name__)
@@ -58,40 +56,34 @@ class POService:
     def list_pos(self, db: sqlite3.Connection) -> List[POListItem]:
         """
         List all Purchase Orders with aggregated quantity details.
-        Optimized single-query version to eliminate N+1 latency.
+        Uses reconciliation_ledger for unified HWM logic.
         """
-        # Single query with subqueries for aggregates to avoid N+1 problem
         # BAL = ORD - DLV (where DLV is High Water Mark)
         query = """
             SELECT 
                 po.po_number, po.po_date, po.supplier_name, po.po_value, po.amend_no, po.po_status, po.financial_year, po.created_at,
-                COALESCE((SELECT SUM(ord_qty) FROM purchase_order_items WHERE po_number = po.po_number), 0) as total_ordered,
-                COALESCE((SELECT COUNT(*) FROM purchase_order_items WHERE po_number = po.po_number), 0) as total_items,
-                (SELECT drg_no FROM purchase_order_items WHERE po_number = po.po_number LIMIT 1) as sample_drg,
-                (SELECT GROUP_CONCAT(dc_number, ', ') FROM delivery_challans WHERE po_number = po.po_number) as linked_dcs,
+                rl.total_ordered,
+                rl.total_delivered,
+                rl.total_pending,
+                rl.total_items,
                 COALESCE((SELECT SUM(rejected_qty) FROM srv_items WHERE po_number = po.po_number), 0) as total_rejected,
-                -- Received (Total for PO)
                 COALESCE((
                     SELECT SUM(pod.received_qty) 
                     FROM purchase_order_deliveries pod 
                     JOIN purchase_order_items poi ON pod.po_item_id = poi.id 
                     WHERE poi.po_number = po.po_number
-                ), 0) as total_received,
-                -- Delivered (Total for PO - Physical Dispatch only)
-                COALESCE((
-                    SELECT SUM(pod.delivered_qty) 
-                    FROM purchase_order_deliveries pod 
-                    JOIN purchase_order_items poi ON pod.po_item_id = poi.id 
-                    WHERE poi.po_number = po.po_number
-                ), 0) as total_delivered,
-                -- Basic Dispatch (From DC items directly)
-                COALESCE((
-                    SELECT SUM(dci.dispatch_qty) 
-                    FROM delivery_challan_items dci 
-                    JOIN purchase_order_items poi ON dci.po_item_id = poi.id 
-                    WHERE poi.po_number = po.po_number
-                ), 0) as total_dispatched_raw
+                ), 0) as total_received
             FROM purchase_orders po
+            LEFT JOIN (
+                SELECT 
+                    po_number,
+                    SUM(ord_qty) as total_ordered,
+                    SUM(actual_delivered_qty) as total_delivered,
+                    SUM(pending_qty) as total_pending,
+                    COUNT(*) as total_items
+                FROM reconciliation_ledger
+                GROUP BY po_number
+            ) rl ON po.po_number = rl.po_number
             ORDER BY po.created_at DESC
         """
 
@@ -99,23 +91,15 @@ class POService:
 
         results = []
         for row in rows:
-            t_ordered = row["total_ordered"]
-            t_delivered = row["total_delivered"]
-            t_dispatched_raw = row["total_dispatched_raw"]
-            t_received = row["total_received"]
+            t_ordered = row["total_ordered"] or 0
+            t_delivered = row["total_delivered"] or 0
+            t_pending = row["total_pending"] or 0
+            t_received = row["total_received"] or 0
+            t_items = row["total_items"] or 0
 
-            # Balance reflects remaining quantity to be DISPATCHED.
-            t_pending = calculate_pending_quantity(t_ordered, t_delivered)
-
-            # Determine Status using centralized service
-            status = calculate_entity_status(t_ordered, t_dispatched_raw, t_received)
-            raw_db_status = translate_raw_status(row["po_status"])
-
-            # ERP/Manual Override Logic
-            if t_pending > 0.1:
-                status = "Pending"
-            elif raw_db_status == "Closed":
-                status = "Closed"
+            # Determine Status using CENTRALIZED logic (same as Dashboard)
+            from backend.services.status_service import calculate_entity_status
+            status = calculate_entity_status(t_ordered, t_delivered, t_received)
 
             results.append(
                 POListItem(
@@ -125,14 +109,13 @@ class POService:
                     po_value=row["po_value"],
                     amend_no=row["amend_no"],
                     po_status=status,
-                    linked_dc_numbers=row["linked_dcs"],
+                    linked_dc_numbers="", # Optimized out, can be added if needed
                     total_ordered_quantity=t_ordered,
-                    total_dispatched_quantity=t_delivered,
+                    total_dispatched_quantity=t_delivered, # UI labels this as 'Delivered'
                     total_received_quantity=t_received,
                     total_rejected_quantity=row["total_rejected"],
                     total_pending_quantity=t_pending,
-                    total_items_count=row["total_items"],
-                    drg_no=row["sample_drg"],
+                    total_items_count=t_items,
                     financial_year=row["financial_year"],
                     created_at=row["created_at"],
                 )
@@ -239,29 +222,28 @@ class POService:
         for item_row in item_rows:
             item_dict = dict(item_row)
             item_id = item_dict["id"]
-            item_dict["po_item_no"]
 
             # Map deliveries and compute High-Water Mark DLV
             item_deliveries = []
             total_lot_ord = 0.0
             total_lot_dlv = 0.0
             total_lot_recd = 0.0
+            total_lot_phys_dsp = 0.0
 
             for d in all_deliveries:
                 if d["po_item_id"] == item_id:
                     d_dict = dict(d)
 
-                    # Logic: Lot DLV = Physical Dispatch only
-                    # De-coupled from Receipt (Triangle of Truth Fix)
+                    # Logic: Lot DLV = High Water Mark (MAX(Dispatch, Receipt, Manual Override))
+                    # This ensures that received units are counted as delivered even if DC is missing.
                     dsp = d_dict["dispatched_qty"] or 0.0
                     recd = d_dict["rcd_qty"] or 0.0
                     lot_ord = d_dict["scheduled_qty"] or 0.0
                     manual = d_dict.get("manual_override_qty") or 0.0
+                    lot_dlv = max(dsp, recd, manual)
 
-                    # Use manual override if provided and dispatched is less
-                    lot_dlv = max(dsp, manual)
-
-                    d_dict["delivered_quantity"] = lot_dlv  # This maps to 'DLV' in UI
+                    d_dict["delivered_quantity"] = lot_dlv  # This maps to accounting 'DLV' (HWM)
+                    d_dict["physical_dispatched_qty"] = dsp  # Physical documents check
                     d_dict["received_quantity"] = recd  # This maps to 'RECD' in UI
                     d_dict["ordered_quantity"] = lot_ord  # This maps to 'ORD' in UI
                     d_dict["manual_override_qty"] = manual
@@ -271,11 +253,13 @@ class POService:
                     total_lot_ord += lot_ord
                     total_lot_dlv += lot_dlv
                     total_lot_recd += recd
+                    total_lot_phys_dsp += dsp
 
             # Update item with aggregate lot quantities (Ensures consistency)
             item_dict["ordered_quantity"] = total_lot_ord or item_dict.get("ordered_quantity", 0)
             item_dict["delivered_quantity"] = total_lot_dlv
             item_dict["received_quantity"] = total_lot_recd
+            item_dict["physical_dispatched_qty"] = total_lot_phys_dsp
 
             # Calculate pending: ORD - DLV
             item_dict["pending_quantity"] = max(

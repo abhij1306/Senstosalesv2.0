@@ -1,0 +1,119 @@
+/* ============================================
+   TIER 2: SEMANTIC TOKENS
+   Design Intent. The "Decisions".
+   ============================================ */
+
+@import './primitives.css';
+
+:root {
+    /* ==========================================
+     SURFACES
+     ========================================== */
+    --bg-app: 235 242 255;
+    /* Soft Light Blue Background */
+    --bg-surface: 253 251 247;
+    /* Premium Off-White / Light Ivory Surface */
+    --bg-surface-elevated: 255 255 255;
+    /* Pure White for highest depth */
+    --bg-surface-sunken: 226 232 240;
+    /* Muted sunken state (Slate 200) */
+    --bg-surface-variant: 236 232 225;
+    /* Off-white variant for contrast */
+    --bg-overlay: 0 0 0;
+
+    /* M3 COLOR ROLES */
+    --primary-container: var(--blue-100);
+    --on-primary-container: var(--blue-900);
+    --secondary-container: var(--slate-100);
+    --on-secondary-container: var(--slate-900);
+    --outline: var(--slate-300);
+    --outline-variant: var(--slate-200);
+
+    /* ==========================================
+     TEXT COLORS
+     ========================================== */
+    --text-primary: var(--slate-900);
+    --text-secondary: var(--slate-600);
+    --text-tertiary: var(--slate-400);
+    --text-inverse: 255 255 255;
+    --text-brand: var(--blue-600);
+
+    /* ==========================================
+     BORDERS
+     ========================================== */
+    --border-subtle: var(--slate-100);
+    --border-default: var(--slate-200);
+    --border-strong: var(--slate-300);
+    --border-focus: var(--blue-500);
+
+    /* ==========================================
+     ACTIONS
+     ========================================== */
+    --action-primary: var(--blue-600);
+    --action-primary-hover: var(--blue-700);
+    --action-primary-fg: 255 255 255;
+
+    --action-secondary: 255 255 255;
+    --action-secondary-hover: var(--slate-50);
+    --action-secondary-fg: var(--slate-900);
+
+    --action-destructive: var(--red-500);
+    --action-destructive-fg: 255 255 255;
+
+    /* ==========================================
+     STATUS
+     ========================================== */
+    --status-success: var(--green-500);
+    --status-warning: var(--amber-500);
+    --status-error: var(--red-500);
+    --status-info: var(--blue-500);
+
+    /* ==========================================
+     M3 ELEVATION (Shadow Levels)
+     ========================================== */
+    --elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.3);
+    --elevation-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.3);
+    --elevation-3: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3);
+    --elevation-4: 0px 6px 10px 4px rgba(0, 0, 0, 0.15), 0px 2px 3px rgba(0, 0, 0, 0.3);
+    --elevation-5: 0px 8px 12px 6px rgba(0, 0, 0, 0.15), 0px 4px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark {
+    /* ==========================================
+     DARK MODE SURFACES
+     ========================================== */
+    --bg-app: var(--slate-950);
+    --bg-surface: var(--slate-900);
+    --bg-surface-elevated: var(--slate-800);
+    --bg-surface-sunken: var(--slate-950);
+    --bg-surface-variant: var(--slate-700);
+
+    /* M3 COLOR ROLES DARK */
+    --primary-container: var(--blue-800);
+    --on-primary-container: var(--blue-50);
+    --secondary-container: var(--slate-800);
+    --on-secondary-container: var(--slate-100);
+    --outline: var(--slate-600);
+    --outline-variant: var(--slate-700);
+
+    /* ==========================================
+     DARK MODE TEXT
+     ========================================== */
+    --text-primary: var(--slate-50);
+    --text-secondary: var(--slate-400);
+    --text-tertiary: var(--slate-600);
+
+    /* ==========================================
+     DARK MODE BORDERS
+     ========================================== */
+    --border-subtle: var(--slate-800);
+    --border-default: var(--slate-700);
+    --border-strong: var(--slate-600);
+
+    /* ==========================================
+     DARK MODE ACTIONS
+     ========================================== */
+    --action-primary: var(--blue-400);
+    --action-primary-hover: var(--blue-300);
+    --action-primary-fg: var(--slate-900);
+}

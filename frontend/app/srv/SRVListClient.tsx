@@ -211,7 +211,11 @@ export function SRVListClient({ initialSRVs, initialStats }: SRVListClientProps)
                 align: "right",
                 render: (v, row) => {
                     const val = row.type === "PO_HEADER" ? row.total_recd : row.total_received_qty;
-                    return <Accounting variant={row.type === "PO_HEADER" ? "highlight" : "default"} className={cn("text-right block", row.type === "SRV_ITEM" && "text-app-fg")}>{val}</Accounting>;
+                    const isHighlight = row.type === "PO_HEADER";
+                    // Removed variant="highlight" as it is not supported on Accounting. Using className for highlight logic if needed or relying on Text color.
+                    // If highlight was bold, we can add font-bold.
+                    // But Accounting is just a text component.
+                    return <Accounting className={cn("text-right block", row.type === "SRV_ITEM" ? "text-app-fg" : "font-bold text-app-fg")}>{val}</Accounting>;
                 }
             },
             {
@@ -240,7 +244,7 @@ export function SRVListClient({ initialSRVs, initialStats }: SRVListClientProps)
                         return (
                             <div className="flex justify-center w-full">
                                 <StatusBadge
-                                    status={String(v).toUpperCase()}
+                                    status={String(v || "Pending").toLowerCase() as any}
                                     className="bg-app-overlay/5 border-none shadow-none"
                                 />
                             </div>
@@ -282,9 +286,9 @@ export function SRVListClient({ initialSRVs, initialStats }: SRVListClientProps)
                 <Button
                     variant="primary"
                     onClick={handleUploadClick}
-                    className="h-9 px-6 font-medium active-glow shadow-lg shadow-blue-600/25 rounded-full bg-blue-600 hover:bg-blue-700"
+                    className="min-w-[170px]"
                 >
-                    <Upload size={16} className="mr-2" />
+                    <Upload size={16} />
                     Provision SRV
                 </Button>
             </Flex>

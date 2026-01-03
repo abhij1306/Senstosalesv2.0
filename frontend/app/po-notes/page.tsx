@@ -15,6 +15,6 @@ export default async function PONotesPage() {
     const templates = await getTemplates();
 
     return (
-        <PONoteListClient initialTemplates={templates} />
+        <PONoteListClient initialNotes={templates} />
     );
 }

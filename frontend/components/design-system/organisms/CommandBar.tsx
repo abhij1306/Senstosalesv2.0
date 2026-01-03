@@ -216,8 +216,7 @@ export function CommandBar() {
                                                 </div>
                                             )}
                                             <StatusBadge
-                                                status={result.status || "Active"}
-                                                variant={selectedIndex === idx ? "neutral" : "success"}
+                                                status={(result.status || "Active") as any}
                                                 className={cn(
                                                     "px-2 py-0.5 text-[9px]",
                                                     selectedIndex === idx &&

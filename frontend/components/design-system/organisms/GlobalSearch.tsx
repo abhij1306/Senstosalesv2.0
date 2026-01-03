@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 import { api, SearchResult } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "../atoms/StatusBadge";
-import { H3, Body, SmallText, Label, MonoCode, Accounting, Caption1 } from "../atoms/Typography";
+import { Title3, Body, SmallText, Label, MonoCode, Accounting, Caption1 } from "../atoms/Typography";
 
 // --- Types ---
 type NavItem = {
@@ -410,11 +410,11 @@ export default function GlobalSearch() {
                 {renderIcon(selectedItem, "w-7 h-7 text-app-fg")}
               </div>
 
-              <H3 className="text-text-primary mb-1 uppercase tracking-tight">
+              <Title3 className="text-text-primary mb-1 uppercase tracking-tight">
                 {selectedItem.type === "NAV"
                   ? selectedItem.label
                   : selectedItem.number}
-              </H3>
+              </Title3>
               <Body className="text-app-fg-muted mb-8">
                 {selectedItem.type === "NAV"
                   ? "Navigation Command"
@@ -450,7 +450,7 @@ export default function GlobalSearch() {
                       </span>
                       <StatusBadge
                         status={
-                          (selectedItem as SearchResult).status || "Active"
+                          (selectedItem as SearchResult).status as any || "Active"
                         }
                         className="text-[10px] py-0.5 px-2"
                       />

@@ -1,153 +1,244 @@
 /* ============================================
-   SENSTOSALES DESIGN TOKENS
-   macOS Tahoe Edition - "Liquid Glass"
+   SENSTOSALES DESIGN SYSTEM
+   Single Source of Truth Architecture
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+/* Imports semantic & primitives moved to layout.tsx */
+
 @import "tailwindcss";
+
+@theme {
+  /* ==========================================
+     TAILWIND 4 SEMANTIC MAPPING
+     ========================================== */
+
+  /* COLORS */
+  --color-background: var(--bg-app);
+  --color-foreground: var(--text-primary);
+
+  --color-border: var(--border-default);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+
+  --color-surface: var(--bg-surface);
+  --color-surface-elevated: var(--bg-surface-elevated);
+  --color-surface-sunken: var(--bg-surface-sunken);
+  --color-surface-variant: var(--bg-surface-variant);
+
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-container: var(--on-secondary-container);
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+
+  --color-action-primary: var(--action-primary);
+  --color-action-secondary: var(--action-secondary);
+  --color-action-destructive: var(--action-destructive);
+
+  --color-status-success: var(--status-success);
+  --color-status-warning: var(--status-warning);
+  --color-status-error: var(--status-error);
+  --color-status-info: var(--status-info);
+
+  /* ELEVATION */
+  --shadow-1: var(--elevation-1);
+  --shadow-2: var(--elevation-2);
+  --shadow-3: var(--elevation-3);
+  --shadow-4: var(--elevation-4);
+  --shadow-5: var(--elevation-5);
+
+  /* SPACING */
+  --spacing-1: var(--space-1);
+  --spacing-2: var(--space-2);
+  --spacing-3: var(--space-3);
+  --spacing-4: var(--space-4);
+  --spacing-5: var(--space-5);
+  --spacing-6: var(--space-6);
+  --spacing-8: var(--space-8);
+  --spacing-10: var(--space-10);
+  --spacing-12: var(--space-12);
+  --spacing-16: var(--space-16);
+
+  /* RADIUS */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+}
+
+@layer base {
+
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--border-default, currentColor);
+  }
+}
 
 :root {
   /* ==========================================
-     TYPOGRAPHY SYSTEM
+     TYPOGRAPHY SYSTEM - MATERIAL 3
      ========================================== */
-  /* Font Families - System Stack */
-  /* Font Families - Strict macOS 3-Font System with Inter Fallback for Windows */
-  --font-display: 'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-text: 'SF Pro Text', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-display: 'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-text: 'SF Pro Text', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
 
-  /* Type Scale - PREMIUM ERP (Compact but legible) */
-  --text-caption-2: 0.6875rem;
-  /* 11px */
-  --text-caption-1: 0.75rem;
-  /* 12px */
-  --text-footnote: 0.8125rem;
-  /* 13px */
-  --text-subhead: 0.875rem;
-  /* 14px */
-  --text-callout: 0.9375rem;
-  /* 15px */
-  --text-body: 0.9375rem;
-  /* 15px - COMPACT */
-  --text-headline: 1rem;
-  /* 16px */
-  --text-title-3: 1.125rem;
-  /* 18px */
-  --text-title-2: 1.375rem;
-  /* 22px */
-  --text-title-1: 1.75rem;
-  /* 28px */
-  --text-large-title: 2.125rem;
-  /* 34px */
-
-  /* Font Weights - STRICTLY REGULAR for ERP Density */
-  --font-ultralight: 400;
-  --font-thin: 400;
-  --font-light: 400;
-  --font-regular: 400;
-  --font-medium: 400;
-  --font-semibold: 400;
-  --font-bold: 400;
-
-  /* Spacing Scale - STANDARD (Don't break layouts, just use smaller vals in components) */
-  --spacing-0: 0;
-  --spacing-1: 0.25rem;
-  /* 4px */
-  --spacing-2: 0.5rem;
-  /* 8px */
-  --spacing-3: 0.75rem;
-  /* 12px */
-  --spacing-4: 1rem;
-  /* 16px */
-  --spacing-5: 1.25rem;
-  /* 20px */
-  --spacing-6: 1.5rem;
-  /* 24px */
-  --spacing-8: 2rem;
-  /* 32px */
-  --spacing-10: 2.5rem;
-  /* 40px */
-  --spacing-12: 3rem;
-  /* 48px */
-  --spacing-16: 4rem;
-  /* 64px */
-  --spacing-3: 0.5rem;
-  /* 8px (was 12px) */
-  --spacing-4: 0.75rem;
-  /* 12px (was 16px) */
-  --spacing-5: 1rem;
-  /* 16px (was 20px) */
-  --spacing-6: 1.25rem;
-  /* 20px (was 24px) */
-  --spacing-8: 1.5rem;
-  /* 24px (was 32px) */
-  --spacing-10: 2rem;
-  /* 32px (was 40px) */
-  --spacing-12: 2.5rem;
-  /* 40px (was 48px) */
-  --spacing-16: 3rem;
-  /* 48px (was 64px) */
-
-  /* ==========================================
-     COLOR SYSTEM - Semantic Tokens
-     ========================================== */
-
-  /* Glass Surfaces */
-  --glass-surface-light: rgba(255, 255, 255, 0.40);
-  --glass-surface-dark: rgba(20, 20, 20, 0.40);
-
-  --glass-border-light: rgba(255, 255, 255, 0.3);
-  --glass-border-dark: rgba(255, 255, 255, 0.08);
-
-  /* Mapping to generic variables for mode support using CSS var fallback or class check */
-  /* Default to Light Mode */
-  --glass-surface: var(--glass-surface-light);
-  --glass-border: var(--glass-border-light);
-
-  --accent-color: #007AFF;
-  /* Default Blue */
-
-  /* Surface Colors (RGB for Tailwind alpha support) */
-  --surface-primary: 255 255 255;
-  --surface-secondary: 235 242 255;
-  /* Blue-tinted light gray */
-
-  /* Text Colors */
-  --text-primary: 15 23 42;
-  /* Slate 900 */
-  --text-secondary: 71 85 105;
-  /* Slate 600 - subtle blue tint */
-  --text-tertiary: 100 116 139;
-  /* Slate 500 */
-  --text-quaternary: 148 163 184;
-  /* Slate 400 */
-
-  /* Semantic Colors */
-  --system-red: 255 59 48;
-  --system-green: 52 199 89;
-  --system-yellow: 255 204 0;
-  --system-blue: 0 122 255;
+  /* M3 Utility Typography Classes */
+  --m3-label-l-size: 0.875rem;
+  --m3-body-m-size: 0.875rem;
+  --m3-body-s-size: 0.75rem;
+  --m3-title-l-size: 1.375rem;
 }
 
-/* Dark Mode Overrides */
+/* M3 Utility Classes - Using @utility for TW4 support */
+@utility m3-label-large {
+  font-size: var(--m3-label-l-size);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.25rem;
+}
+
+@utility m3-label-medium {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  line-height: 1rem;
+}
+
+@utility m3-label-small {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  line-height: 1rem;
+}
+
+@utility m3-body-large {
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1.5rem;
+}
+
+@utility m3-body-medium {
+  font-size: var(--m3-body-m-size);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.25rem;
+}
+
+@utility m3-body-small {
+  font-size: var(--m3-body-s-size);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1rem;
+}
+
+@utility m3-title-large {
+  font-size: var(--m3-title-l-size);
+  font-weight: 400;
+  line-height: 1.75rem;
+}
+
+@utility m3-title-medium {
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.5rem;
+}
+
+@utility m3-title-small {
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.25rem;
+}
+
+/* Mapping existing Atomic classes to M3 roles */
+.type-title-1 {
+  @apply m3-title-large font-medium;
+}
+
+.type-title-2 {
+  @apply m3-title-medium;
+}
+
+.type-title-3 {
+  @apply m3-title-small;
+}
+
+.type-body {
+  @apply m3-body-medium;
+}
+
+.type-subhead {
+  @apply m3-body-small font-medium;
+}
+
+.type-footnote {
+  @apply m3-body-small;
+}
+
+.type-caption-1 {
+  @apply m3-label-large;
+}
+
+.type-caption-2 {
+  @apply m3-label-medium;
+}
+
+.type-mono {
+  @apply font-mono m3-body-medium tracking-tight;
+}
+
+/* ==========================================
+   M3 SURFACE UTILITIES 
+   ========================================== */
+.m3-surface {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.m3-surface-variant {
+  background-color: var(--bg-surface-variant);
+  color: var(--text-secondary);
+}
+
+.m3-container-primary {
+  background-color: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.m3-container-secondary {
+  background-color: var(--secondary-container);
+  color: var(--on-secondary-container);
+}
+
+
+/* Dark Mode Overrides - DISABLED / FORCED BLUE-BLACK */
 .dark {
   --glass-surface: var(--glass-surface-dark);
   --glass-border: var(--glass-border-dark);
 
   /* Surfaces - Dark Application */
   --surface-primary: 15 23 42;
-  /* Deep Navy */
+  /* Deep Navy - NO GREY */
   --surface-secondary: 30 41 59;
-  /* Slate 800 */
+  /* Slate 800 - Cool Tone */
 
-  --text-primary: 248 250 252;
-  /* Slate 50 */
+  --text-primary: 255 255 255;
   --text-secondary: 203 213 225;
-  /* Slate 300 */
   --text-tertiary: 148 163 184;
-  /* Slate 400 */
   --text-quaternary: 100 116 139;
-  /* Slate 500 */
+
+  /* Borders */
+  --border-primary: 255 255 255;
+  --border-secondary: 51 65 85;
 }
 
 /* ============================================
@@ -165,17 +256,22 @@
   /* Subtle elevation */
 }
 
-/* Glass Panel - macOS Tahoe Style */
+/* Glass Panel - macOS Tahoe Style - SOLID WHITE */
 .glass-panel {
   background: rgba(255, 255, 255, 1.0);
-  backdrop-filter: blur(60px) saturate(200%);
-  -webkit-backdrop-filter: blur(60px) saturate(200%);
   border: none;
   border-radius: 20px;
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.06),
-    0 2px 4px rgba(0, 0, 0, 0.03),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.dark .glass-panel {
+  background: rgba(30, 41, 59, 1.0);
+  border: none;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .dark .glass-panel {
@@ -209,26 +305,22 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Glass Card Variants - macOS Tahoe Style */
+/* Glass Card Variants - macOS Tahoe Style - SOLID WHITE */
 .tahoe-glass-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(50px) saturate(200%);
-  -webkit-backdrop-filter: blur(50px) saturate(200%);
+  background: rgba(255, 255, 255, 1.0);
   border: none;
   border-radius: 20px;
   box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    0 1px 2px rgba(0, 0, 0, 0.02),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .dark .tahoe-glass-card {
-  background: rgba(30, 30, 35, 0.6);
+  background: rgba(30, 41, 59, 1.0);
   border: none;
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.25),
-    0 2px 4px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .tahoe-glass-pill {

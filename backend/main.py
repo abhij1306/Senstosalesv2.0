@@ -8,7 +8,6 @@ import logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from backend.core.exceptions import ResourceNotFoundException, DomainError
 
 # Import Routers
 from backend.api import (
@@ -27,7 +26,7 @@ from backend.api import (
     system,
 )
 from backend.core.config import settings as app_settings
-from backend.core.exceptions import AppException
+from backend.core.exceptions import AppException, ResourceNotFoundException
 
 # Setup structured logging
 logging.basicConfig(level=logging.INFO)

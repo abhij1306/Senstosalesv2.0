@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
-import { H1, SmallText } from "../atoms/Typography";
+import { Title1, SmallText, Body } from "../atoms/Typography";
 import { SummaryCards, type SummaryCardProps } from "../organisms/SummaryCards";
 import { DataTable, type Column } from "../organisms/DataTable";
 import { cn } from "@/lib/utils";
+import { DocumentTemplate } from "./DocumentTemplate";
 
 /**
  * ListPageTemplate - Atomic Design System v1.0
@@ -49,8 +50,6 @@ export interface ListPageTemplateProps<T = any> {
     icon?: React.ReactNode;
     iconLayoutId?: string;
 }
-
-import { DocumentTemplate } from "./DocumentTemplate";
 
 export function ListPageTemplate<T extends Record<string, any>>({
     title,

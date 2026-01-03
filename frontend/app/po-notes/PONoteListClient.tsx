@@ -9,7 +9,7 @@ import {
     Flex,
     Button,
     Label,
-    H3,
+    Title3,
     Body,
     Box,
     Card,
@@ -20,11 +20,11 @@ import { PONoteDialog } from "./organisms/PONoteDialog";
 import { PONoteDeleteDialog } from "./organisms/PONoteDeleteDialog";
 
 interface PONoteListClientProps {
-    initialTemplates: PONote[];
+    initialNotes: PONote[];
 }
 
-export function PONoteListClient({ initialTemplates }: PONoteListClientProps) {
-    const [templates, setTemplates] = useState<PONote[]>(initialTemplates);
+export function PONoteListClient({ initialNotes }: PONoteListClientProps) {
+    const [templates, setTemplates] = useState<PONote[]>(initialNotes);
     const [loading, setLoading] = useState(false);
     const [showForm, setShowForm] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
@@ -69,6 +69,10 @@ export function PONoteListClient({ initialTemplates }: PONoteListClientProps) {
         setShowForm(true);
     }, []);
 
+    const handleDeleteClick = useCallback((template: PONote) => {
+        setDeleteId(template.id);
+    }, []);
+
     const handleDeleteConfirm = useCallback(async () => {
         if (!deleteId) return;
         try {
@@ -106,8 +110,7 @@ export function PONoteListClient({ initialTemplates }: PONoteListClientProps) {
             <Box className="mt-2">
                 {templates.length > 0 ? (
                     <Grid
-                        cols={1}
-                        className="sm:grid-cols-2 xl:grid-cols-3"
+                        className="grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
                         gap={4}
                     >
                         {templates.map((template) => (
@@ -115,16 +118,16 @@ export function PONoteListClient({ initialTemplates }: PONoteListClientProps) {
                                 key={template.id}
                                 template={template}
                                 onEdit={handleEdit}
-                                onDelete={setDeleteId}
+                                onDelete={handleDeleteClick}
                             />
                         ))}
                     </Grid>
                 ) : (
-                    <Card className="p-16 flex flex-col items-center justify-center text-center bg-app-surface/30 border-dashed border-2 border-app-border/30">
-                        <div className="w-16 h-16 rounded-full bg-app-overlay/5 flex items-center justify-center text-app-fg-muted mb-4">
+                    <Card className="p-16 flex flex-col items-center justify-center text-center tahoe-glass-card border-dashed">
+                        <div className="w-16 h-16 rounded-full bg-surface-secondary/50 flex items-center justify-center text-app-fg-muted mb-4">
                             <FileText className="w-8 h-8 opacity-20" />
                         </div>
-                        <H3 className="text-lg mb-2">Null Policy Matrix</H3>
+                        <Title3 className="text-lg mb-2">Null Policy Matrix</Title3>
                         <Body className="text-app-fg-muted mb-6 max-w-sm">
                             No standardized clauses detected. Provision a new term to accelerate document lifecycle.
                         </Body>

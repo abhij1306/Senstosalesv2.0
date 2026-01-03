@@ -26,6 +26,7 @@ import {
     TabsTrigger,
     TabsContent,
     MonoCode,
+    Card,
 } from "@/components/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
@@ -37,7 +38,7 @@ const DocumentJourney = dynamic(
             (mod) => mod.DocumentJourney
         ),
     {
-        loading: () => <div className="h-6 w-48 bg-app-surface-hover rounded-full animate-pulse" />,
+        loading: () => <div className="h-6 w-48 bg-surface-variant/30 rounded-full animate-pulse" />,
         ssr: false,
     }
 );
@@ -86,7 +87,7 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
     const topActions = (
         <div className="flex gap-3">
             <Button
-                variant="excel"
+                variant="secondary"
                 asChild
             >
                 <a href={`${API_BASE_URL}/api/dc/${dcId}/download`} target="_blank" rel="noreferrer">
@@ -105,9 +106,9 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
             )}
             {!hasInvoice && (
                 <Button
-                    variant="default"
-                    className="bg-blue-600 text-white hover:bg-blue-700 hover:text-white border-transparent"
+                    variant="primary"
                     onClick={() => router.push(`/invoice/create?dc=${dcId}`)}
+                    className="whitespace-nowrap"
                 >
                     <Plus size={16} />
                     Create Invoice
@@ -123,7 +124,7 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
             actions={topActions}
             onBack={() => router.push("/dc")}
             layoutId={`dc-title-${header.dc_number}`}
-            icon={<Truck size={22} className="text-system-blue" />}
+            icon={<Truck size={22} className="text-action-primary" />}
             iconLayoutId={`dc-icon-${header.dc_number}`}
         >
             <div className="space-y-6">
@@ -134,7 +135,7 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
 
 
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="mb-4 bg-blue-500/5 p-1 rounded-xl w-fit border-none backdrop-blur-sm">
+                    <TabsList className="mb-4 bg-surface p-1 rounded-xl w-fit border-none shadow-1">
                         <TabsTrigger value="basic">Basic Info</TabsTrigger>
                         <TabsTrigger value="supplier">Supplier</TabsTrigger>
                         <TabsTrigger value="consignee">Consignee</TabsTrigger>
@@ -148,21 +149,21 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                             exit={{ opacity: 0, y: -5 }}
                             transition={{ duration: 0.15 }}
                         >
-                            <div className="bg-app-surface rounded-xl elevation-2 p-6 mt-0">
+                            <div className="bg-surface rounded-xl shadow-1 p-6 mt-0">
                                 <TabsContent value="basic" className="mt-0">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div className="space-y-1">
                                             <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">DC Number</Caption2>
-                                            <div className="text-text-primary px-3 py-1.5 bg-blue-500/5 rounded-lg border-none text-[12px] font-medium transition-all">{header.dc_number}</div>
+                                            <div className="text-text-primary px-3 py-1.5 bg-surface-variant/30 rounded-lg text-[12px] font-medium">{header.dc_number}</div>
                                         </div>
                                         <div className="space-y-1">
                                             <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">DC Date</Caption2>
-                                            <div className="text-text-primary px-3 py-1.5 bg-blue-500/5 rounded-lg border-none text-[12px] transition-all">{header.dc_date}</div>
+                                            <div className="text-text-primary px-3 py-1.5 bg-surface-variant/30 rounded-lg text-[12px]">{header.dc_date}</div>
                                         </div>
                                         <div className="space-y-1">
                                             <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">PO Reference</Caption2>
                                             <button
-                                                className="w-full text-left px-3 py-1.5 bg-blue-500/5 hover:bg-app-accent/10 rounded-lg border-none text-app-accent font-medium transition-all text-[12px]"
+                                                className="w-full text-left px-3 py-1.5 bg-surface-variant/30 hover:bg-primary-container hover:text-on-primary-container rounded-lg text-action-primary font-medium transition-all text-[12px]"
                                                 onClick={() => router.push(`/po/${header.po_number}`)}
                                             >
                                                 #{header.po_number}
@@ -174,22 +175,24 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-1">
                                             <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">Supplier Phone</Caption2>
-                                            <div className="text-text-primary px-3 py-1.5 bg-blue-500/5 rounded-lg border-none text-[12px] transition-all">{header.supplier_phone}</div>
+                                            <div className="text-text-primary px-3 py-1.5 bg-surface-variant/30 rounded-lg text-[12px]">{header.supplier_phone}</div>
                                         </div>
                                         <div className="space-y-1">
                                             <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">Supplier GSTIN</Caption2>
-                                            <div className="text-text-primary px-3 py-1.5 bg-blue-500/5 rounded-lg border-none text-[12px] transition-all">{header.supplier_gstin}</div>
+                                            <div className="text-text-primary px-3 py-1.5 bg-surface-variant/30 rounded-lg text-[12px]">{header.supplier_gstin}</div>
                                         </div>
                                     </div>
                                 </TabsContent>
                                 <TabsContent value="consignee" className="mt-0">
-                                    <div className="space-y-1">
-                                        <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">Consignee Name</Caption2>
-                                        <div className="text-text-primary px-3 py-2 bg-blue-500/5 rounded-lg border-none">{header.consignee_name}</div>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">Consignee Address</Caption2>
-                                        <div className="text-text-primary px-3 py-1.5 bg-blue-500/5 rounded-lg border-none min-h-[50px] text-[12px] leading-snug transition-all">{header.consignee_address}</div>
+                                    <div className="space-y-2">
+                                        <div className="space-y-1">
+                                            <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">Consignee Name</Caption2>
+                                            <div className="text-text-primary px-3 py-2 bg-surface-variant/30 rounded-lg font-medium">{header.consignee_name}</div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Caption2 className="text-text-tertiary uppercase tracking-widest text-[9px] opacity-70">Consignee Address</Caption2>
+                                            <div className="text-text-primary px-3 py-2 bg-surface-variant/30 rounded-lg text-[12px] leading-snug">{header.consignee_address}</div>
+                                        </div>
                                     </div>
                                 </TabsContent>
                             </div>
@@ -199,17 +202,18 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
 
                 {/* Items Table with Parent-Lot Hierarchy */}
                 <div className="space-y-2">
-                    <div className="tahoe-glass-card elevation-1 overflow-hidden">
-                        <table className="table-standard w-full table-fixed">
+                    <Card padding="none" className="overflow-hidden bg-surface shadow-1">
+                        <table className="w-full table-fixed border-collapse">
                             <thead>
-                                <tr className="header-glass">
+                                <tr className="bg-surface-variant border-none">
                                     <th className="py-2.5 px-3 text-center w-[50px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80">#</Caption1></th>
                                     <th className="py-2.5 px-3 text-left w-[110px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80">Code</Caption1></th>
                                     <th className="py-2.5 px-3 text-left w-[110px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80">Drawing</Caption1></th>
                                     <th className="py-2.5 px-3 text-left border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80">Description</Caption1></th>
                                     <th className="py-2.5 px-3 text-left w-[60px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80">Unit</Caption1></th>
                                     <th className="py-2.5 px-3 text-right w-[80px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80 block text-right">Ord</Caption1></th>
-                                    <th className="py-2.5 px-3 text-right w-[90px] bg-blue-600/5 dark:bg-blue-400/5 border-none"><Caption1 className="text-app-accent uppercase tracking-widest text-[11px] opacity-80 block text-right">Qty</Caption1></th>
+                                    <th className="py-2.5 px-3 text-right w-[90px] bg-action-primary/5 border-none"><Caption1 className="text-action-primary uppercase tracking-widest text-[11px] opacity-80 block text-right">Dlv</Caption1></th>
+                                    <th className="py-2.5 px-3 text-right w-[90px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80 block text-right">Recd</Caption1></th>
                                     <th className="py-2.5 px-3 text-right w-[90px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80 block text-right">Rate</Caption1></th>
                                     <th className="py-2.5 px-3 text-right w-[100px] border-none"><Caption1 className="uppercase tracking-widest text-[11px] opacity-80 block text-right">Value</Caption1></th>
                                 </tr>
@@ -222,7 +226,7 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
 
                                     return (
                                         <React.Fragment key={parentItem.po_item_id || groupIdx}>
-                                            <tr className="bg-blue-500/5 border-none opacity-100">
+                                            <tr className="bg-surface-variant/30 border-none transition-colors">
                                                 <td className="py-2.5 px-3 text-center w-[50px] border-none">
                                                     <MonoCode className="border-none bg-transparent p-0 text-[11px] opacity-70 font-regular">
                                                         #{parentItem.po_item_no || groupIdx + 1}
@@ -247,8 +251,13 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                                                         {group.reduce((sum, i) => sum + (i.ordered_quantity || 0), 0)}
                                                     </Accounting>
                                                 </td>
-                                                <td className="py-2.5 px-3 w-[90px] text-right bg-blue-600/5 dark:bg-blue-400/5 border-none">
-                                                    <Accounting className="text-base text-app-accent font-regular pr-0">{totalDisp}</Accounting>
+                                                <td className="py-2.5 px-3 w-[90px] text-right bg-action-primary/5 border-none">
+                                                    <Accounting className="text-base text-action-primary font-regular pr-0">{totalDisp}</Accounting>
+                                                </td>
+                                                <td className="py-2.5 px-3 w-[90px] text-right border-none">
+                                                    <Accounting className="text-base text-text-tertiary font-regular pr-0">
+                                                        {group.reduce((sum, i) => sum + (i.received_quantity || 0), 0)}
+                                                    </Accounting>
                                                 </td>
                                                 <td className="py-2.5 px-3 w-[90px] text-right border-none">
                                                     <Accounting className="text-base text-text-primary font-regular pr-0">{parentItem.po_rate?.toFixed(2) || "-"}</Accounting>
@@ -265,7 +274,7 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                                                 return (
                                                     <tr key={item.id} className="bg-transparent border-none">
                                                         <td className="py-2 px-3 text-center w-[50px] border-none">
-                                                            <div className="w-[1px] h-4 bg-app-accent/20 mx-auto" />
+                                                            <div className="w-[1px] h-4 bg-action-primary/20 mx-auto" />
                                                         </td>
                                                         <td className="py-2 px-3 w-[110px] text-left border-none">
                                                             <div className="flex items-center gap-2">
@@ -278,10 +287,13 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                                                         <td className="py-2 px-3 w-[80px] text-right border-none">
                                                             <Accounting className="text-sm text-text-secondary font-regular pr-0">{item.ordered_quantity}</Accounting>
                                                         </td>
-                                                        <td className="py-2 px-3 w-[90px] text-right bg-blue-600/5 dark:bg-blue-400/5 border-none">
-                                                            <Accounting className="text-sm text-app-accent font-regular pr-0">
+                                                        <td className="py-2 px-3 w-[90px] text-right bg-action-primary/5 border-none">
+                                                            <Accounting className="text-sm text-action-primary font-regular pr-0">
                                                                 {item.dispatch_quantity}
                                                             </Accounting>
+                                                        </td>
+                                                        <td className="py-2 px-3 w-[90px] text-right border-none">
+                                                            <Accounting className="text-sm text-text-secondary font-regular pr-0">{item.received_quantity}</Accounting>
                                                         </td>
                                                         <td className="py-2 px-3 w-[90px] text-right border-none" />
                                                         <td className="py-2 px-3 w-[100px] text-right border-none">
@@ -297,20 +309,20 @@ export default function DCDetailClient({ initialData, initialInvoiceData }: DCDe
                                 })}
                             </tbody>
                         </table>
-                    </div>
+                    </Card>
                 </div>
 
                 {notes.length > 0 && (
-                    <div className="p-6 bg-app-surface rounded-xl elevation-2 mt-6">
-                        <Caption1 className="mb-4 block uppercase tracking-wide text-text-tertiary">Additional Notes</Caption1>
+                    <Card className="bg-surface shadow-1 mt-6">
+                        <Caption1 className="mb-4 block uppercase tracking-widest text-[10px] text-text-tertiary">Additional Notes</Caption1>
                         <div className="space-y-2">
                             {notes.map((note, idx) => (
-                                <div key={`note-${idx}`} className="p-3 bg-blue-500/5 rounded-xl">
-                                    <Body className="text-text-secondary italic leading-relaxed">{note}</Body>
+                                <div key={`note-${idx}`} className="p-4 bg-surface-variant/20 rounded-xl">
+                                    <Body className="text-text-secondary italic leading-relaxed text-sm">{note}</Body>
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </Card>
                 )}
             </div>
         </DocumentTemplate>

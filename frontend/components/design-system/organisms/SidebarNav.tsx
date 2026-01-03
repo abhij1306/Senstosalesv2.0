@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Caption1, Body, Headline, Footnote } from "../atoms/Typography";
+import { Caption1, Body, Footnote } from "../atoms/Typography";
 
 const navGroups = [
   {
@@ -47,7 +47,7 @@ export function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 flex-shrink-0 flex flex-col tahoe-glass z-20 m-4 ml-4 rounded-[24px] overflow-hidden">
+    <aside className="w-64 flex-shrink-0 flex flex-col bg-surface shadow-2 z-20 m-4 ml-4 rounded-[24px] overflow-hidden border-none transition-smooth">
       {/* Brand Header */}
       <div className="h-16 flex items-center px-6">
         <div className="flex items-center gap-3">

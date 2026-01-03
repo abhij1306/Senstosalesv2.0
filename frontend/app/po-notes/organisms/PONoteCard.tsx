@@ -10,13 +10,13 @@ import {
     Hash
 } from "lucide-react";
 import { PONote } from "@/lib/api";
-import { Card, Button, Badge, H3, SmallText, Flex, Stack, Box } from "@/components/design-system";
+import { Card, Button, Badge, Title3, SmallText, Flex, Stack, Box } from "@/components/design-system";
 import { cn } from "@/lib/utils";
 
 interface PONoteCardProps {
     template: PONote;
     onEdit: (template: PONote) => void;
-    onDelete: (id: number) => void;
+    onDelete: (template: PONote) => void;
 }
 
 export const PONoteCard = ({ template, onEdit, onDelete }: PONoteCardProps) => {
@@ -34,9 +34,9 @@ export const PONoteCard = ({ template, onEdit, onDelete }: PONoteCardProps) => {
                             <FileText className="w-5 h-5 text-app-fg-muted group-hover:text-app-accent transition-colors" />
                         </div>
                         <Stack gap={1}>
-                            <H3 className="text-sm font-black tracking-tight text-app-fg line-clamp-1 group-hover:text-app-accent transition-colors">
+                            <Title3 className="text-sm font-black tracking-tight text-app-fg line-clamp-1 group-hover:text-app-accent transition-colors">
                                 {template.title}
-                            </H3>
+                            </Title3>
                             <Flex align="center" gap={1.5}>
                                 <Hash className="w-2.5 h-2.5 text-app-fg-muted" />
                                 <span className="text-[10px] font-bold text-app-fg-muted uppercase tracking-widest opacity-50">
@@ -58,7 +58,7 @@ export const PONoteCard = ({ template, onEdit, onDelete }: PONoteCardProps) => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => onDelete(template.id)}
+                            onClick={() => onDelete(template)}
                             className="w-8 h-8 rounded-lg hover:bg-app-status-error/10 text-app-fg-muted hover:text-app-status-error transition-colors"
                             title="Purge Clause"
                         >

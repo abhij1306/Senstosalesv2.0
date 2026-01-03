@@ -53,7 +53,7 @@ export function DocumentActions({
         <div className="flex gap-3">
             {onDownload && (
                 <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={onDownload}
                     className="text-emerald-700 border-emerald-200 bg-emerald-50 hover:bg-emerald-100"

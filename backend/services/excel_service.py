@@ -314,8 +314,8 @@ class ExcelService:
         - Totals start Row 16+ (Shifted if items > 1)
         """
         import os
+
         import openpyxl
-        from backend.core.num_to_words import amount_to_words
 
         template_path = "Invoice_4544.xlsx"
         if not os.path.exists(template_path):

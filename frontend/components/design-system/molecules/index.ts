@@ -4,7 +4,6 @@ export * from "./Dialog";
 export * from "./DocumentJourney";
 export * from "./EmptyState";
 export * from "./FormField";
-export * from "./FormFields";
 export * from "./NavigationCard";
 export * from "./Pagination";
 export * from "./PaginationControls";

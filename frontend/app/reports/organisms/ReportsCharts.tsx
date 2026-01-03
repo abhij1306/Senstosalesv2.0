@@ -89,7 +89,7 @@ const ReportsCharts = ({ activeTab, chartData }: ReportsChartsProps) => {
                                         contentStyle={{
                                             borderRadius: "12px",
                                             border: "1px solid hsl(var(--system-blue) / 0.2)",
-                                            boxShadow: "var(--shadow-lg)",
+                                            boxShadow: "var(--shadow-3)",
                                             color: "rgb(var(--app-fg-primary))",
                                             fontSize: "11px",
                                             marginBottom: "4px",
@@ -102,7 +102,7 @@ const ReportsCharts = ({ activeTab, chartData }: ReportsChartsProps) => {
                                     <Bar
                                         name="Ordered"
                                         dataKey="ordered_value"
-                                        fill="#2563EB" // blue-600
+                                        fill="rgb(var(--color-sys-primary))" // primary
                                         radius={[6, 6, 0, 0]}
                                         maxBarSize={40}
                                         opacity={0.9}
@@ -110,7 +110,7 @@ const ReportsCharts = ({ activeTab, chartData }: ReportsChartsProps) => {
                                     <Bar
                                         name="Delivered"
                                         dataKey="delivered_value"
-                                        fill="#16A34A" // green-600
+                                        fill="rgb(var(--status-success))"
                                         radius={[6, 6, 0, 0]}
                                         maxBarSize={40}
                                         opacity={0.9}

@@ -24,7 +24,7 @@ export function ThemeToggle() {
   if (!mounted) return null;
 
   return (
-    <div className="inline-flex p-1 bg-app-surface/50 backdrop-blur-md rounded-xl border-none shadow-sm">
+    <div className="inline-flex p-1 bg-surface-variant/30 backdrop-blur-md rounded-xl border-none shadow-sm">
       <div className="flex gap-1">
         {themes.map(({ value, icon: Icon, label }) => (
           <button
@@ -33,8 +33,8 @@ export function ThemeToggle() {
             className={cn(
               "flex items-center justify-center p-2 rounded-lg transition-all duration-300 relative group will-change-transform",
               theme === value
-                ? "bg-app-accent text-white shadow-lg shadow-app-accent/20 scale-105 active-glow"
-                : "text-app-fg-muted hover:bg-app-overlay/10 hover:text-app-fg"
+                ? "text-action-primary-fg shadow-lg shadow-action-primary/20 scale-105 active-glow"
+                : "text-text-tertiary hover:bg-surface-variant/50 hover:text-text-primary"
             )}
             aria-label={`Switch to ${label} theme`}
             title={label}
@@ -43,7 +43,7 @@ export function ThemeToggle() {
             {theme === value && (
               <motion.div
                 layoutId="theme-active"
-                className="absolute inset-0 bg-app-accent rounded-lg -z-10"
+                className="absolute inset-0 bg-action-primary rounded-lg -z-10"
                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
               />
             )}

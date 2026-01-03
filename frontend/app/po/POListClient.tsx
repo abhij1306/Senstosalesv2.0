@@ -18,7 +18,8 @@ import { formatDate, formatIndianCurrency } from "@/lib/utils";
 import { useDebouncedValue } from "@/lib/hooks/useDebounce";
 
 import { Button } from "@/components/design-system/atoms/Button";
-import { Body, Footnote, Accounting, Label, SmallText } from "@/components/design-system/atoms/Typography";
+import { Body, Footnote, Accounting, SmallText } from "@/components/design-system/atoms/Typography";
+import { Label } from "@/components/design-system/atoms/Label";
 import { StatusBadge } from "@/components/design-system/atoms/StatusBadge";
 import { useUpload } from "@/components/providers/UploadContext";
 import { SearchBar } from "@/components/design-system/molecules/SearchBar";
@@ -34,7 +35,7 @@ const columns: Column<POListItem>[] = [
         width: "15%",
         render: (_value, po) => (
             <Link href={`/po/${po.po_number}`} className="block group">
-                <Footnote className="group-hover:text-app-accent transition-colors">
+                <Footnote className="group-hover:text-action-primary transition-colors">
                     #{po.po_number}
                 </Footnote>
             </Link>
@@ -117,8 +118,8 @@ const columns: Column<POListItem>[] = [
         render: (v) => (
             <div className="flex justify-center">
                 <StatusBadge
-                    status={String(v).toUpperCase()}
-                    className="border-none shadow-none bg-app-overlay/5"
+                    status={String(v || "Pending").toLowerCase() as any}
+                    className="border-none shadow-none bg-surface-variant/30"
                 />
             </div>
         ),
@@ -209,7 +210,6 @@ export function POListClient({ initialPOs, initialStats }: POListClientProps) {
     const toolbar = (
         <Flex align="center" justify="between" className="w-full" gap={4}>
             <SearchBar
-                id="po-search"
                 value={searchQuery}
                 onChange={handleSearch}
                 placeholder="Search orders, items, or status..."
@@ -228,7 +228,7 @@ export function POListClient({ initialPOs, initialStats }: POListClientProps) {
                 <Button
                     variant="secondary"
                     onClick={handleUploadClick}
-                    className="min-w-[140px] border-none rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/25"
+                    className="min-w-[140px] whitespace-nowrap"
                 >
                     <Upload size={16} />
                     Upload PO
@@ -237,7 +237,7 @@ export function POListClient({ initialPOs, initialStats }: POListClientProps) {
                 <Button
                     variant="primary"
                     onClick={() => router.push("/po/create")}
-                    className="min-w-[170px] border-none rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25"
+                    className="min-w-[170px] whitespace-nowrap"
                 >
                     <Plus size={18} />
                     Create PO

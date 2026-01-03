@@ -6,15 +6,13 @@ import {
     Bar,
     XAxis,
     YAxis,
-    CartesianGrid,
     Tooltip,
     ResponsiveContainer,
-    Cell,
 } from "recharts";
 import { TrendingUp } from "lucide-react";
-import { motion } from "framer-motion";
 import { Flex, Stack, Box } from "@/components/design-system/atoms/Layout";
-import { Body, SmallText, H3 } from "@/components/design-system/atoms/Typography";
+import { SmallText, Title3 } from "@/components/design-system/atoms/Typography";
+import { Button } from "@/components/design-system/atoms/Button";
 
 interface RevenueMomentumProps {
     data: any[];
@@ -44,12 +42,12 @@ export function RevenueMomentum({ data, loading }: RevenueMomentumProps) {
                             Revenue Analytics
                         </SmallText>
                     </Flex>
-                    <H3 className="text-h3 font-black tracking-tight uppercase text-vibrancy">Revenue Momentum</H3>
+                    <Title3 className="text-h3 font-black tracking-tight uppercase text-vibrancy">Revenue Momentum</Title3>
                 </Stack>
-                <Flex align="center" gap={2} className="px-3 py-1.5 bg-white/20 dark:bg-black/20 rounded-full shadow-inner border border-white/10 backdrop-blur-md">
+                <Button variant="glass" size="sm" className="h-8 gap-1 text-app-accent p-0 px-3 py-1.5 rounded-full shadow-inner border border-white/10">
                     <div className="w-2 h-2 rounded-full bg-system-green animate-pulse shadow-[0_0_8px_rgba(var(--system-green-rgb),0.8)]" />
                     <SmallText className="font-bold text-text-secondary">Live Forecast</SmallText>
-                </Flex>
+                </Button>
             </Flex>
 
             <div className="flex-1 min-h-0 w-full">

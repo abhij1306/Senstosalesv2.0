@@ -28,8 +28,8 @@ import {
   TabsContent,
 } from "@/components/design-system/molecules/Tabs";
 import {
-  H2,
-  H3,
+  Title2,
+  Title3,
   Label,
   Body,
   SmallText,
@@ -253,7 +253,7 @@ export default function SettingsPage() {
                         <Stack gap={10}>
                           <section>
                             <Flex align="center" justify="between" className="mb-8">
-                              <H3>Business Profile</H3>
+                              <Title3>Business Profile</Title3>
                               <Button
                                 variant="primary"
                                 onClick={() =>
@@ -268,7 +268,7 @@ export default function SettingsPage() {
                                   ])
                                 }
                                 disabled={saving}
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors border-none"
+                                className="font-medium px-4"
                               >
                                 {saving ? (
                                   <Loader2 className="animate-spin" size={14} />
@@ -350,7 +350,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="lg:col-span-4 space-y-6">
-                    <div className="rounded-3xl p-6 bg-surface-secondary border-none elevation-3 relative overflow-hidden group">
+                    <div className="rounded-3xl p-6 bg-surface-primary/60 dark:bg-surface-primary/20 backdrop-blur-xl border border-white/20 elevation-3 relative overflow-hidden group">
                       <motion.div
                         className="absolute top-0 right-0 p-4 opacity-5 group-hover:rotate-12 transition-transform duration-500"
                         whileHover={{ scale: 1.2 }}
@@ -360,9 +360,9 @@ export default function SettingsPage() {
                       <Label className="text-text-tertiary mb-6 tracking-[0.2em]">
                         IDENTITY PREVIEW
                       </Label>
-                      <H2 className="mb-2 text-text-primary line-clamp-2">
+                      <Title2 className="mb-2 text-text-primary line-clamp-2">
                         {settings.supplier_name || "Enterprise Identity"}
-                      </H2>
+                      </Title2>
                       <Accounting className="text-text-secondary text-sm mb-8 block">
                         {settings.supplier_gstin || "GSTIN NOT SET"}
                       </Accounting>
@@ -389,10 +389,10 @@ export default function SettingsPage() {
                       </Stack>
                     </div>
 
-                    <Card className="p-4 bg-app-surface-hover/30 border-none">
+                    <Card className="p-4 bg-surface-secondary border border-border-secondary">
                       <Flex align="center" gap={3}>
-                        <ShieldAlert size={16} className="text-app-accent" />
-                        <SmallText className="font-medium text-app-fg-muted">
+                        <ShieldAlert size={16} className="text-text-secondary" />
+                        <SmallText className="font-medium text-text-primary">
                           Profile changes affect all future documentation.
                         </SmallText>
                       </Flex>
@@ -413,11 +413,11 @@ export default function SettingsPage() {
                         <Stack gap={8}>
                           <Flex align="center" justify="between" className="mb-4 w-full">
                             <Stack gap={1}>
-                              <H3>Buyer Identity</H3>
+                              <Title3>Buyer Identity</Title3>
                             </Stack>
                             <Button
                               variant="primary"
-                              className="bg-blue-600 hover:bg-blue-700 text-white border-none shadow-lg shadow-blue-500/20"
+                              className="px-4 shadow-1"
                               onClick={() => {
                                 handleCancelBuyerForm();
                                 setIsAddingBuyer(true);
@@ -446,9 +446,9 @@ export default function SettingsPage() {
                                       <div className="p-2 rounded-lg bg-app-accent/10 text-app-accent">
                                         {editingBuyerId ? <Edit2 size={16} /> : <Plus size={16} />}
                                       </div>
-                                      <H3 className="text-sm">
+                                      <Title3 className="text-sm">
                                         {editingBuyerId ? "Modify Market Entity" : "New Market Entity"}
-                                      </H3>
+                                      </Title3>
                                     </Flex>
                                     <Button
                                       variant="ghost"
@@ -550,7 +550,7 @@ export default function SettingsPage() {
                                       variant="primary"
                                       onClick={handleSaveBuyer}
                                       disabled={saving}
-                                      className="px-10 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors border-none"
+                                      className="px-10 font-medium"
                                     >
                                       {saving ? (
                                         <Loader2 className="animate-spin" size={14} />
@@ -651,7 +651,7 @@ export default function SettingsPage() {
 
                   {/* Sidebar Preview Column */}
                   <div className="lg:col-span-4 space-y-6">
-                    <div className="rounded-3xl p-6 bg-surface-secondary border-none elevation-3 relative overflow-hidden group">
+                    <div className="rounded-3xl p-6 bg-surface-primary/60 dark:bg-surface-primary/20 backdrop-blur-xl border border-white/20 elevation-3 relative overflow-hidden group">
                       <motion.div
                         className="absolute top-0 right-0 p-4 opacity-5 group-hover:rotate-12 transition-transform duration-500"
                         whileHover={{ scale: 1.2 }}
@@ -661,9 +661,9 @@ export default function SettingsPage() {
                       <Label className="text-text-tertiary mb-6 tracking-[0.2em]">
                         REGISTRY PREVIEW
                       </Label>
-                      <H2 className="mb-2 text-text-primary line-clamp-2">
+                      <Title2 className="mb-2 text-text-primary line-clamp-2">
                         {buyers.length} Market Entities
-                      </H2>
+                      </Title2>
                       <Accounting className="text-text-secondary text-sm mb-8 block">
                         {buyers.filter(b => b.is_default).length > 0 ? "Default entity assigned" : "No default entity"}
                       </Accounting>
@@ -725,12 +725,12 @@ export default function SettingsPage() {
                         </Label>
                       </Flex>
 
-                      <Card className="p-8 border-none bg-app-status-error/5 elevation-1 backdrop-blur-sm">
+                      <Card className="p-8 border border-status-error/10 bg-surface-primary/10 elevation-1 backdrop-blur-sm">
                         <Stack gap={6}>
                           <Stack gap={2}>
-                            <H3 className="text-app-status-error">
+                            <Title3 className="text-app-status-error">
                               Nuclear System Reset
-                            </H3>
+                            </Title3>
                             <Body className="text-app-status-error/80 text-xs leading-relaxed">
                               Permanently purge all POs, Invoices, and DC history. Identity records
                               are preserved.
@@ -748,7 +748,7 @@ export default function SettingsPage() {
                                 <Button
                                   variant="primary"
                                   onClick={() => setShowResetConfirm(true)}
-                                  className="w-full bg-red-600 hover:bg-red-700 text-white font-medium rounded-full uppercase transition-colors"
+                                  className="w-full font-medium rounded-full uppercase"
                                 >
                                   Initiate Purge
                                 </Button>
@@ -764,7 +764,7 @@ export default function SettingsPage() {
                                   variant="primary"
                                   onClick={handleSystemReset}
                                   disabled={isResetting}
-                                  className="flex-1 bg-app-status-error hover:bg-app-status-error/90 text-white"
+                                  className="flex-1 bg-status-error hover:bg-status-error/90 text-white"
                                 >
                                   {isResetting && (
                                     <Loader2 className="animate-spin" size={12} />

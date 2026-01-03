@@ -33,15 +33,16 @@ def get_dashboard_summary(db: sqlite3.Connection = Depends(get_db)):
         total_sales = sales_row[0] if sales_row and sales_row[0] else 0.0
 
         # 2. Pending/Draft POs (Live Count)
-        # We need to count POs that aren't Closed/Delivered
+        # Uses reconciliation_ledger for unified HWM logic
+        # Status "Closed" means transaction complete.
         active_pos_count = db.execute("""
-            SELECT COUNT(*) FROM purchase_orders po
-            WHERE (
-                SELECT COALESCE(SUM(ord_qty), 0) - COALESCE(SUM(received_qty), 0)
-                FROM purchase_order_items poi
-                LEFT JOIN srv_items si ON poi.po_number = si.po_number AND poi.po_item_no = si.po_item_no
-                WHERE poi.po_number = po.po_number
-            ) > 0.001
+            SELECT COUNT(*) 
+            FROM (
+                SELECT po_number, SUM(pending_qty) as total_pending
+                FROM reconciliation_ledger 
+                GROUP BY po_number
+            ) 
+            WHERE total_pending > 0.001
         """).fetchone()[0]
 
         # 3. New POs Today
@@ -115,9 +116,9 @@ def get_recent_activity(
                    po.created_at,
                    (SELECT COALESCE(SUM(ord_qty), 0) FROM purchase_order_items WHERE po_number = po.po_number) as t_ord,
                    (
-                       SELECT COALESCE(SUM(dispatch_qty), 0) 
-                       FROM delivery_challan_items dci 
-                       JOIN purchase_order_items poi ON dci.po_item_id = poi.id 
+                       SELECT COALESCE(SUM(pod.delivered_qty), 0) 
+                       FROM purchase_order_deliveries pod 
+                       JOIN purchase_order_items poi ON pod.po_item_id = poi.id 
                        WHERE poi.po_number = po.po_number
                    ) as t_del,
                    (

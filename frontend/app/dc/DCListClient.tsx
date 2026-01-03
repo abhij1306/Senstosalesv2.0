@@ -27,7 +27,7 @@ const columns: Column<DCListItem>[] = [
         width: "15%",
         render: (_value, dc) => (
             <Link href={`/dc/${encodeURIComponent(dc.dc_number)}`} className="block group">
-                <Accounting className="text-app-accent tracking-tight group-hover:underline underline-offset-4 decoration-2">
+                <Accounting className="text-action-primary tracking-tight group-hover:underline underline-offset-4 decoration-2">
                     {dc.dc_number}
                 </Accounting>
             </Link>
@@ -59,22 +59,22 @@ const columns: Column<DCListItem>[] = [
     },
     {
         key: "total_ordered_quantity",
-        label: "Ordered",
+        label: "Ord",
         align: "right",
         width: "10%",
         isNumeric: true,
         render: (v) => (
-            <Accounting className="text-app-fg pr-2">{v || 0}</Accounting>
+            <Accounting className="text-text-primary pr-2">{v || 0}</Accounting>
         ),
     },
     {
         key: "total_dispatched_quantity",
-        label: "QTY",
+        label: "Dlv",
         align: "right",
         width: "10%",
         isNumeric: true,
         render: (v) => (
-            <Accounting className="text-app-accent pr-2">
+            <Accounting className="text-action-primary pr-2">
                 {v || 0}
             </Accounting>
         ),
@@ -86,7 +86,7 @@ const columns: Column<DCListItem>[] = [
         width: "15%",
         isNumeric: true,
         render: (v) => (
-            <Accounting className="text-app-fg font-medium pr-2">
+            <Accounting className="text-text-primary font-medium pr-2">
                 {formatIndianCurrency(Number(v))}
             </Accounting>
         ),
@@ -99,7 +99,7 @@ const columns: Column<DCListItem>[] = [
         width: "15%",
         render: (v) => (
             <div className="flex justify-center">
-                <StatusBadge status={String(v).toUpperCase()} className="w-24 border-none shadow-none bg-app-overlay/5" />
+                <StatusBadge status={String(v || "Pending").toLowerCase() as any} className="w-24 border-none shadow-none bg-surface-variant/30" />
             </div>
         ),
     },
@@ -165,17 +165,16 @@ export function DCListClient({ initialDCs, initialStats }: DCListClientProps) {
     const toolbar = (
         <Flex align="center" justify="between" className="w-full" gap={4}>
             <SearchBar
-                id="dc-search"
                 value={searchQuery}
                 onChange={handleSearch}
-                placeholder="Search challans or contracts..."
+                placeholder="Search DCs, Suppliers or PO Ref..."
                 className="w-full max-w-sm"
             />
 
             <Button
                 variant="primary"
                 onClick={() => router.push("/dc/create")}
-                className="min-w-[140px] border-none rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25"
+                className="min-w-[140px] whitespace-nowrap"
             >
                 <Plus size={18} />
                 Create Challan
@@ -194,10 +193,6 @@ export function DCListClient({ initialDCs, initialStats }: DCListClientProps) {
             columns={columns}
             data={filteredDCs}
             keyField="dc_number"
-            page={page}
-            pageSize={pageSize}
-            totalItems={filteredDCs.length}
-            onPageChange={(newPage) => setPage(newPage)}
             emptyMessage="No delivery challans found"
             density="normal"
         />

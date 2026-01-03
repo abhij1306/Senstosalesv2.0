@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { H2, SmallText, Caption1, Caption2 } from "../atoms/Typography";
+import { Title2, Footnote, Caption1, Caption2 } from "../atoms/Typography";
 import { Card } from "../atoms/Card";
 import { cn } from "@/lib/utils";
 import { motion, Variants } from "framer-motion";
@@ -25,35 +25,26 @@ export interface SummaryCardProps {
 }
 
 const variantStyles = {
-    default: "text-text-primary",
-    primary: "text-text-primary",
-    success: "text-text-primary",
-    warning: "text-text-primary",
-    error: "text-text-primary",
+    default: "text-primary",
+    primary: "text-primary",
+    success: "text-primary",
+    warning: "text-primary",
+    error: "text-primary",
 };
 
 const iconBackgrounds = {
-    default: "bg-gradient-to-b from-system-blue/10 to-surface-primary/30 dark:from-surface-primary/10 dark:to-surface-primary/5",
-    primary: "bg-gradient-to-b from-[#4facfe] to-[#00f2fe] shadow-system-blue/30", // Blue-Cyan (Morning Briefing)
-    success: "bg-gradient-to-b from-[#667eea] to-[#764ba2] shadow-system-indigo/30", // Indigo-Purple (Invoiced Sales)
-    warning: "bg-gradient-to-b from-[#a18cd1] to-[#fbc2eb] shadow-system-purple/30", // Purple-Pink (Active Orders)
-    error: "bg-gradient-to-b from-[#ff9a9e] to-[#fecfef] shadow-system-red/30", // Red-Pink fallback
-    info: "bg-gradient-to-b from-[#00c6fb] to-[#005bea] shadow-system-blue/30", // Cyan-Blue (Purchase Commitment)
-};
-
-const glowColors = {
-    default: "bg-surface-secondary/30",
-    primary: "bg-system-blue/10 group-hover:bg-system-blue/15",
-    success: "bg-system-green/10 group-hover:bg-system-green/15",
-    warning: "bg-system-yellow/10 group-hover:bg-system-yellow/15",
-    error: "bg-system-red/10 group-hover:bg-system-red/15",
-    info: "bg-system-blue/10 group-hover:bg-system-blue/15",
+    default: "bg-surface-variant text-secondary",
+    primary: "bg-primary-container text-on-primary-container",
+    success: "bg-[rgba(var(--status-success),0.2)] text-[rgb(var(--status-success))]",
+    warning: "bg-[rgba(var(--status-warning),0.2)] text-[rgb(var(--status-warning))]",
+    error: "bg-[rgba(var(--status-error),0.2)] text-[rgb(var(--status-error))]",
+    info: "bg-primary-container text-on-primary-container",
 };
 
 const trendColors = {
-    up: "text-system-green bg-system-green/10",
-    down: "text-system-red bg-system-red/10",
-    neutral: "text-text-tertiary bg-text-tertiary/10",
+    up: "text-[rgb(var(--status-success))] bg-[rgba(var(--status-success),0.1)]",
+    down: "text-[rgb(var(--status-error))] bg-[rgba(var(--status-error),0.1)]",
+    neutral: "text-secondary bg-surface-variant",
 };
 
 
@@ -66,32 +57,37 @@ export const SummaryCard = React.memo(function SummaryCard({
     variant = "default",
     className,
 }: SummaryCardProps) {
-    // Map 'info' variant properly if needed, effectively using 'primary' or 'info'
-    const glowClass = glowColors[variant as keyof typeof glowColors] || glowColors.default;
     const iconClass = iconBackgrounds[variant as keyof typeof iconBackgrounds] || iconBackgrounds.default;
 
     return (
         <div
-            className={cn("tahoe-glass-card h-[145px] group transition-all duration-300 hover:scale-[1.01] hover:elevation-3 relative overflow-hidden will-change-transform", className)}
+            className={cn(
+                "group relative overflow-hidden rounded-xl shadow-1 transition-all duration-300",
+                "bg-surface hover:scale-[1.02] hover:shadow-3 will-change-transform",
+                "h-[145px]",
+                className
+            )}
         >
-            {/* Glow Blob - Added from Reference */}
-            <div className={cn("absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl transition-all duration-500 pointer-events-none will-change-[filter,opacity]", glowClass)} />
+            {/* Glow Blob - Restored for premium feel */}
+            <div className={cn(
+                "absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl opacity-15 transition-all duration-500 pointer-events-none group-hover:opacity-25",
+                variant === 'default' ? "bg-primary/20" : "bg-primary-container"
+            )} />
 
             <div className="p-5 h-full flex flex-col justify-between relative z-10">
                 <div className="flex justify-between items-start">
                     <div className="min-w-0 flex-1">
-                        <Caption1 className="uppercase tracking-wide text-text-tertiary opacity-80 mb-1 block">
+                        <Footnote className="uppercase tracking-wide text-secondary opacity-80 mb-1 block font-medium">
                             {title}
-                        </Caption1>
-                        <div className={cn("text-title-2 tracking-tight transition-colors", variantStyles[variant])}>
+                        </Footnote>
+                        <div className={cn("m3-title-medium tracking-tight transition-colors", variantStyles[variant])}>
                             {value}
                         </div>
                     </div>
                     {icon && (
                         <div className={cn(
-                            "w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-500 shrink-0 elevation-1 group-hover:rotate-6 will-change-transform",
-                            iconClass,
-                            variant !== 'default' && "text-white"
+                            "w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-500 shrink-0 shadow-1 group-hover:rotate-6 will-change-transform",
+                            iconClass
                         )}>
                             {icon}
                         </div>
@@ -100,22 +96,22 @@ export const SummaryCard = React.memo(function SummaryCard({
 
                 <div className="mt-4 flex items-center justify-between">
                     {progress !== undefined ? (
-                        <div className="w-full bg-surface-secondary/50 dark:bg-surface-secondary/30 rounded-full h-1.5 overflow-hidden">
+                        <div className="w-full bg-surface-variant rounded-full h-1.5 overflow-hidden">
                             <motion.div
                                 initial={{ width: 0 }}
                                 animate={{ width: `${progress}%` }}
                                 transition={{ duration: 1, ease: "easeOut" }}
                                 className={cn(
                                     "h-full rounded-full transition-all",
-                                    variant === "default" || variant === "primary" ? "bg-system-blue" :
-                                        variant === "success" ? "bg-system-green" :
-                                            variant === "warning" ? "bg-system-yellow" : "bg-system-red"
+                                    variant === "default" || variant === "primary" ? "bg-[rgb(var(--action-primary))]" :
+                                        variant === "success" ? "bg-[rgb(var(--status-success))]" :
+                                            variant === "warning" ? "bg-[rgb(var(--status-warning))]" : "bg-[rgb(var(--status-error))]"
                                 )}
                             />
                         </div>
                     ) : trend ? (
                         <div className={cn(
-                            "px-1.5 py-0.5 rounded-md text-caption-2 tracking-tight flex items-center gap-1 backdrop-blur-sm",
+                            "px-1.5 py-0.5 rounded-md m3-label-small tracking-tight flex items-center gap-1",
                             trendColors[trend.direction]
                         )}>
                             <span className="text-[10px]">
@@ -164,7 +160,7 @@ export const SummaryCards = React.memo(function SummaryCards({
             variants={container}
             initial="hidden"
             animate="show"
-            className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5", className)}
+            className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6", className)}
         >
             {cards.map((card, index) => (
                 <motion.div key={index} variants={item} className="h-full">

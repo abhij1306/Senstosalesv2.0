@@ -1,138 +1,141 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { motion, AnimatePresence, useDragControls } from "framer-motion";
-import { X } from "lucide-react";
-import { Card } from "../atoms/Card";
-import { H3 } from "../atoms/Typography";
-import { Button } from "../atoms/Button";
-import { cn } from "@/lib/utils";
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { ComponentPropsWithoutRef, ElementRef, forwardRef, HTMLAttributes } from 'react';
 
-export interface DialogProps {
-    isOpen: boolean;
-    onClose: () => void;
-    title?: string;
-    children: React.ReactNode;
-    footer?: React.ReactNode;
-    className?: string; // For the content container
-    maxWidth?: string; // e.g. "max-w-md", "max-w-2xl"
-}
+const Dialog = DialogPrimitive.Root;
+const DialogTrigger = DialogPrimitive.Trigger;
 
-export const Dialog = ({
-    isOpen,
-    onClose,
-    title,
-    children,
-    footer,
-    className,
-    maxWidth = "max-w-md",
-}: DialogProps) => {
-    const [mounted, setMounted] = useState(false);
-    const dragControls = useDragControls();
+const DialogPortal = DialogPrimitive.Portal;
 
-    useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
+const DialogOverlay = forwardRef<
+    ElementRef<typeof DialogPrimitive.Overlay>,
+    ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+>(({ className, ...props }, ref) => (
+    <DialogPrimitive.Overlay
+        ref={ref}
+        className={cn(
+            'fixed inset-0 z-50',
+            'bg-[rgb(var(--color-bg-overlay)/0.4)]',
+            'backdrop-blur-sm',
+            'data-[state=open]:animate-in data-[state=closed]:animate-out',
+            'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+            className
+        )}
+        {...props}
+    />
+));
+DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
-    // Lock body scroll when dialog is open
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = "hidden";
-        } else {
-            document.body.style.overflow = "unset";
-        }
-        return () => {
-            document.body.style.overflow = "unset";
-        };
-    }, [isOpen]);
-
-    if (!mounted) return null;
-
-    return createPortal(
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="fixed inset-0 bg-app-overlay/40 backdrop-blur-sm z-50"
-                        onClick={onClose}
-                    />
-                    {/* Dialog Content */}
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-                        <motion.div
-                            drag
-                            dragListener={false}
-                            dragControls={dragControls}
-                            dragMomentum={false}
-                            whileDrag={{ cursor: "grabbing" }}
-                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            transition={{
-                                duration: 0.2,
-                                type: "spring",
-                                damping: 25,
-                                stiffness: 300,
-                            }}
-                            className={cn("w-full pointer-events-auto", maxWidth)}
-                        >
-                            <Card
-                                className={cn(
-                                    "overflow-hidden shadow-app-spotlight border border-app-border/30",
-                                    "bg-app-surface",
-                                    className
-                                )}
-                            >
-                                {/* Header - Draggable Handle */}
-                                <div
-                                    onPointerDown={(e) => dragControls.start(e)}
-                                    className="flex items-center justify-between px-6 py-4 border-b border-app-border cursor-grab active:cursor-grabbing select-none"
-                                >
-                                    <H3 className="text-app-fg uppercase tracking-tight">{title || "Dialog"}</H3>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={onClose}
-                                        className="h-8 w-8 p-0 rounded-full hover:bg-app-overlay text-app-fg-muted"
-                                    >
-                                        <X size={18} />
-                                    </Button>
-                                </div>
-                                {/* Body */}
-                                <div className="p-6">{children}</div>
-                                {/* Footer */}
-                                {footer && (
-                                    <div className="px-6 py-4 bg-app-overlay/50 border-t border-app-border flex justify-end gap-3">
-                                        {footer}
-                                    </div>
-                                )}
-                            </Card>
-                        </motion.div>
-                    </div>
-                </>
+const DialogContent = forwardRef<
+    ElementRef<typeof DialogPrimitive.Content>,
+    ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+>(({ className, children, ...props }, ref) => (
+    <DialogPortal>
+        <DialogOverlay />
+        <DialogPrimitive.Content
+            ref={ref}
+            className={cn(
+                'fixed left-1/2 top-1/2 z-50',
+                'w-full max-w-lg',
+                '-translate-x-1/2 -translate-y-1/2',
+                'surface-glass-strong', // Strong glass for readability
+                'p-6', // 24px - Generous for modals
+                'shadow-xl',
+                'rounded-[var(--radius-lg)]',
+                'data-[state=open]:animate-in data-[state=closed]:animate-out',
+                'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+                'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+                'data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%]',
+                'data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]',
+                className
             )}
-        </AnimatePresence>,
-        document.body
-    );
+            {...props}
+        >
+            {children}
+            <DialogPrimitive.Close
+                className={cn(
+                    'absolute right-4 top-4',
+                    'rounded-[var(--radius-xs)]',
+                    'p-1',
+                    'text-tertiary hover:text-primary',
+                    'hover:bg-[rgb(var(--color-bg-elevated)/0.5)]',
+                    'transition-colors'
+                )}
+            >
+                <X size={16} />
+                <span className="sr-only">Close</span>
+            </DialogPrimitive.Close>
+        </DialogPrimitive.Content>
+    </DialogPortal>
+));
+DialogContent.displayName = DialogPrimitive.Content.displayName;
+
+const DialogHeader = ({
+    className,
+    ...props
+}: HTMLAttributes<HTMLDivElement>) => (
+    <div
+        className={cn(
+            "flex flex-col space-y-2 text-center sm:text-left mb-4",
+            className
+        )}
+        {...props}
+    />
+);
+DialogHeader.displayName = "DialogHeader";
+
+const DialogFooter = ({
+    className,
+    ...props
+}: HTMLAttributes<HTMLDivElement>) => (
+    <div
+        className={cn(
+            "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-6",
+            className
+        )}
+        {...props}
+    />
+);
+DialogFooter.displayName = "DialogFooter";
+
+const DialogTitle = forwardRef<
+    ElementRef<typeof DialogPrimitive.Title>,
+    ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+>(({ className, ...props }, ref) => (
+    <DialogPrimitive.Title
+        ref={ref}
+        className={cn(
+            "type-title-2",
+            className
+        )}
+        {...props}
+    />
+));
+DialogTitle.displayName = DialogPrimitive.Title.displayName;
+
+const DialogDescription = forwardRef<
+    ElementRef<typeof DialogPrimitive.Description>,
+    ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+>(({ className, ...props }, ref) => (
+    <DialogPrimitive.Description
+        ref={ref}
+        className={cn("type-subhead text-secondary", className)}
+        {...props}
+    />
+));
+DialogDescription.displayName = DialogPrimitive.Description.displayName;
+
+export {
+    Dialog,
+    DialogPortal,
+    DialogOverlay,
+    DialogTrigger,
+    DialogContent,
+    DialogHeader,
+    DialogFooter,
+    DialogTitle,
+    DialogDescription,
 };
-
-// Compound component exports for shadcn/ui compatibility or extended usage
-export const DialogContent = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div className={cn("p-6", className)}>{children}</div>
-);
-
-export const DialogHeader = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div className={cn("flex items-center justify-between px-6 py-4 border-b border-app-border", className)}>
-        {children}
-    </div>
-);
-
-export const DialogTitle = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <H3 className={className}>{children}</H3>
-);

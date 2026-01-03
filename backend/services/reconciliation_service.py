@@ -52,7 +52,7 @@ class ReconciliationService:
         # 1. Update Lot Levels
         lots = db.execute(
             """
-            SELECT id, lot_no, dely_qty, manual_override_qty 
+            SELECT id, lot_no, dely_qty, manual_override_qty, received_qty 
             FROM purchase_order_deliveries 
             WHERE po_item_id = ? 
             ORDER BY lot_no ASC
@@ -98,7 +98,7 @@ class ReconciliationService:
         )
 
         for lot in lots:
-            l_id, l_no, l_ord, l_manual = lot[0], lot[1], to_qty(lot[2]), to_qty(lot[3])
+            l_id, l_no, l_ord, l_manual, l_existing_recd = lot[0], lot[1], to_qty(lot[2]), to_qty(lot[3]), to_qty(lot[4])
 
             # 1. Direct Receipt for this lot
             direct_srv_query = "SELECT COALESCE(SUM(received_qty), 0) FROM srv_items WHERE po_number = ? AND po_item_no = ? AND lot_no = ?"
@@ -120,6 +120,15 @@ class ReconciliationService:
                 db.execute(direct_dispatch_query, direct_dispatch_params).fetchone()[0]
             )
 
+            # 2.5 Invoiced Quantity for this lot (HWM Signal)
+            invoiced_query = """
+                SELECT COALESCE(SUM(gii.quantity), 0)
+                FROM gst_invoice_items gii
+                JOIN gst_invoices gi ON gii.invoice_number = gi.invoice_number
+                WHERE gii.po_item_id = ? AND gii.po_sl_no = ?
+            """
+            l_invoiced = to_qty(db.execute(invoiced_query, (po_item_id, l_no)).fetchone()[0])
+
             # 3. Add Shared quantities to fill up to ordered amount
             l_remaining_capacity_rcd = max(0, l_ord - l_direct_received)
             l_shared_received_share = min(remaining_shared_received, l_remaining_capacity_rcd)
@@ -130,41 +139,42 @@ class ReconciliationService:
             remaining_shared_dispatch -= l_shared_dispatch_share
 
             # Final quantities for lot
-            l_total_received = l_direct_received + l_shared_received_share
-            l_total_dispatched = l_direct_dispatch + l_shared_dispatch_share
+            l_system_received = l_direct_received + l_shared_received_share
+            l_system_dispatched = l_direct_dispatch + l_shared_dispatch_share
 
             # If there's surplus shared qty, add it to the last lot
             if lot == lots[-1]:
-                l_total_received += remaining_shared_received
-                l_total_dispatched += remaining_shared_dispatch
+                l_system_received += remaining_shared_received
+                l_system_dispatched += remaining_shared_dispatch
 
-            # Decoupled Logic: Delivered is strictly Physical Dispatch (DC).
-            # Balance = Ordered - Delivered.
-            # Received is tracked separately and does not affect the 'Delivered' (Dispatched) high water mark.
-            l_base_dlv = l_total_dispatched
-
-            # Manual override still applies if needed, but rarely used now.
-            # We keep logic: If Manual > System, use Manual.
-            l_delivered = max(l_base_dlv, l_manual)
+            # HIGH WATER MARK (HWM) LOGIC:
+            # - Received HWM: MAX(Physical Receipt, Invoiced Quantity, Existing Ingested Quantity)
+            # - Delivered HWM: MAX(Physical Dispatch, Received HWM, Invoiced Quantity, Manual Override)
+            l_received = max(l_system_received, l_invoiced, l_existing_recd)
+            l_delivered = max(l_system_dispatched, l_received, l_manual)
 
             db.execute(
                 """
                 UPDATE purchase_order_deliveries
                 SET delivered_qty = ?, received_qty = ?
-                WHERE id = ?
+                WHERE po_item_id = ? AND lot_no = ?
             """,
-                (l_delivered, l_total_received, l_id),
+                (l_delivered, l_received, po_item_id, l_no),
             )
 
             # NEW: Distribute received/accepted/rejected qty to Delivery Challan Items for this lot
             # This ensures "Total Receipt" is correctly reflected in DC List/Detail views even without challan_no
+            l_total_received = to_qty(db.execute(
+                "SELECT COALESCE(SUM(received_qty), 0) FROM srv_items "
+                "WHERE po_number = ? AND po_item_no = ? AND lot_no = ?",
+                (po_num, po_item_num, l_no)
+            ).fetchone()[0])
+            
             l_total_rejected = to_qty(db.execute(
                 "SELECT COALESCE(SUM(rejected_qty), 0) FROM srv_items "
                 "WHERE po_number = ? AND po_item_no = ? AND lot_no = ?",
                 (po_num, po_item_num, l_no)
             ).fetchone()[0])
-            
-            l_total_accepted = max(0, l_total_received - l_total_rejected)
 
             dc_items = db.execute(
                 """

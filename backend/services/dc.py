@@ -137,12 +137,13 @@ def validate_dc_items(
         # (Redundant legacy check removed: invalid column pod.dsp_qty)
 
         # GLOBAL INVARIANT: Dispatch cannot exceed PO Item Ordered Quantity
-        # Use Reconciliation Ledger View for single source of truth
+        # Note: We validate against PHYSICAL Dispatch sums, NOT accounting HWM (delivered_qty).
+        # This allows DC generation even if the item was already 'received' (HWM > Physical).
         recon_row = db.execute(
             """
-            SELECT rl.ord_qty, rl.actual_delivered_qty 
-            FROM reconciliation_ledger rl
-            JOIN purchase_order_items poi ON rl.po_number = poi.po_number AND rl.po_item_no = poi.po_item_no
+            SELECT poi.ord_qty, 
+                   COALESCE((SELECT SUM(dispatch_qty) FROM delivery_challan_items dci WHERE dci.po_item_id = poi.id), 0) as physical_dispatched
+            FROM purchase_order_items poi
             WHERE poi.id = ?
         """,
             (po_item_id,),
@@ -150,9 +151,9 @@ def validate_dc_items(
 
         if recon_row:
             global_ordered = recon_row[0]
-            global_delivered = recon_row[1]
+            global_dispatched = recon_row[1]
 
-            # If updating, exclude current DC contribution from 'global_delivered'
+            # If updating, exclude current DC contribution from 'global_dispatched'
             if exclude_dc:
                 current_dc_contribution = db.execute(
                     """
@@ -162,20 +163,20 @@ def validate_dc_items(
                 """,
                     (exclude_dc, po_item_id),
                 ).fetchone()[0]
-                global_delivered -= current_dc_contribution
+                global_dispatched -= current_dc_contribution
 
             # Allow small float tolerance if needed
-            remaining_global = global_ordered - global_delivered
+            remaining_global = global_ordered - global_dispatched
 
             if dispatch_qty > remaining_global + 0.001:
                 raise BusinessRuleViolation(
-                    f"Item {idx + 1}: Over-dispatch error. Total Ordered: {global_ordered}, "
-                    f"Already Delivered: {global_delivered}, Remaining: {remaining_global}. "
+                    f"Item {idx + 1}: Over-dispatch error (Physical Limit). Total Ordered: {global_ordered}, "
+                    f"Already Dispatched via DCs: {global_dispatched}, Remaining: {remaining_global}. "
                     f"Attempting to dispatch: {dispatch_qty}",
                     details={
                         "item_index": idx,
                         "global_ordered": global_ordered,
-                        "already_delivered": global_delivered,
+                        "already_dispatched": global_dispatched,
                         "remaining_global": remaining_global,
                         "dispatch_qty": dispatch_qty,
                         "invariant": "Global-PO-Limit",

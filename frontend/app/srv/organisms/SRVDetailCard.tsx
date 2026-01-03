@@ -4,7 +4,7 @@ import React from "react";
 import { SummaryCards } from "@/components/design-system/organisms/SummaryCards";
 import { Flex, Stack } from "@/components/design-system/atoms/Layout";
 import { Badge } from "@/components/design-system/atoms/Badge";
-import { H3, Body, SmallText } from "@/components/design-system/atoms/Typography";
+import { Title3, Body, SmallText } from "@/components/design-system/atoms/Typography";
 import { useRouter } from "next/navigation";
 import { Package, Calendar, User } from "lucide-react";
 
@@ -25,7 +25,7 @@ export const SRVDetailCard = ({ header, summary }: SRVDetailCardProps) => {
                     <Stack gap={3}>
                         <Flex align="center" gap={2}>
                             <Package size={16} className="text-app-accent" />
-                            <H3 className="m-0 text-app-accent font-semibold">Source PO</H3>
+                            <Title3 className="m-0 text-app-accent font-semibold">Source PO</Title3>
                         </Flex>
                         <Flex direction="col" gap={1}>
                             <Badge

@@ -157,7 +157,7 @@ const columns: Column<InvoiceListItem>[] = [
         align: "center",
         render: (v) => (
             <div className="flex justify-center">
-                <StatusBadge status={String(v || "Pending").toUpperCase()} className="w-24 border-none shadow-none bg-app-overlay/5" />
+                <StatusBadge status={String(v || "Pending").toLowerCase() as any} className="w-24 border-none shadow-none bg-app-overlay/5" />
             </div>
         ),
     },
@@ -222,7 +222,6 @@ export function InvoiceListClient({ initialInvoices, initialStats }: InvoiceList
     const toolbar = (
         <Flex align="center" justify="between" className="w-full" gap={4}>
             <SearchBar
-                id="invoice-search"
                 value={searchQuery}
                 onChange={handleSearch}
                 placeholder="Search invoices or GSTIN..."
@@ -232,7 +231,7 @@ export function InvoiceListClient({ initialInvoices, initialStats }: InvoiceList
             <Button
                 variant="primary"
                 onClick={() => router.push("/invoice/create")}
-                className="min-w-[140px] rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25 border-none"
+                className="min-w-[140px] whitespace-nowrap"
             >
                 <Plus size={16} />
                 Create Invoice

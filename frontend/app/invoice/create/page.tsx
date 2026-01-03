@@ -8,7 +8,7 @@ import { api, type Buyer } from "@/lib/api";
 import * as Select from "@radix-ui/react-select";
 import { motion, useDragControls, AnimatePresence } from "framer-motion";
 import {
-  H3,
+  Title3,
   Label,
   SmallText,
   Body,
@@ -23,7 +23,8 @@ import {
   TabsContent,
   DocumentJourney,
   MonoCode,
-  ActionConfirmationModal
+  ActionConfirmationModal,
+  Caption2
 } from "@/components/design-system";
 import { useInvoiceStore } from "@/store/invoiceStore";
 
@@ -269,7 +270,6 @@ function CreateInvoicePageContent() {
         variant="primary"
         onClick={() => setShowWarning(true)}
         disabled={isSaving || items.length === 0 || isDuplicateNumber || !header.invoice_number}
-        className="rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-600/25 border-none"
       >
         {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
         {isSaving ? "Saving..." : "Save Invoice"}
@@ -283,17 +283,17 @@ function CreateInvoicePageContent() {
       description="Generate billing documentation from DC"
       actions={topActions}
       onBack={() => router.back()}
-      icon={<Receipt size={20} className="text-app-accent" />}
+      icon={<Receipt size={20} className="text-action-primary" />}
       iconLayoutId="create-invoice-icon"
     >
       <div className="space-y-6">
         <DocumentJourney currentStage="Invoice" className="mb-2" />
 
         {error && (
-          <Card className="p-4 bg-app-status-error/10 border-none">
-            <div className="flex items-center gap-2 text-app-status-error">
+          <Card className="p-4 bg-status-error/10 border-none">
+            <div className="flex items-center gap-2 text-status-error">
               <AlertCircle size={16} />
-              <SmallText className="text-app-status-error">{error}</SmallText>
+              <SmallText className="text-status-error">{error}</SmallText>
             </div>
           </Card>
         )}
@@ -308,7 +308,7 @@ function CreateInvoicePageContent() {
                   value={manualDcId}
                   onChange={(e) => setManualDcId(e.target.value)}
                   placeholder="Enter DC number"
-                  className="text-app-fg text-lg"
+                  className="text-text-primary text-lg"
                 />
               </div>
               <Button variant="secondary" onClick={() => loadDC(manualDcId)} disabled={!manualDcId || isLoading}>
@@ -321,7 +321,7 @@ function CreateInvoicePageContent() {
 
         {/* Info Tabs */}
         <Tabs defaultValue="buyer" className="w-full">
-          <TabsList className="mb-4 bg-app-overlay/5 p-1 rounded-xl inline-flex border-none shadow-none">
+          <TabsList className="mb-4 p-1 rounded-xl inline-flex border-none bg-surface-variant/30">
             <TabsTrigger value="buyer">Buyer Info</TabsTrigger>
             <TabsTrigger value="references">References</TabsTrigger>
             <TabsTrigger value="logistics">Logistics</TabsTrigger>
@@ -334,10 +334,10 @@ function CreateInvoicePageContent() {
               exit={{ opacity: 0, y: -5 }}
               transition={{ duration: 0.15 }}
             >
-              <Card className="p-6 mt-0 border-none elevation-2 bg-app-surface/50 backdrop-blur-md">
+              <Card className="p-6 mt-0">
                 <TabsContent value="buyer" className="mt-0">
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 border-r border-app-border/10 pr-6">
+                    <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pr-6">
                       <div className="space-y-2">
                         <Label>INVOICE NUMBER</Label>
                         <Input
@@ -347,10 +347,10 @@ function CreateInvoicePageContent() {
                             updateHeader("invoice_number", val);
                             checkNumberDuplicate(val, header.invoice_date);
                           }}
-                          className={cn("tabular-nums text-lg", isDuplicateNumber ? "border-app-status-error ring-app-status-error/10" : "")}
+                          className={cn("tabular-nums text-lg", isDuplicateNumber ? "border-status-error ring-status-error/10" : "")}
                           placeholder="INV/001/24-25"
                         />
-                        {isDuplicateNumber && <SmallText className="text-app-status-error">This number already exists</SmallText>}
+                        {isDuplicateNumber && <SmallText className="text-status-error">This number already exists</SmallText>}
                       </div>
                       <div className="space-y-2">
                         <Label>INVOICE DATE</Label>
@@ -359,17 +359,17 @@ function CreateInvoicePageContent() {
                     </div>
 
                     <div className="lg:col-span-1">
-                      <Label className="text-app-accent mb-3 block uppercase tracking-wide">Billed To</Label>
+                      <Label className="text-action-primary mb-3 block uppercase tracking-wide">Billed To</Label>
                       <Select.Root value={selectedBuyerId} onValueChange={handleBuyerChange}>
-                        <Select.Trigger className="flex items-center justify-between w-full px-4 py-2 bg-app-surface border-none rounded-xl text-sm shadow-none mb-4 elevation-1 focus:elevation-2">
+                        <Select.Trigger className="flex items-center justify-between w-full px-4 py-2 bg-surface-variant/30 border-none rounded-xl text-sm shadow-none mb-4 focus:bg-surface transition-all">
                           <Select.Value placeholder="Select Buyer" />
                           <Select.Icon><ChevronDown size={14} /></Select.Icon>
                         </Select.Trigger>
                         <Select.Portal>
-                          <Select.Content className="overflow-hidden bg-app-surface rounded-2xl elevation-3 z-50">
+                          <Select.Content className="overflow-hidden bg-surface rounded-2xl shadow-3 z-50">
                             <Select.Viewport className="p-1">
                               {buyers.map((b) => (
-                                <Select.Item key={b.id} value={b.id.toString()} className="flex items-center px-8 py-3 text-sm text-app-fg-muted rounded-xl outline-none hover:bg-app-accent/10 hover:text-app-accent cursor-pointer">
+                                <Select.Item key={b.id} value={b.id.toString()} className="flex items-center px-8 py-3 text-sm text-text-secondary rounded-xl outline-none hover:bg-action-primary/10 hover:text-action-primary cursor-pointer">
                                   <Select.ItemText>{b.name}</Select.ItemText>
                                 </Select.Item>
                               ))}
@@ -377,9 +377,9 @@ function CreateInvoicePageContent() {
                           </Select.Content>
                         </Select.Portal>
                       </Select.Root>
-                      <div className="p-4 rounded-xl bg-app-overlay/5 border-none">
-                        <H3 className="text-app-fg text-sm mb-1">{header.buyer_name || "---"}</H3>
-                        <Body className="text-app-fg-muted leading-relaxed">{header.buyer_address || "---"}</Body>
+                      <div className="p-4 rounded-xl bg-surface-variant/30 border-none">
+                        <Title3 className="text-text-primary text-sm mb-1">{header.buyer_name || "---"}</Title3>
+                        <Body className="text-text-tertiary leading-relaxed">{header.buyer_address || "---"}</Body>
                       </div>
                     </div>
                   </div>
@@ -410,20 +410,20 @@ function CreateInvoicePageContent() {
         {/* Items Table */}
         {items.length > 0 && (
           <div className="space-y-4">
-            <Label className="m-0 text-app-fg-muted uppercase tracking-wide">
+            <Label className="m-0 text-text-tertiary uppercase tracking-wide">
               Billing Structure ({items.length} Items)
             </Label>
-            <div className="table-container border-none shadow-none bg-app-surface/30">
+            <div className="overflow-hidden bg-surface shadow-1 rounded-xl">
               <table className="w-full">
                 <thead>
-                  <tr className="border-none bg-app-overlay/10">
-                    <th className="py-3 px-4 text-left w-[60px]"><Label>Lot</Label></th>
-                    <th className="py-3 px-4 text-left"><Label>Description</Label></th>
-                    <th className="py-3 px-4 text-left w-[120px]"><Label>HSN/SAC</Label></th>
-                    <th className="py-3 px-4 text-right w-[100px]"><Label>Qty</Label></th>
-                    <th className="py-3 px-4 text-right w-[100px]"><Label>Rate</Label></th>
-                    <th className="py-3 px-4 text-right w-[120px] bg-blue-50/10 dark:bg-blue-900/10"><Label className="text-blue-600 dark:text-blue-400">Taxable</Label></th>
-                    <th className="py-3 px-4 text-right w-[100px]"><Label>Recd</Label></th>
+                  <tr className="bg-surface-variant border-none">
+                    <th className="py-3 px-4 text-left w-[60px]"><Caption2 className="uppercase tracking-widest opacity-100">Lot</Caption2></th>
+                    <th className="py-3 px-4 text-left"><Caption2 className="uppercase tracking-widest opacity-100">Description</Caption2></th>
+                    <th className="py-3 px-4 text-left w-[120px]"><Caption2 className="uppercase tracking-widest opacity-100">HSN/SAC</Caption2></th>
+                    <th className="py-3 px-4 text-right w-[100px]"><Caption2 className="uppercase tracking-widest opacity-100">Dlv</Caption2></th>
+                    <th className="py-3 px-4 text-right w-[100px]"><Caption2 className="uppercase tracking-widest opacity-100">Recd</Caption2></th>
+                    <th className="py-3 px-4 text-right w-[100px]"><Caption2 className="uppercase tracking-widest opacity-100">Rate</Caption2></th>
+                    <th className="py-3 px-4 text-right w-[120px] bg-action-primary/5"><Caption2 className="text-action-primary uppercase tracking-widest opacity-100">Taxable</Caption2></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -436,20 +436,20 @@ function CreateInvoicePageContent() {
                     return (
                       <React.Fragment key={(parent.description || "") + groupIdx}>
                         {/* Summary Header */}
-                        <tr className="bg-app-overlay/10 border-none">
-                          <td className="py-3 px-4"><MonoCode className="text-app-accent/60">#{groupIdx + 1}</MonoCode></td>
-                          <td className="py-3 px-4"><Body className="text-xs text-app-fg-muted/80">{parent.description}</Body></td>
-                          <td className="py-3 px-4"><SmallText className="text-app-fg-muted/40 uppercase tracking-wide">{parent.hsn_sac || "-"}</SmallText></td>
-                          <td className="py-3 px-4 text-right"><Accounting className="text-xs text-app-fg-muted/60">{tQty}</Accounting></td>
-                          <td className="py-3 px-4 text-right"><Accounting className="text-xs text-app-fg-muted/40">{parent.rate}</Accounting></td>
-                          <td className="py-3 px-4 text-right bg-blue-50/5 dark:bg-blue-900/5"><Accounting className="text-xs text-blue-600/60 dark:text-blue-400/60">{tVal}</Accounting></td>
-                          <td className="py-3 px-4 text-right"><Accounting className="text-xs text-app-fg-muted/60">{tRec}</Accounting></td>
+                        <tr className="bg-surface-variant/30 border-none">
+                          <td className="py-3 px-4"><MonoCode className="text-action-primary/60">#{groupIdx + 1}</MonoCode></td>
+                          <td className="py-3 px-4"><Body className="text-xs text-text-tertiary">{parent.description}</Body></td>
+                          <td className="py-3 px-4"><SmallText className="text-text-tertiary/40 uppercase tracking-wide">{parent.hsn_sac || "-"}</SmallText></td>
+                          <td className="py-3 px-4 text-right"><Accounting className="text-xs text-text-tertiary/60">{tQty}</Accounting></td>
+                          <td className="py-3 px-4 text-right"><Accounting className="text-xs text-text-tertiary/60">{tRec}</Accounting></td>
+                          <td className="py-3 px-4 text-right"><Accounting className="text-xs text-text-tertiary/40">{parent.rate}</Accounting></td>
+                          <td className="py-3 px-4 text-right bg-action-primary/5"><Accounting className="text-xs text-action-primary/60">{tVal}</Accounting></td>
                         </tr>
                         {/* Lot Rows */}
                         {group.map((item, idx) => (
                           <tr key={idx} className="bg-app-surface border-none transition-colors">
                             <td className="py-2 px-0 relative">
-                              <div className="absolute left-[30px] top-0 bottom-0 w-[2px] bg-app-accent/20" />
+                              <div className="absolute left-[30px] top-0 bottom-0 w-[2px] bg-action-primary/20" />
                             </td>
                             <td className="py-2 px-4">
                               <div className="flex items-center gap-2">
@@ -457,12 +457,12 @@ function CreateInvoicePageContent() {
                               </div>
                             </td>
                             <td />
-                            <td className="py-2 px-4 text-right"><Accounting className="text-app-fg-muted">{item.quantity}</Accounting></td>
+                            <td className="py-2 px-4 text-right"><Accounting className="text-text-secondary">{item.quantity}</Accounting></td>
+                            <td className="py-2 px-4 text-right"><Accounting className="text-text-secondary">{item.received_qty}</Accounting></td>
                             <td className="py-2 px-4 text-right" />
-                            <td className="py-2 px-4 text-right bg-blue-50/5 dark:bg-blue-900/5">
-                              <Accounting className="text-blue-600 dark:text-blue-400">{item.taxable_value}</Accounting>
+                            <td className="py-2 px-4 text-right bg-action-primary/5">
+                              <Accounting className="text-action-primary">{item.taxable_value}</Accounting>
                             </td>
-                            <td className="py-2 px-4 text-right"><Accounting className="text-app-fg-muted">{item.received_qty}</Accounting></td>
                           </tr>
                         ))}
                       </React.Fragment>
@@ -478,21 +478,21 @@ function CreateInvoicePageContent() {
                 <Card className="p-8 bg-app-surface/50 border-none shadow-premium-hover backdrop-blur-xl">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center pb-2 border-none">
-                      <Label className="uppercase tracking-wide text-app-fg-muted">Net Taxable Value</Label>
-                      <Accounting className="text-xl text-app-fg">{header.total_taxable_value}</Accounting>
+                      <Label className="uppercase tracking-wide text-text-tertiary">Net Taxable Value</Label>
+                      <Accounting className="text-xl text-text-primary">{header.total_taxable_value}</Accounting>
                     </div>
-                    <div className="flex justify-between items-center text-app-fg-muted">
+                    <div className="flex justify-between items-center text-text-tertiary">
                       <Label className="uppercase tracking-wide">CGST (9%) + SGST (9%)</Label>
                       <Accounting className="text-sm">{(header.cgst_total + header.sgst_total).toFixed(2)}</Accounting>
                     </div>
                     <div className="pt-6 mt-4 border-none flex justify-between items-end">
                       <div className="space-y-2">
-                        <Label className="uppercase text-app-accent tracking-wide">Total Invoice Value</Label>
-                        <SmallText className="text-app-fg-muted block max-w-[280px] leading-snug italic lowercase first-letter:uppercase">
+                        <Label className="uppercase text-action-primary tracking-wide">Total Invoice Value</Label>
+                        <SmallText className="text-text-tertiary block max-w-[280px] leading-snug italic lowercase first-letter:uppercase">
                           {amountInWords(header.total_invoice_value)} Only
                         </SmallText>
                       </div>
-                      <Accounting className="text-4xl text-app-fg tracking-tighter leading-none">
+                      <Accounting className="text-4xl text-text-primary tracking-tighter leading-none">
                         {header.total_invoice_value}
                       </Accounting>
                     </div>

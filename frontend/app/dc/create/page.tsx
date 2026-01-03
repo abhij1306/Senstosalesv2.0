@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Save, Search, AlertCircle, Loader2, Plus, Trash2, Truck } from "lucide-react";
 import { api } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { DCItemRow } from "@/types";
 import {
   Body,
@@ -17,6 +17,7 @@ import {
   Button,
   Badge,
   Input,
+  Card,
   DocumentJourney,
   DocumentTemplate,
 } from "@/components/design-system";
@@ -125,7 +126,9 @@ function CreateDCPageContent() {
               received_quantity: recd,
               dispatch_quantity: 0,
               remaining_post_dc: currentBal,
-              original_remaining: currentBal
+              original_remaining: currentBal,
+              dely_date: lot.dely_date || "",
+              physical_dispatched_qty: lot.physical_dispatched_qty || 0,
             });
           });
         });
@@ -244,7 +247,6 @@ function CreateDCPageContent() {
         disabled={
           isSubmitting || items.length === 0 || isDuplicateNumber || isCheckingNumber || !header.dc_number || isLoading
         }
-        className="rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-600/25 border-none"
       >
         {isSubmitting ? (
           <Loader2 size={16} className="animate-spin" />
@@ -270,17 +272,17 @@ function CreateDCPageContent() {
 
       <div className="space-y-6">
         {error && (
-          <div className="p-4 bg-app-status-error/10 border-none rounded-xl mb-4">
-            <div className="flex items-center gap-2 text-app-status-error">
+          <div className="p-4 bg-status-error/10 border-none rounded-xl mb-4">
+            <div className="flex items-center gap-2 text-status-error">
               <AlertCircle size={16} />
-              <Footnote className="text-app-status-error">{error}</Footnote>
+              <Footnote className="text-status-error">{error}</Footnote>
             </div>
           </div>
         )}
 
         {/* PO Selection */}
         {!initialPoNumber && (
-          <div className="p-6 bg-app-surface rounded-xl elevation-2">
+          <div className="p-6 bg-surface rounded-xl shadow-1">
             <Caption1 className="mb-2 block uppercase tracking-wide text-text-tertiary">
               Purchase Order Reference
             </Caption1>
@@ -309,7 +311,7 @@ function CreateDCPageContent() {
               </Button>
             </div>
             {poData && (
-              <div className="mt-4 p-4 bg-app-overlay/5 rounded-xl border-none flex items-center justify-between">
+              <div className="mt-4 p-4 bg-surface-variant/30 rounded-xl border-none flex items-center justify-between">
                 <div className="flex flex-col">
                   <Caption1 className="text-text-tertiary uppercase tracking-wide">
                     Supplier
@@ -318,7 +320,7 @@ function CreateDCPageContent() {
                 </div>
                 <Badge
                   variant="outline"
-                  className="bg-app-surface text-text-tertiary border-white/10"
+                  className="bg-surface text-text-tertiary border-white/10"
                 >
                   PO #{poData.po_number}
                 </Badge>
@@ -328,7 +330,7 @@ function CreateDCPageContent() {
         )}
 
         {/* Challan Details */}
-        <div className="p-6 bg-app-surface rounded-xl elevation-2">
+        <Card className="p-6">
           <Caption1 className="mb-6 block uppercase tracking-widest text-text-tertiary">Challan Information</Caption1>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-1">
@@ -342,12 +344,12 @@ function CreateDCPageContent() {
                 )}
               />
               {isCheckingNumber && (
-                <div className="flex items-center gap-2 text-[10px] text-app-accent mt-1 uppercase tracking-tight">
+                <div className="flex items-center gap-2 text-[10px] text-action-primary mt-1 uppercase tracking-tight">
                   <Loader2 className="w-3 h-3 animate-spin" /> Checking availability...
                 </div>
               )}
               {isDuplicateNumber && (
-                <div className="flex items-center gap-2 text-[10px] text-app-status-error mt-1 uppercase tracking-tight">
+                <div className="flex items-center gap-2 text-[10px] text-status-error mt-1 uppercase tracking-tight">
                   <AlertCircle className="w-3 h-3" />
                   {conflictType === "DC"
                     ? "This DC Number already exists"
@@ -374,7 +376,7 @@ function CreateDCPageContent() {
               <Input
                 value={header.supplier_phone}
                 readOnly
-                className="bg-app-overlay/5"
+                className="bg-surface-variant/30"
               />
             </div>
 
@@ -383,7 +385,7 @@ function CreateDCPageContent() {
               <Input
                 value={header.supplier_gstin}
                 readOnly
-                className="bg-app-overlay/5"
+                className="bg-surface-variant/30"
               />
             </div>
 
@@ -405,14 +407,14 @@ function CreateDCPageContent() {
               />
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Items Table */}
         {items.length > 0 && (
-          <div className="tahoe-glass-card elevation-1 overflow-hidden">
+          <div className="bg-surface shadow-1 rounded-xl overflow-hidden">
             <table className="table-standard w-full table-fixed">
               <thead>
-                <tr className="header-glass">
+                <tr className="bg-surface-variant border-none">
                   <th className="py-2.5 px-3 text-left w-[50px]"><Caption2 className="uppercase tracking-widest opacity-100">#</Caption2></th>
                   <th className="py-2.5 px-3 text-left w-[120px]"><Caption2 className="uppercase tracking-widest opacity-100">Code</Caption2></th>
                   <th className="py-2.5 px-3 text-left w-[120px]"><Caption2 className="uppercase tracking-widest opacity-100">Drawing</Caption2></th>
@@ -421,8 +423,8 @@ function CreateDCPageContent() {
                   <th className="py-2.5 px-3 text-right w-[100px]"><Caption2 className="uppercase tracking-widest opacity-100 block text-right">Rate</Caption2></th>
                   <th className="py-2.5 px-3 text-right w-[80px]"><Caption2 className="uppercase tracking-widest opacity-100 block text-right">Ord</Caption2></th>
                   <th className="py-2.5 px-3 text-right w-[80px]"><Caption2 className="uppercase tracking-widest opacity-100 block text-right">Dlv</Caption2></th>
-                  <th className="py-2.5 px-3 text-right w-[100px]"><Caption2 className="text-app-accent uppercase tracking-widest opacity-100 block text-right">Qty</Caption2></th>
-                  <th className="py-2.5 px-3 text-right w-[80px]"><Caption2 className="text-app-warning uppercase tracking-widest opacity-100 block text-right">Bal</Caption2></th>
+                  <th className="py-2.5 px-3 text-right w-[100px]"><Caption2 className="text-action-primary uppercase tracking-widest opacity-100 block text-right">Qty</Caption2></th>
+                  <th className="py-2.5 px-3 text-right w-[80px]"><Caption2 className="text-status-warning uppercase tracking-widest opacity-100 block text-right">Bal</Caption2></th>
                   <th className="py-2.5 px-3 text-right w-[80px]"><Caption2 className="uppercase tracking-widest opacity-100 block text-right">Recd</Caption2></th>
                 </tr>
               </thead>
@@ -430,14 +432,15 @@ function CreateDCPageContent() {
                 {groupedItems.map((group, groupIdx) => {
                   const parentItem = group[0];
                   const totalOrd = group.reduce((sum, i) => sum + (i.ordered_quantity || 0), 0);
-                  const totalDlv = group.reduce((sum, i) => sum + (i.delivered_quantity || 0), 0);
+                  const totalPhysDlv = group.reduce((sum, i) => sum + (i.physical_dispatched_qty || 0), 0);
                   const totalRec = group.reduce((sum, i) => sum + (i.received_quantity || 0), 0);
-                  const totalBal = group.reduce((sum, i) => sum + (i.remaining_post_dc || 0), 0);
                   const totalDisp = group.reduce((sum, i) => sum + (i.dispatch_quantity || 0), 0);
+                  // Balance for DC calculation must be Ordered - Physical Dispatched
+                  const totalBal = Math.max(0, totalOrd - totalPhysDlv - totalDisp);
 
                   return (
                     <React.Fragment key={parentItem.po_item_id}>
-                      <tr className="bg-app-overlay/5 border-none opacity-80">
+                      <tr className="bg-surface-variant/30 border-none">
                         <td className="py-2.5 px-3 text-center w-[50px] border-none">
                           <MonoCode className="bg-transparent border-none p-0 opacity-60 font-regular">
                             #{parentItem.po_item_no || groupIdx + 1}
@@ -464,13 +467,13 @@ function CreateDCPageContent() {
                           <Accounting className="text-text-tertiary opacity-70 font-regular pr-0 w-full text-right">{totalOrd}</Accounting>
                         </td>
                         <td className="py-2.5 px-3 w-[80px] text-right border-none">
-                          <Accounting className="text-text-tertiary opacity-70 font-regular pr-0 w-full text-right">{totalDlv}</Accounting>
+                          <Accounting className="text-text-tertiary opacity-70 font-regular pr-0 w-full text-right">{totalPhysDlv}</Accounting>
                         </td>
-                        <td className="py-2.5 px-3 w-[100px] text-right bg-app-accent/5 border-none">
-                          <Accounting className="text-app-accent opacity-60 font-regular pr-0 w-full text-right">{totalDisp}</Accounting>
+                        <td className="py-2.5 px-3 w-[100px] text-right bg-action-primary/5 border-none">
+                          <Accounting className="text-action-primary font-regular pr-0 w-full text-right">{totalDisp}</Accounting>
                         </td>
-                        <td className="py-2.5 px-3 w-[80px] text-right bg-app-warning/5 border-none">
-                          <Accounting className="text-app-warning opacity-60 font-regular pr-0 w-full text-right">{totalBal}</Accounting>
+                        <td className="py-2.5 px-3 w-[80px] text-right bg-status-warning/5 border-none">
+                          <Accounting className="text-status-warning font-regular pr-0 w-full text-right">{totalBal}</Accounting>
                         </td>
                         <td className="py-2.5 px-3 w-[80px] text-right border-none">
                           <Accounting className="text-text-tertiary opacity-70 font-regular pr-0 w-full text-right">{totalRec}</Accounting>
@@ -479,52 +482,61 @@ function CreateDCPageContent() {
 
                       {group.map((item) => {
                         const originalIndex = items.findIndex(i => i.id === item.id);
+                        const originalRem = (items[originalIndex].ordered_quantity || 0) - (items[originalIndex].physical_dispatched_qty || 0);
+                        // Calculate Lot Balance (Order - Phys Dispatched - Current Input)
+                        const lotBal = Math.max(0, (item.ordered_quantity || 0) - (item.physical_dispatched_qty || 0) - (item.dispatch_quantity || 0));
+                        const isCompleted = originalRem <= 0;
+
                         return (
-                          <tr key={item.id} className="bg-transparent border-none last:border-none">
-                            <td className="py-2 px-3 text-center w-[50px] border-none">
-                              {/* Visual Indent Pipe */}
-                              <div className="w-[1px] h-4 border-r border-app-accent/20 mx-auto" />
-                            </td>
-                            <td className="py-2 px-3 w-[120px] text-left border-none">
-                              <div className="flex items-center gap-2">
-                                <MonoCode className="bg-transparent border-none text-text-secondary font-regular">L-{item.lot_no}</MonoCode>
-                              </div>
-                            </td>
-                            <td className="w-[120px] border-none" />
-                            <td className="border-none" />
-                            <td className="w-[60px] border-none" />
-                            <td className="w-[100px] text-right border-none" />
-                            <td className="py-2 px-3 w-[80px] text-right border-none">
-                              <Accounting className="text-text-secondary font-regular pr-0 w-full text-right">{item.ordered_quantity}</Accounting>
-                            </td>
-                            <td className="py-2 px-3 w-[80px] text-right border-none">
-                              <Accounting className="text-text-secondary font-regular pr-0 w-full text-right">{item.delivered_quantity}</Accounting>
-                            </td>
-                            <td className="py-2 px-3 w-[100px] text-right border-none">
-                              <Input
-                                type="number"
-                                value={item.dispatch_quantity || ""}
-                                onChange={(e) => {
-                                  const val = parseFloat(e.target.value) || 0;
-                                  const originalRem = items[originalIndex].original_remaining ?? items[originalIndex].remaining_post_dc ?? 0;
-                                  const validDispatch = Math.min(Math.max(0, val), originalRem);
-                                  const newBalance = Math.max(0, originalRem - validDispatch);
-                                  updateItem(originalIndex, "dispatch_quantity", validDispatch);
-                                  updateItem(originalIndex, "remaining_post_dc", newBalance);
-                                }}
-                                className="text-right w-full h-7 text-xs bg-app-accent/5 border-transparent focus:border-app-accent/20 font-regular"
-                                placeholder="0"
-                              />
-                            </td>
-                            <td className="py-2 px-3 w-[80px] text-right bg-app-warning/5 border-none">
-                              <Accounting className="text-app-warning font-regular pr-0 w-full text-right">{item.remaining_post_dc}</Accounting>
-                            </td>
-                            <td className="py-2 px-3 w-[80px] text-right border-none">
-                              <Accounting className="text-text-secondary font-regular pr-0 w-full text-right">{item.received_quantity}</Accounting>
-                            </td>
-                          </tr>
+                          <React.Fragment key={item.id}>
+                            <tr className="bg-surface-variant/30 border-none last:border-none">
+                              <td className="py-2 px-3 text-center w-[50px] border-none">
+                                {/* Pipe Removed */}
+                              </td>
+                              <td className="py-2 px-3 w-[120px] text-left border-none">
+                                <div className="flex items-center gap-2">
+                                  <MonoCode className="bg-transparent border-none text-text-secondary font-regular">L-{item.lot_no}</MonoCode>
+                                </div>
+                              </td>
+                              <td className="w-[120px] border-none" />
+                              <td className="border-none" />
+                              <td className="w-[60px] border-none" />
+                              <td className="w-[100px] text-right border-none" />
+                              <td className="py-2 px-3 w-[80px] text-right border-none">
+                                <Accounting className="text-text-secondary font-regular pr-0 w-full text-right">{item.ordered_quantity}</Accounting>
+                              </td>
+                              <td className="py-2 px-3 w-[80px] text-right border-none">
+                                <Accounting className="text-text-secondary font-regular pr-0 w-full text-right">{item.physical_dispatched_qty}</Accounting>
+                              </td>
+                              <td className="py-2 px-3 w-[100px] text-right border-none">
+                                <Input
+                                  type="number"
+                                  value={item.dispatch_quantity || ""}
+                                  onChange={(e) => {
+                                    if (isCompleted) return;
+                                    const val = parseFloat(e.target.value) || 0;
+                                    const validDispatch = Math.min(Math.max(0, val), originalRem);
+                                    updateItem(originalIndex, "dispatch_quantity", validDispatch);
+                                  }}
+                                  disabled={isCompleted}
+                                  className={`text-right w-full h-7 text-xs border-transparent focus:border-action-primary/20 font-regular ${isCompleted ? "bg-surface-variant text-text-tertiary cursor-not-allowed" : "bg-action-primary/5 text-text-primary"
+                                    }`}
+                                  placeholder={isCompleted ? "Done" : "0"}
+                                />
+                              </td>
+                              <td className="py-2 px-3 w-[80px] text-right bg-status-warning/5 border-none">
+                                <Accounting className={`font-regular pr-0 w-full text-right ${isCompleted ? "text-text-tertiary" : "text-status-warning"}`}>
+                                  {isCompleted ? "0" : lotBal}
+                                </Accounting>
+                              </td>
+                              <td className="py-2 px-3 w-[80px] text-right border-none">
+                                <Accounting className="text-text-secondary font-regular pr-0 w-full text-right">{item.received_quantity}</Accounting>
+                              </td>
+                            </tr>
+                          </React.Fragment>
                         );
                       })}
+
                     </React.Fragment>
                   );
                 })}
@@ -533,7 +545,7 @@ function CreateDCPageContent() {
           </div>
         )}
 
-        <div className="p-6 bg-app-surface rounded-xl elevation-2">
+        <div className="p-6 bg-surface rounded-xl shadow-1">
           <Caption1 className="mb-4 block uppercase tracking-wide text-text-tertiary">
             Additional Notes
           </Caption1>
@@ -549,7 +561,7 @@ function CreateDCPageContent() {
                   variant="ghost"
                   size="sm"
                   onClick={() => removeNote(idx)}
-                  className="text-app-fg-muted hover:text-app-status-error hover:bg-app-status-error/10 transition-all rounded-full p-2"
+                  className="text-text-tertiary hover:text-status-error hover:bg-status-error/10 transition-all rounded-full p-2"
                 >
                   <Trash2 size={16} />
                 </Button>
@@ -559,7 +571,7 @@ function CreateDCPageContent() {
               variant="secondary"
               size="sm"
               onClick={addNote}
-              className="w-full bg-transparent hover:bg-app-overlay/5"
+              className="w-full bg-transparent hover:bg-surface-variant/20"
             >
               <Plus size={16} />
               Add Line Note
@@ -577,7 +589,7 @@ function CreateDCPageContent() {
         warningText="Generating this DC will lock the specified quantities. Ensure all details are correct as this affects inventory and billing."
         confirmLabel={isSubmitting ? "Saving..." : "Confirm Save"}
       />
-    </DocumentTemplate>
+    </DocumentTemplate >
   );
 }
 
@@ -585,7 +597,7 @@ import { Suspense } from "react";
 
 export default function CreateDCPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center p-12"><Loader2 className="animate-spin text-app-accent" /></div>}>
+    <Suspense fallback={<div className="flex items-center justify-center p-12"><Loader2 className="animate-spin text-action-primary" /></div>}>
       <CreateDCPageContent />
     </Suspense>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { H1, Body, SmallText } from "../atoms/Typography";
+import { Body } from "../atoms/Typography";
 import { SummaryCards, SummaryCardProps } from "../organisms/SummaryCards";
 import { DataTable, Column } from "../organisms/DataTable";
 import { cn } from "@/lib/utils";

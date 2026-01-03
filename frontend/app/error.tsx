@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { AlertCircle, RefreshCcw, Home } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Card, H2, Body, SmallText, Button } from "@/components/design-system";
+import { Card, Title2, Body, SmallText, Button } from "@/components/design-system";
 
 export default function Error({
     error,
@@ -28,9 +28,9 @@ export default function Error({
                 </div>
 
                 <div className="space-y-3">
-                    <H2 className="uppercase tracking-tighter text-app-status-error">
+                    <Title2 className="uppercase tracking-tighter text-app-status-error">
                         Runtime Exception
-                    </H2>
+                    </Title2>
                     <Body className="font-black text-app-fg-muted uppercase tracking-widest">
                         {error.digest || "PROCESS TERMINATED"}
                     </Body>

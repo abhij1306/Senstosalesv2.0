@@ -33,6 +33,7 @@ import {
   Badge,
   DocumentTemplate,
   Button,
+  DatePicker,
 } from "@/components/design-system";
 import { ReportNavGrid } from "./organisms/ReportNavGrid";
 import { ReportsDataCard } from "./organisms/ReportsDataCard";
@@ -414,11 +415,10 @@ export default function ReportsPage() {
             size={16}
             className="text-app-accent group-hover:scale-110 transition-transform"
           />
-          <input
-            type="date"
+          <DatePicker
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="outline-none bg-transparent text-app-fg-muted text-xs font-regular uppercase"
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartDate(e.target.value)}
+            className="w-32 h-auto py-0 px-0 bg-transparent border-none shadow-none text-xs font-regular text-app-fg-muted uppercase tabular-nums focus:ring-0"
           />
         </Flex>
         <Box className="w-[1px] h-6 bg-app-fg-muted/10 mx-1" />
@@ -427,16 +427,15 @@ export default function ReportsPage() {
           gap={3}
           className="px-4 py-2 hover:bg-app-surface/40 transition-colors rounded-xl group"
         >
-          <input
-            type="date"
+          <DatePicker
             value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="outline-none bg-transparent text-app-fg-muted text-xs font-regular uppercase"
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEndDate(e.target.value)}
+            className="w-32 h-auto py-0 px-0 bg-transparent border-none shadow-none text-xs font-regular text-app-fg-muted uppercase tabular-nums focus:ring-0"
           />
         </Flex>
       </Flex>
       <Button
-        variant="excel"
+        variant="secondary"
         onClick={handleExport}
       >
         <FileDown size={16} /> Export

@@ -28,12 +28,11 @@ SenstoSales is a high-precision supplier-side ERP system designed for Senstograp
 - **[FRONTEND_ARCHITECTURE.md](./docs/FRONTEND_ARCHITECTURE.md)** - 🎨 Atomic Design System, Tahoe Glassmorphism standards.
 - **[BACKEND_ARCHITECTURE.md](./docs/BACKEND_ARCHITECTURE.md)** - ⚙️ FastAPI Services, direct SQLite logic, and Reconciliation services.
 - **[DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md)** - Database ERD, table definitions, and relationships.
-- **[GLOBAL_VARIABLES.md](./docs/GLOBAL_VARIABLES.md)** - 🔧 Component catalog, semantic tokens, and design invariants.
+- **[design_guide.md](./docs/design_guide.md)** - 🔧 SenstoSales Design System: Tokens, Components, and Page standards.
 - **[CHANGELOG.md](./CHANGELOG.md)** - 📝 Version history and release notes.
 
 ### Technical References
 - **[DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)** - Production setup, SSL, and database hardening.
-- **[COMPONENT_REFERENCE.md](./docs/COMPONENT_REFERENCE.md)** - Detailed guide for Atomic Design components.
 - **[API Reference](./docs/api/API_REFERENCE.md)** - Auto-generated API documentation.
 
 ---
@@ -54,10 +53,10 @@ SenstoSales is a high-precision supplier-side ERP system designed for Senstograp
 - **API Pattern**: RESTful/JSON
 
 ### Design System Highlights
-- **Typography**: 8 Atomic components (LargeTitle, Title1-3, Headline, Body, Footnote, Caption1-2)
-- **Material Hardening**: Claymorphism + Glassmorphism with semantic tokens
-- **Dark Theme Ready**: 100% coverage with CSS variable system
-- **Data Tables**: Compact density, standardized typography classes, and Tahoe Glass Card containers.
+- **3-Tier Tokens**: Primitives -> Semantic -> Component hierarchy.
+- **Atomic Design**: Title1-3, Headline, Body, Footnote, Caption1-2 (Inter/SF Pro).
+- **macOS Tahoe**: Premium glassmorphism with 40px blur and saturation.
+- **Dark Mode**: Native Tailwind 4 theme support for all semantic tokens.
 
 ---
 
@@ -163,8 +162,8 @@ npm run dev
 
 ```
 Atoms (11)
-├── Typography: H1, H2, H3, H4, Body, SmallText, Label, Accounting
-├── UI: Button, Input, Checkbox, Badge, Card, GlassContainer
+├── Typography: Title1, Title2, Title3, Headline, Body, Footnote, Caption1, Caption2
+├── UI: Button, Input, Checkbox, Badge, StatusBadge, Card, Label
 └── Layout: Flex, Stack, Grid, Box
 
 Molecules (18)
@@ -258,7 +257,7 @@ SenstoSales/
 ├── docs/                      # Comprehensive documentation
 │   ├── SYSTEM_STATUS.md       # System dashboard
 │   ├── FRONTEND_ARCHITECTURE.md
-│   ├── GLOBAL_VARIABLES.md
+│   ├── design_guide.md        # Single Source of Truth for Design
 │   └── ARCHITECTURE_SYNC_REPORT.md
 └── migrations/                # Alembic migrations
 ```

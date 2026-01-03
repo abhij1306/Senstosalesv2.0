@@ -2,7 +2,10 @@
 
 import React from "react";
 import { Input } from "@/components/design-system/atoms/Input";
-import { Body, H3, Label, SmallText, Accounting, Caption1, Caption2 } from "@/components/design-system/atoms/Typography";
+import { Body, Title3, SmallText, Accounting, Caption1, Caption2 } from "@/components/design-system/atoms/Typography";
+import { Label } from "@/components/design-system/atoms/Label";
+// ... (omitting middle lines)
+
 import { Stack, Flex, Box } from "@/components/design-system/atoms/Layout";
 import { Button } from "@/components/design-system/atoms/Button";
 import { Badge } from "@/components/design-system/atoms/Badge";
@@ -44,7 +47,7 @@ const Field = ({ label, value, field, readonly = false, editMode }: FieldProps) 
                     <Input
                         value={value ?? ""}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateHeader(field, e.target.value)}
-                        className="h-6 px-2 py-0.5 border-none bg-blue-500/5 focus:bg-blue-500/10 transition-all font-regular text-app-fg text-[11px]"
+                        className="h-6 px-2 py-0.5 border-none bg-action-primary/5 focus:bg-action-primary/10 transition-all font-regular text-app-fg text-[11px]"
                     />
                 ) : (
                     <div
@@ -79,12 +82,21 @@ export const PODetailInfo = ({
     setActiveTab,
 }: PODetailInfoProps) => {
     const header = usePOStore((state) => state.data?.header);
+    const items = usePOStore((state) => state.data?.items);
     const updateHeader = usePOStore((state) => state.updateHeader);
+
+    // Derive Expected Delivery Date from the first item (uniform per user)
+    const commonDelyDate = React.useMemo(() => {
+        if (items && items.length > 0 && items[0]?.deliveries?.[0]?.dely_date) {
+            return items[0].deliveries[0].dely_date;
+        }
+        return null;
+    }, [items]);
 
     if (!header) return null;
     return (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="mb-4 bg-blue-500/5 p-1 rounded-xl w-fit border-none shadow-none backdrop-blur-sm">
+            <TabsList className="mb-4 bg-surface p-1 rounded-xl w-fit border-none shadow-1">
                 <TabsTrigger value="basic">Basic Info</TabsTrigger>
                 <TabsTrigger value="references">References</TabsTrigger>
                 <TabsTrigger value="financial">Financial Details</TabsTrigger>
@@ -99,7 +111,7 @@ export const PODetailInfo = ({
                     exit={{ opacity: 0, y: -5 }}
                     transition={{ duration: 0.15 }}
                 >
-                    <div className="bg-app-surface rounded-xl elevation-2 p-5 min-h-[160px] border-none">
+                    <div className="bg-surface rounded-xl shadow-1 p-5 min-h-[160px] border-none">
                         <TabsContent value="basic" className="m-0">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3">
                                 <Field label="PO Number" value={header.po_number} field="po_number" readonly editMode={editMode} />
@@ -108,7 +120,7 @@ export const PODetailInfo = ({
                                 <Field label="Supplier Code" value={header.supplier_code} field="supplier_code" editMode={editMode} />
                                 <Field label="Phone" value={header.supplier_phone} field="supplier_phone" editMode={editMode} />
                                 <Field label="Fax" value={header.supplier_fax} field="supplier_fax" editMode={editMode} />
-                                <Field label="Email" value={header.supplier_email} field="supplier_email" editMode={editMode} />
+                                <Field label="Expected Delivery" value={commonDelyDate ? formatDate(commonDelyDate) : "-"} field="dely_date" readonly editMode={false} />
                                 <Field label="Dept No (DVN)" value={header.department_no} field="department_no" editMode={editMode} />
                             </div>
                         </TabsContent>
@@ -151,7 +163,7 @@ export const PODetailInfo = ({
                                             <input
                                                 value={header.remarks || ""}
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateHeader("remarks", e.target.value)}
-                                                className="w-full h-7 px-2 text-[11px] border-none bg-blue-500/5 rounded focus:bg-blue-500/10 transition-all font-regular text-app-fg"
+                                                className="w-full h-7 px-2 text-[11px] border-none bg-action-primary/5 rounded focus:bg-action-primary/10 transition-all font-regular text-app-fg"
                                                 placeholder="Enter remarks..."
                                             />
                                         ) : (
@@ -169,12 +181,12 @@ export const PODetailInfo = ({
                                     {srvs.map((srv: any) => (
                                         <div
                                             key={srv.srv_number}
-                                            className="p-4 rounded-xl elevation-1 hover:elevation-2 hover:bg-blue-500/5 transition-all duration-300 group cursor-pointer border-none shadow-none"
+                                            className="p-4 rounded-xl elevation-1 hover:elevation-2 hover:bg-action-primary/5 transition-all duration-300 group cursor-pointer border-none shadow-none"
                                             onClick={() => onSRVClick(srv.srv_number)}
                                         >
                                             <Flex justify="between" align="start" className="mb-3">
                                                 <Stack gap={1}>
-                                                    <Caption1 className="text-text-primary uppercase tracking-wide group-hover:text-app-accent">
+                                                    <Caption1 className="text-text-primary uppercase tracking-wide group-hover:text-action-primary">
                                                         SRV-{srv.srv_number}
                                                     </Caption1>
                                                     <div className="text-[10px] font-regular text-text-tertiary flex items-center gap-1 uppercase tracking-tight">
@@ -183,7 +195,7 @@ export const PODetailInfo = ({
                                                     </div>
                                                 </Stack>
                                                 <Stack align="end" gap={2}>
-                                                    <div className="w-6 h-6 rounded-lg bg-app-accent/10 flex items-center justify-center text-app-accent">
+                                                    <div className="w-6 h-6 rounded-lg bg-action-primary/10 flex items-center justify-center text-action-primary">
                                                         <Receipt className="w-3 h-3" />
                                                     </div>
                                                 </Stack>
@@ -193,7 +205,7 @@ export const PODetailInfo = ({
                                                     <Caption2 className="text-app-status-success uppercase tracking-wide leading-tight">
                                                         Accepted
                                                     </Caption2>
-                                                    <Accounting variant="success" className="text-footnote">
+                                                    <Accounting className="text-footnote text-app-status-success">
                                                         {srv.total_accepted_qty || 0}
                                                     </Accounting>
                                                 </div>
@@ -201,7 +213,7 @@ export const PODetailInfo = ({
                                                     <Caption2 className="text-app-status-error uppercase tracking-wide leading-tight">
                                                         Rejected
                                                     </Caption2>
-                                                    <Accounting variant="error" className="text-footnote">
+                                                    <Accounting className="text-footnote text-app-status-error">
                                                         {srv.total_rejected_qty || 0}
                                                     </Accounting>
                                                 </div>

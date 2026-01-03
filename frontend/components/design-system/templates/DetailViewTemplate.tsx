@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { H1, Body } from "../atoms/Typography";
+import { Title1, Body } from "../atoms/Typography";
 import { SummaryCards, SummaryCardProps } from "../organisms/SummaryCards";
 import { DocumentTrace, DocumentNode } from "../organisms/DocumentTrace";
 import { ActionButtonGroup, Action } from "../molecules/ActionButtonGroup";
@@ -92,7 +92,7 @@ export const DetailViewTemplate: React.FC<DetailViewTemplateProps> = ({
             <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-3">
-                        <H1 className="uppercase tracking-tight text-app-fg">{title}</H1>
+                        <Title1 className="uppercase tracking-tight text-app-fg">{title}</Title1>
                         {badge}
                     </div>
                     {subtitle && (

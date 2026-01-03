@@ -1,0 +1,239 @@
+=== RECONCILIATION LEDGER VIEW ===
+CREATE VIEW reconciliation_ledger AS
+SELECT 
+    poi.po_number,
+    poi.po_item_no,
+    poi.status as item_status,
+    poi.material_description,
+    poi.ord_qty,
+    -- TOT High Water Mark: Delivered is MAX(Dispatched, Received)
+    MAX(poi.delivered_qty, poi.rcd_qty) as actual_delivered_qty, 
+    poi.rcd_qty as accepted_qty,
+    poi.rejected_qty,
+    -- Amendment Logic: Pending is 0 for Cancelled items
+    CASE 
+        WHEN poi.status = 'Cancelled' THEN 0 
+        ELSE MAX(0, poi.ord_qty - MAX(poi.delivered_qty, poi.rcd_qty)) 
+    END as pending_qty
+FROM purchase_order_items poi
+
+=== TABLE SCHEMAS ===
+
+Table: purchase_order_items
+  id                   | TEXT
+  po_number            | TEXT
+  po_item_no           | INTEGER
+  status               | TEXT
+  material_code        | TEXT
+  material_description | TEXT
+  drg_no               | TEXT
+  mtrl_cat             | INTEGER
+  unit                 | TEXT
+  po_rate              | DECIMAL(15,2)
+  ord_qty              | DECIMAL(15,3)
+  rcd_qty              | DECIMAL(15,3)
+  rejected_qty         | DECIMAL(15,3)
+  delivered_qty        | DECIMAL(15,3)
+  manual_delivered_qty | DECIMAL(15,3)
+  pending_qty          | DECIMAL(15,3)
+  hsn_code             | TEXT
+  created_at           | TIMESTAMP
+  updated_at           | TIMESTAMP
+
+Table: purchase_order_deliveries
+  id                   | TEXT
+  po_item_id           | TEXT
+  lot_no               | INTEGER
+  dely_qty             | DECIMAL(15,3)
+  dely_date            | DATE
+  delivered_qty        | DECIMAL(15,3)
+  received_qty         | DECIMAL(15,3)
+  entry_allow_date     | DATE
+  dest_code            | INTEGER
+  created_at           | TIMESTAMP
+  manual_override_qty  | REAL
+
+Table: delivery_challan_items
+  id                   | TEXT
+  dc_number            | TEXT
+  po_item_id           | TEXT
+  lot_no               | INTEGER
+  dispatch_qty         | DECIMAL(15,3)
+  received_qty         | DECIMAL(15,3)
+  accepted_qty         | DECIMAL(15,3)
+  rejected_qty         | DECIMAL(15,3)
+  hsn_code             | TEXT
+  hsn_rate             | DECIMAL(15,2)
+
+Table: srv_items
+  id                   | TEXT
+  srv_number           | TEXT
+  po_number            | TEXT
+  po_item_no           | INTEGER
+  lot_no               | INTEGER
+  received_qty         | DECIMAL(15,3)
+  rejected_qty         | DECIMAL(15,3)
+  challan_no           | TEXT
+  created_at           | TIMESTAMP
+  srv_item_no          | INTEGER
+  rev_no               | INTEGER
+  invoice_no           | VARCHAR(50)
+  remarks              | TEXT
+  invoice_date         | DATE
+  challan_date         | DATE
+  order_qty            | DECIMAL(15,3)
+  challan_qty          | DECIMAL(15,3)
+  accepted_qty         | DECIMAL(15,3)
+  unit                 | VARCHAR(20)
+  div_code             | VARCHAR(20)
+  pmir_no              | VARCHAR(50)
+  finance_date         | DATE
+  cnote_no             | VARCHAR(50)
+  cnote_date           | DATE
+
+Table: gst_invoice_items
+  id                   | TEXT
+  invoice_number       | TEXT
+  financial_year       | TEXT
+  description          | TEXT
+  quantity             | DECIMAL(15,3)
+  unit                 | TEXT
+  rate                 | DECIMAL(15,2)
+  taxable_value        | DECIMAL(15,2)
+  cgst_amount          | DECIMAL(15,2)
+  sgst_amount          | DECIMAL(15,2)
+  igst_amount          | DECIMAL(15,2)
+  total_amount         | DECIMAL(15,2)
+  created_at           | TIMESTAMP
+  po_sl_no             | TEXT
+  hsn_sac              | TEXT
+
+Table: purchase_orders
+  po_number            | TEXT
+  po_date              | DATE
+  buyer_id             | INTEGER
+  supplier_name        | TEXT
+  supplier_gstin       | TEXT
+  supplier_code        | TEXT
+  supplier_phone       | TEXT
+  supplier_fax         | TEXT
+  supplier_email       | TEXT
+  department_no        | INTEGER
+  enquiry_no           | TEXT
+  enquiry_date         | DATE
+  quotation_ref        | TEXT
+  quotation_date       | DATE
+  rc_no                | TEXT
+  order_type           | TEXT
+  po_status            | TEXT
+  tin_no               | TEXT
+  ecc_no               | TEXT
+  mpct_no              | TEXT
+  po_value             | DECIMAL(15,2)
+  fob_value            | DECIMAL(15,2)
+  ex_rate              | DECIMAL(15,4)
+  currency             | TEXT
+  net_po_value         | DECIMAL(15,2)
+  amend_no             | INTEGER
+  remarks              | TEXT
+  issuer_name          | TEXT
+  issuer_designation   | TEXT
+  issuer_phone         | TEXT
+  inspection_by        | TEXT
+  inspection_at        | TEXT
+  financial_year       | TEXT
+  created_at           | TIMESTAMP
+  updated_at           | TIMESTAMP
+
+Table: delivery_challans
+  dc_number            | TEXT
+  dc_date              | DATE
+  po_number            | TEXT
+  consignee_name       | TEXT
+  consignee_gstin      | TEXT
+  consignee_address    | TEXT
+  vehicle_no           | TEXT
+  transporter          | TEXT
+  lr_no                | TEXT
+  created_at           | TIMESTAMP
+
+Table: srvs
+  srv_number           | TEXT
+  srv_date             | DATE
+  po_number            | TEXT
+  invoice_number       | TEXT
+  is_active            | BOOLEAN
+  created_at           | TIMESTAMP
+  updated_at           | TIMESTAMP
+  srv_status           | VARCHAR(50)
+  po_found             | BOOLEAN
+  warning_message      | TEXT
+
+Table: gst_invoices
+  invoice_number       | TEXT
+  invoice_date         | DATE
+  dc_number            | TEXT
+  financial_year       | TEXT
+  buyer_name           | TEXT
+  buyer_gstin          | TEXT
+  buyer_address        | TEXT
+  po_numbers           | TEXT
+  buyers_order_date    | TEXT
+  gemc_number          | TEXT
+  gemc_date            | TEXT
+  mode_of_payment      | TEXT
+  payment_terms        | TEXT
+  despatch_doc_no      | TEXT
+  srv_no               | TEXT
+  srv_date             | TEXT
+  vehicle_no           | TEXT
+  lr_no                | TEXT
+  transporter          | TEXT
+  destination          | TEXT
+  terms_of_delivery    | TEXT
+  buyer_state          | TEXT
+  buyer_state_code     | TEXT
+  taxable_value        | DECIMAL(15,2)
+  cgst                 | DECIMAL(15,2)
+  sgst                 | DECIMAL(15,2)
+  igst                 | DECIMAL(15,2)
+  total_invoice_value  | DECIMAL(15,2)
+  created_at           | TIMESTAMP
+  updated_at           | TIMESTAMP
+
+=== DATA INTEGRITY SAMPLES ===
+
+>>> AUDIT: PO 1105216 Item 1 (ID: 6cc4e5dd-b5ae-4282-b764-e800ece90152)
+    PO_ITEMS Table: ORD=11, HWM_DLV=0, HWM_RCD=0
+      TOTAL PHYSICAL DISPATCH (SUM DCI): 0
+      TOTAL PHYSICAL RECEIPT (SUM SRV): 0
+      Error reading Invoices: no such column: po_item_id
+    [VERIFY] Calculated HWM: 0 | Actual DB HWM: 0
+
+>>> AUDIT: PO 1105216 Item 2 (ID: 494762fb-8ce6-4d80-a93b-646ad1bb4776)
+    PO_ITEMS Table: ORD=11, HWM_DLV=0, HWM_RCD=0
+      TOTAL PHYSICAL DISPATCH (SUM DCI): 0
+      TOTAL PHYSICAL RECEIPT (SUM SRV): 0
+      Error reading Invoices: no such column: po_item_id
+    [VERIFY] Calculated HWM: 0 | Actual DB HWM: 0
+
+>>> AUDIT: PO 1105231 Item 1 (ID: 06e8c7e3-857f-49f4-b5e2-c45b2f656553)
+    PO_ITEMS Table: ORD=1, HWM_DLV=0, HWM_RCD=0
+      TOTAL PHYSICAL DISPATCH (SUM DCI): 0
+      TOTAL PHYSICAL RECEIPT (SUM SRV): 0
+      Error reading Invoices: no such column: po_item_id
+    [VERIFY] Calculated HWM: 0 | Actual DB HWM: 0
+
+>>> AUDIT: PO 1105231 Item 2 (ID: d31b0114-a07b-4945-86d8-b7f6bf8f3266)
+    PO_ITEMS Table: ORD=1, HWM_DLV=0, HWM_RCD=0
+      TOTAL PHYSICAL DISPATCH (SUM DCI): 0
+      TOTAL PHYSICAL RECEIPT (SUM SRV): 0
+      Error reading Invoices: no such column: po_item_id
+    [VERIFY] Calculated HWM: 0 | Actual DB HWM: 0
+
+>>> AUDIT: PO 1105241 Item 1 (ID: f6081af7-4c1a-485e-81ae-3fc752c9dd48)
+    PO_ITEMS Table: ORD=1.8, HWM_DLV=0, HWM_RCD=0
+      TOTAL PHYSICAL DISPATCH (SUM DCI): 0
+      TOTAL PHYSICAL RECEIPT (SUM SRV): 0
+      Error reading Invoices: no such column: po_item_id
+    [VERIFY] Calculated HWM: 0 | Actual DB HWM: 0

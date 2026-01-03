@@ -15,12 +15,12 @@ The backend uses a layered architecture to ensure separation of concerns and hig
 - **`services/`**: Pure business logic (PO, DC, Invoice, Reconciliation).
 - **`db/`**: Database connection (`session.py`) and Schema Models.
 - **`core/`**: Configuration, Exceptions, Logging.
-- **`validation/`**: Shared validation helpers.
 
 ## 2. Service Catalog
 
 ### 2.1 Purchase Order Service (`po_service.py`)
 -   **Responsibility**: CRUD for POs, Scraper for HTML uploads.
+-   **CRITICAL CONSTRAINT**: Any operation mutating `ordered_quantity` or `delivered_quantity` **MUST** call `ReconciliationService.sync_po_item(item_id)` immediately after the DB update.
 -   **Key Logic**:
     -   Displays `delivered_qty` and `rcd_qty` from synchronized lots/items.
     -   Implements Balance calculation: `Ordered - Delivered`.
@@ -42,6 +42,25 @@ The backend uses a layered architecture to ensure separation of concerns and hig
 -   **Logic**: Synchronizes the entire document chain.
     -   `Delivered = Sum(DC Dispatch)`
     -   `Received = Sum(SRV Receipt)`
+
+### 2.5 Architecture Decision Record (B-1)
+
+> [!IMPORTANT]
+> **ADR: Reconciliation Service Boundary**
+> 
+> **Decision**: All operations mutating `ordered_qty`, `delivered_qty`, or `pending_qty` MUST invoke `ReconciliationService.sync_po_item(item_id)` immediately after the DB update.
+>
+> **Rationale**: Prevents Balance/Pending desync across PO/DC/SRV documents.
+>
+> **Pattern**:
+> ```python
+> def update_po_item_qty(item_id, new_qty):
+>     db.execute("UPDATE po_items SET ord_qty = ?", new_qty)
+>     reconciliation_service.sync_po_item(item_id)  # MANDATORY
+> ```
+>
+> **Enforcement**: PRs modifying quantity fields must include sync call or justification.
+
 
 ## 3. Data Integrity Strategy
 
@@ -66,11 +85,37 @@ All successful responses follow the `StandardResponse` schema:
 }
 ```
 
-### 4.2 Error Handling
+### 4.2 Error Handling (API-2)
 We use a global exception handler to map Python exceptions to HTTP codes:
--   `ValueError` -> 400 Bad Request
--   `ResourceNotFound` -> 404 Not Found
--   `IntegrityError` -> 409 Conflict
+
+| Exception | HTTP Code | Usage |
+|-----------|-----------|-------|
+| `ValueError` | 400 | Bad Request / Invalid Input |
+| `ValidationError` (Pydantic) | 422 | Unprocessable Entity |
+| `AuthenticationError` | 401 | Unauthorized |
+| `PermissionDenied` | 403 | Forbidden |
+| `ResourceNotFound` | 404 | Not Found |
+| `IntegrityError` | 409 | Conflict (Duplicate Key) |
+| `BusinessRuleViolation` | 422 | Domain Logic Error |
+
+```python
+# core/exceptions.py
+exception_status_map = {
+    ValueError: 400,
+    ValidationError: 422,
+    AuthenticationError: 401,
+    PermissionDenied: 403,
+    ResourceNotFound: 404,
+    IntegrityError: 409,
+    BusinessRuleViolation: 422,
+}
+```
+
+### 4.3 Batch Operations (Partial Success Mode)
+For bulk operations (e.g., PO Upload), we employ a **Hybrid Transaction Strategy**:
+-   **Default (Strict)**: `Atomic Transaction` - All files roll back on single failure.
+-   **Lenient Mode**: Process each file in isolated transaction; return `207 Multi-Status` summary.
+
 
 ## 5. Deployment Architecture
 -   **Server**: Uvicorn (ASGI) behind Nginx (Reverse Proxy).

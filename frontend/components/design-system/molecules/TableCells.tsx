@@ -1,12 +1,24 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-export const TableHeaderCell = ({ children, className, numeric, ...props
-}: {
+export const TableHeaderCell = ({ children, className, numeric, ...props }: {
     children?: React.ReactNode; className?: string; numeric?: boolean;
-} & React.ThHTMLAttributes<HTMLTableCellElement>) => (<th className={cn("h-8 px-3 text-left align-middle font-semibold text-[9px] uppercase tracking-[0.15em] text-muted-foreground/60 bg-background/40 neo-flat backdrop-blur-sm sticky top-0 z-10 border-b border-border/10", numeric && "text-right", className,)} {...props} > {children} </th>
-); export const TableRowCell = ({ children, className, numeric, ...props
-}: {
+} & React.ThHTMLAttributes<HTMLTableCellElement>) => (
+    <th className={cn(
+        "h-14 px-4 sticky top-0 z-20 m3-label-large text-secondary",
+        "bg-surface-variant/40 backdrop-blur-md border-b border-outline",
+        numeric && "text-right",
+        className,
+    )} {...props}> {children} </th>
+);
+
+export const TableRowCell = ({ children, className, numeric, ...props }: {
     children?: React.ReactNode; className?: string; numeric?: boolean;
-} & React.TdHTMLAttributes<HTMLTableCellElement>) => (<td className={cn("py-1.5 px-3 align-middle border-b border-border/5 transition-colors group-hover:bg-primary/5 text-[10px] font-extrabold tracking-tight", numeric && "font-mono tabular-nums text-right text-primary/80", className,)} {...props} > {children} </td>
+} & React.TdHTMLAttributes<HTMLTableCellElement>) => (
+    <td className={cn(
+        "h-[52px] px-4 m3-body-medium text-primary",
+        "border-b border-outline-variant/30 transition-colors hover:bg-primary-container/10",
+        numeric && "font-mono tabular-nums text-right",
+        className,
+    )} {...props}> {children} </td>
 );
