@@ -10,6 +10,13 @@ The backend uses a layered architecture to ensure separation of concerns and hig
 -   **Database Access**: Uses `db.execute()` with atomic transactions and explicit commit/rollback for safety.
 -   **Invariants**: Business rules are enforced both in Python logic and via SQLite Triggers.
 
+### 1.1 Module Responsibility Map
+- **`api/`**: Router definitions. Delegates logic to Services.
+- **`services/`**: Pure business logic (PO, DC, Invoice, Reconciliation).
+- **`db/`**: Database connection (`session.py`) and Schema Models.
+- **`core/`**: Configuration, Exceptions, Logging.
+- **`validation/`**: Shared validation helpers.
+
 ## 2. Service Catalog
 
 ### 2.1 Purchase Order Service (`po_service.py`)
@@ -69,3 +76,10 @@ We use a global exception handler to map Python exceptions to HTTP codes:
 -   **Server**: Uvicorn (ASGI) behind Nginx (Reverse Proxy).
 -   **Process Management**: Supervisor/Systemd for keep-alive.
 -   **Workers**: Configurable based on CPU cores (`workers = 2 * CPU + 1`).
+
+## 6. Code Quality & Security
+- **Linting**: Backend enforced via Ruff (E, F, B rulesets).
+- **Security**: 
+    - No SQL Injection: All queries use parameterized SQL.
+    - Path Injection: File paths are validated against allowed directories.
+- **Performance**: High-density queries utilize composite indexes on `po_number` and `dc_number`.

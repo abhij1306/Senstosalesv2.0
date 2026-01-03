@@ -34,7 +34,7 @@ The lifecycle represents the "Order-to-Cash" process from the Supplier's perspec
 | **Ordered Qty (ORD)** | Total quantity contracted. | - | `po_items.ord_qty` |
 | **Delivered Qty (DLV)** | Total quantity DISPATCHED. | `Sum(DC.dispatch_qty)` | `po_items.delivered_qty` |
 | **Received Qty (RECD)** | Total quantity RECEIVED. | `Sum(SRV.received_qty)` | `po_items.rcd_qty` |
-| **Balance (BAL)** | **Pending for Dispatch**. | **ORD - DLV** | Calculated |
+| **Balance (BAL)** | **Pending for Dispatch**. | **ORD - DLV** | `reconciliation_ledger` |
 
 > [!IMPORTANT]
 > **THE CORE INVARIANT**: `BALANCE = ORDERED - DELIVERED`.
@@ -137,7 +137,7 @@ The system extracts and stores the following fields from every Purchase Order:
 
 ### 5.2 Delivery Challan (DC)
 - **DC-1 (Dispatch Bounds)**: `dispatch_qty` cannot exceed `(ordered_qty - previously_delivered)`.
-    - **Atomic Check**: Must verify inventory snapshot before writing.
+    - **Atomic Check (R-01)**: Must verify inventory snapshot before writing. Enforced via `INSERT ... SELECT` with `WHERE` clause concurrency protection.
 - **DC-2 (Single Invoice)**: A DC can be linked to **max ONE Invoice**.
 
 ### 5.3 Store Receipt Voucher (SRV)

@@ -17,6 +17,13 @@ SenstoSales uses a **Next.js 14 (App Router)** frontend, optimized for high-dens
   - **Local State**: `useState` / `useReducer` - for complex UI interactions.
 - **Forms**: Component-level State / React Context.
 
+### 1.1 Module Responsibility Map
+- **`app/`**: Next.js App Router pages and layouts.
+- **`components/`**: Atomic React components (Atoms, Molecules, Organisms, Templates).
+- **`hooks/`**: Custom hooks for business logic and data fetching.
+- **`lib/`**: Utilities (`api.ts`, `utils.ts`).
+- **`store/`**: Data stores for complex multi-step forms.
+
 ### 1.2 Core Architectural Patterns
 
 #### A. Server Components vs Client Components
@@ -104,3 +111,9 @@ frontend/
 -   **Controlled**: All inputs are controlled components.
 -   **Validation**: Component-level state logic synchronized with Backend Pydantic models.
 -   **Auto-Save**: Long-forms (like PO Notes) implement debounced auto-save.
+
+## 5. UI Hardening & Standardization
+1. **Z-Index Layering**: Standardized on macOS hierarchy (Modals @ 1000+, Toasts @ 2000+).
+2. **Focus Management**: All interactive elements support keyboard Focus rings (`focus:ring-2`).
+3. **Empty States**: Enforced use of `DataTable.emptyMessage` for all data-driven views.
+4. **Contrast Guard**: Raw Tailwind colors are prohibited in favor of semantic variables to ensure legible Dark/Light mode transitions.

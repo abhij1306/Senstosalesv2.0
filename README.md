@@ -1,21 +1,21 @@
 # SenstoSales ERP - Supplier Management System
 
-**Version**: 3.0.0 (System Consolidated - Triangle of Truth)  
+**Version**: 4.0.0 (macOS Tahoe - Physical Dispatch Logic)  
 **Status**: 🟢 Production Ready  
-**Last Updated**: 2025-12-30 18:35 IST
+**Last Updated**: 2026-01-03 10:55 IST
 
 ---
 
 ## Overview
 
-SenstoSales is an internal supplier-side ERP system designed for Senstographic Solutions to manage business operations with BHEL (Bharat Heavy Electricals Limited) and other PSUs. It handles the complete lifecycle of Purchase Orders (PO), Delivery Challans (DC), Sales Invoices, and Store Receipt Vouchers (SRV).
+SenstoSales is a high-precision supplier-side ERP system designed for Senstographic Solutions to manage business operations with BHEL and other PSUs. It handles the complete lifecycle of Purchase Orders (PO), Delivery Challans (DC), Sales Invoices, and Store Receipt Vouchers (SRV).
 
 ### Key Features
-- ✅ **Complete Document Lifecycle**: PO → DC → Invoice → SRV with auto-reconciliation
-- ✅ **Material Hardening UI**: 95% dark-theme ready with semantic token system
-- ✅ **Atomic Design System**: 47 components organized in 5 hierarchical tiers
-- ✅ **Performance Optimized**: CLS <0.05, AnimatePresence for zero ghosting
-- ✅ **Enterprise-Grade**: PostgreSQL, FastAPI async, Next.js 16 App Router
+- ✅ **Complete Document Lifecycle**: PO → DC → Invoice → SRV with auto-reconciliation.
+- ✅ **macOS Tahoe UI**: Premium glassmorphism and claymorphism system with semantic tokens.
+- ✅ **Atomic Design System**: 52+ components organized across hierarchical tiers.
+- ✅ **Precision Invoicing**: Template-based Excel generation using `openpyxl`.
+- ✅ **Physical Dispatch Logic**: De-coupled balance tracking (`Balance = Ordered - Delivered`).
 
 ---
 
@@ -24,20 +24,17 @@ SenstoSales is an internal supplier-side ERP system designed for Senstographic S
 **START HERE** for comprehensive system understanding:
 
 ### Core Documentation
-- **[SYSTEM_STATUS.md](./docs/SYSTEM_STATUS.md)** - 📊 Real-time system dashboard, metrics, and phase completion status
-- **[FRONTEND_ARCHITECTURE.md](./docs/FRONTEND_ARCHITECTURE.md)** - 🎨 Atomic Design System, Material Hardening standards, dark theme guide
-- **[GLOBAL_VARIABLES.md](./docs/GLOBAL_VARIABLES.md)** - 🔧 Component catalog, semantic tokens, and design invariants
-- **[CHANGELOG.md](./CHANGELOG.md)** - 📝 Version history and release notes
+- **[BUSINESS_LOGIC_SPEC.md](./docs/BUSINESS_LOGIC_SPEC.md)** - **THE BIBLE**: System Invariants, Data Pipelines, and Business Rules.
+- **[FRONTEND_ARCHITECTURE.md](./docs/FRONTEND_ARCHITECTURE.md)** - 🎨 Atomic Design System, Tahoe Glassmorphism standards.
+- **[BACKEND_ARCHITECTURE.md](./docs/BACKEND_ARCHITECTURE.md)** - ⚙️ FastAPI Services, direct SQLite logic, and Reconciliation services.
+- **[DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md)** - Database ERD, table definitions, and relationships.
+- **[GLOBAL_VARIABLES.md](./docs/GLOBAL_VARIABLES.md)** - 🔧 Component catalog, semantic tokens, and design invariants.
+- **[CHANGELOG.md](./CHANGELOG.md)** - 📝 Version history and release notes.
 
 ### Technical References
-- **[DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md)** - Database ERD, table definitions, and relationships
-- **[BUSINESS_LOGIC_SPEC.md](./docs/BUSINESS_LOGIC_SPEC.md)** - **THE BIBLE**: System Invariants, Data Pipelines, and Business Rules
-- **[GLOBAL_VARIABLES.md](./docs/GLOBAL_VARIABLES.md)** - 🔧 Component catalog, semantic tokens, and design invariants
-- **[FONT_STANDARDIZATION.md](./docs/FONT_STANDARDIZATION.md)** - Typography standards and table classes
-- **[TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md)** - Common issues and solutions
-
-### System Reports
-- **[ARCHITECTURE_SYNC_REPORT.md](./docs/ARCHITECTURE_SYNC_REPORT.md)** - Complete audit: components, tokens, debt purge, dark-theme readiness
+- **[DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)** - Production setup, SSL, and database hardening.
+- **[COMPONENT_REFERENCE.md](./docs/COMPONENT_REFERENCE.md)** - Detailed guide for Atomic Design components.
+- **[API Reference](./docs/api/API_REFERENCE.md)** - Auto-generated API documentation.
 
 ---
 
@@ -48,21 +45,19 @@ SenstoSales is an internal supplier-side ERP system designed for Senstographic S
 - **Language**: TypeScript 5+ (Strict Mode)
 - **Styling**: Tailwind CSS 4 + Semantic Design Tokens
 - **Animation**: Framer Motion 12.23.26
-- **Components**: 47-component Atomic Design System
-- **Icons**: Lucide React 0.562.0
+- **State Management**: React Query (Server), React Context/State (Local)
 
 ### Backend
 - **Framework**: FastAPI (Python 3.11+)
-- **Database**: PostgreSQL
-- **ORM**: SQLAlchemy (Async)
-- **File Processing**: BeautifulSoup4, lxml, openpyxl
-- **API Pattern**: RESTful with async support
+- **Database**: SQLite (Direct `sqlite3` usage for performance)
+- **File Processing**: openpyxl, BeautifulSoup4, lxml
+- **API Pattern**: RESTful/JSON
 
 ### Design System Highlights
-- **Typography**: 8 Atomic components (H1-H4, Body, SmallText, Label, Accounting)
+- **Typography**: 8 Atomic components (LargeTitle, Title1-3, Headline, Body, Footnote, Caption1-2)
 - **Material Hardening**: Claymorphism + Glassmorphism with semantic tokens
-- **Dark Theme Ready**: 95% coverage with CSS variable system
-- **Data Tables**: Compact density (40px rows), standardized typography classes
+- **Dark Theme Ready**: 100% coverage with CSS variable system
+- **Data Tables**: Compact density, standardized typography classes, and Tahoe Glass Card containers.
 
 ---
 
@@ -71,7 +66,7 @@ SenstoSales is an internal supplier-side ERP system designed for Senstographic S
 ### Prerequisites
 - **Node.js**: 20+ (for Next.js 16)
 - **Python**: 3.11+
-- **PostgreSQL**: 14+
+- **SQLite**: 3.35+
 
 ### Installation
 
@@ -92,12 +87,8 @@ pip install -r requirements.txt
 
 **3. Database Setup:**
 ```bash
-# Create PostgreSQL database
-createdb senstosales
-
-# Run migrations
-cd backend
-python -m alembic upgrade head
+# Verify database exists (SQLite)
+python backend/scripts/verify_database.py
 ```
 
 **4. Frontend Setup:**
@@ -110,8 +101,8 @@ npm install
 
 Create `backend/.env`:
 ```env
-DATABASE_URL=postgresql://user:password@localhost/senstosales
-API_BASE_URL=http://localhost:8000
+DATABASE_URL=sqlite:///../db/business.db
+ENV_MODE=dev
 ```
 
 Create `frontend/.env.local`:
