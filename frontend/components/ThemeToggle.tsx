@@ -31,7 +31,7 @@ export function ThemeToggle() {
             key={value}
             onClick={() => setTheme(value)}
             className={cn(
-              "flex items-center justify-center p-2 rounded-lg transition-all duration-300 relative group",
+              "flex items-center justify-center p-2 rounded-lg transition-all duration-300 relative group will-change-transform",
               theme === value
                 ? "bg-app-accent text-white shadow-lg shadow-app-accent/20 scale-105 active-glow"
                 : "text-app-fg-muted hover:bg-app-overlay/10 hover:text-app-fg"

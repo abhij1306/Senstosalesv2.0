@@ -72,7 +72,7 @@ export const SummaryCard = React.memo(function SummaryCard({
 
     return (
         <div
-            className={cn("tahoe-glass-card h-[145px] group transition-all duration-300 hover:scale-[1.01] hover:elevation-3 relative overflow-hidden", className)}
+            className={cn("tahoe-glass-card h-[145px] group transition-all duration-300 hover:scale-[1.01] hover:elevation-3 relative overflow-hidden will-change-transform", className)}
         >
             {/* Glow Blob - Added from Reference */}
             <div className={cn("absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl transition-all duration-500 pointer-events-none", glowClass)} />
@@ -89,7 +89,7 @@ export const SummaryCard = React.memo(function SummaryCard({
                     </div>
                     {icon && (
                         <div className={cn(
-                            "w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-500 shrink-0 elevation-1 group-hover:rotate-6",
+                            "w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-500 shrink-0 elevation-1 group-hover:rotate-6 will-change-transform",
                             iconClass,
                             variant !== 'default' && "text-white"
                         )}>
