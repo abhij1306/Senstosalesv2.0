@@ -51,7 +51,7 @@ export function SidebarNav() {
       {/* Brand Header */}
       <div className="h-16 flex items-center px-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl elevation-1 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+          <div className="w-10 h-10 bg-[rgb(var(--action-primary))] rounded-xl elevation-1 flex items-center justify-center text-white shadow-lg shadow-[rgb(var(--action-primary))]/20">
             <Package className="w-5 h-5" />
           </div>
           <div className="flex flex-col justify-center">
@@ -85,7 +85,7 @@ export function SidebarNav() {
                       {isActive && (
                         <motion.div
                           layoutId="sidebar-selection-capsule"
-                          className="absolute inset-0 bg-blue-600/90 backdrop-blur-md rounded-lg shadow-lg shadow-blue-500/30 -z-10 border border-white/10"
+                          className="absolute inset-0 bg-[rgb(var(--action-primary))]/90 backdrop-blur-md rounded-lg shadow-lg shadow-[rgb(var(--action-primary))]/30 -z-10 border border-white/10"
                           transition={{
                             type: "spring",
                             stiffness: 500,

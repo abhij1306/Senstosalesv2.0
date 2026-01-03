@@ -132,8 +132,8 @@ export const DataTable = <T extends Record<string, any>>({
                                     <td
                                         key={`${column.key}-${rowIndex}`}
                                         className={cn(
-                                            // Standard M3 Row height: 52px (h-[52px]) -> Reduced to h-10 (40px)
-                                            "h-10 px-4",
+                                            // M3 Row height: 52px
+                                            "h-[52px] px-4",
                                             "m3-body-medium text-primary",
                                             column.align === 'center' && 'text-center',
                                             column.align === 'right' && 'text-right'
