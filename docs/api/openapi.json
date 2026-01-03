@@ -925,6 +925,27 @@
         }
       }
     },
+    "/reconcile-all": {
+      "post": {
+        "summary": "",
+        "operationId": "reconcile_all",
+        "tags": [
+          "system"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/{srv_number}": {
       "get": {
         "summary": "",

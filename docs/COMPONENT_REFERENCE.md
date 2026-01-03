@@ -1,6 +1,6 @@
 # Component Reference
 
-**Generated:** 2026-01-03 03:36:43  
+**Generated:** 2026-01-03 05:21:43  
 **Auto-synced from JSDoc comments**
 
 ## Design System Components
@@ -34,7 +34,7 @@ Card Atom - MacOS Tahoe Edition
 
 #### `Checkbox`
 
-Checkbox Atom - macOS Tahoe 4.0
+Checkbox Atom - Atomic Design System v1.0
 
 **File:** `components/design-system/atoms/Checkbox.tsx`
 
@@ -63,7 +63,7 @@ Checkbox Atom - macOS Tahoe 4.0
 
 #### `Icon`
 
-Icon Atom - macOS Tahoe 4.0
+Icon Atom - Atomic Design System v1.0
 
 **File:** `components/design-system/atoms/Icon.tsx`
 
@@ -71,7 +71,7 @@ Icon Atom - macOS Tahoe 4.0
 
 #### `Input`
 
-Input Atom - macOS Tahoe 4.0
+Input Atom - Atomic Design System v1.0
 
 **File:** `components/design-system/atoms/Input.tsx`
 
@@ -93,7 +93,7 @@ LargeTitle - Hero sections, main navigation (34px, Bold)
 
 #### `StatusBadge`
 
-StatusBadge Atom - macOS Tahoe 4.0
+StatusBadge Atom - Atomic Design System v6.0
 
 **File:** `components/design-system/atoms/StatusBadge.tsx`
 
@@ -189,7 +189,7 @@ StatusBadge Atom - macOS Tahoe 4.0
 
 #### `FormField`
 
-FormField Molecule - macOS Tahoe 4.0
+FormField Molecule - Atomic Design System v1.0
 
 **File:** `components/design-system/molecules/FormField.tsx`
 
@@ -240,7 +240,7 @@ FormField Molecule - macOS Tahoe 4.0
 
 #### `SearchBar`
 
-SearchBar Molecule - macOS Tahoe 4.0
+SearchBar Molecule - Atomic Design System v1.0
 
 **Props:**
 
@@ -303,7 +303,7 @@ SearchBar Molecule - macOS Tahoe 4.0
 
 #### `TableHeaderCell`
 
-TableHeaderCell Molecule - macOS Tahoe 4.0
+TableHeaderCell Molecule - Atomic Design System v1.0
 
 **File:** `components/design-system/molecules/TableHeaderCell.tsx`
 
@@ -382,7 +382,7 @@ Shared Form Components
 
 #### `DocumentTrace`
 
-DocumentTrace Organism - macOS Tahoe 4.0
+DocumentTrace Organism - Atomic Design System v1.0
 
 **Props:**
 
@@ -439,7 +439,7 @@ DocumentTrace Organism - macOS Tahoe 4.0
 
 #### `SummaryCard`
 
-SummaryCard Organism - macOS Tahoe 4.0
+SummaryCard Organism - Atomic Design System v6.0
 
 **Props:**
 
@@ -459,7 +459,7 @@ SummaryCard Organism - macOS Tahoe 4.0
 
 #### `CreateEditFormTemplate`
 
-CreateEditFormTemplate - macOS Tahoe 4.0
+CreateEditFormTemplate - Atomic Design System v1.0
 
 **Props:**
 
@@ -478,7 +478,7 @@ CreateEditFormTemplate - macOS Tahoe 4.0
 
 #### `DetailViewTemplate`
 
-DetailViewTemplate - macOS Tahoe 4.0
+DetailViewTemplate - Atomic Design System v1.0
 
 **Props:**
 
@@ -518,7 +518,7 @@ DetailViewTemplate - macOS Tahoe 4.0
 
 #### `ListPageTemplate`
 
-ListPageTemplate - macOS Tahoe 4.0
+ListPageTemplate - Atomic Design System v1.0
 
 **File:** `components/design-system/templates/ListPageTemplate.tsx`
 
@@ -526,7 +526,7 @@ ListPageTemplate - macOS Tahoe 4.0
 
 #### `ReportsPageTemplate`
 
-ReportsPageTemplate - macOS Tahoe 4.0
+ReportsPageTemplate - Atomic Design System v1.0
 
 **File:** `components/design-system/templates/ReportsPageTemplate.tsx`
 

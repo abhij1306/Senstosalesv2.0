@@ -1,6 +1,6 @@
 # SenstoSales API Documentation
 
-**Generated:** 2026-01-03 03:36:43  
+**Generated:** 2026-01-03 05:21:43  
 **Base URL:** `http://localhost:8000`
 
 ## Endpoints
@@ -399,6 +399,12 @@ No description
 
 
 ### SYSTEM
+
+#### `POST` /reconcile-all
+
+
+
+---
 
 #### `POST` /reset-db
 
