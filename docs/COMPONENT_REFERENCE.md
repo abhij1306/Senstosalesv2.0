@@ -1,6 +1,6 @@
 # Component Reference
 
-**Generated:** 2026-01-02 08:15:15  
+**Generated:** 2026-01-03 03:07:14  
 **Auto-synced from JSDoc comments**
 
 ## Design System Components
@@ -10,25 +10,25 @@
 
 #### `Badge`
 
-Badge Atom - Atomic Design System v5.0
+Badge Atom - MacOS Tahoe Edition
 
-**File:** `components\design-system\atoms\Badge.tsx`
+**File:** `components/design-system/atoms/Badge.tsx`
 
 ---
 
 #### `Button`
 
-Button Atom - Atomic Design System v5.0
+Button Atom - MacOS Tahoe Edition
 
-**File:** `components\design-system\atoms\Button.tsx`
+**File:** `components/design-system/atoms/Button.tsx`
 
 ---
 
 #### `Card`
 
-Card Atom - Atomic Design System v1.0
+Card Atom - MacOS Tahoe Edition
 
-**File:** `components\design-system\atoms\Card.tsx`
+**File:** `components/design-system/atoms/Card.tsx`
 
 ---
 
@@ -36,21 +36,28 @@ Card Atom - Atomic Design System v1.0
 
 Checkbox Atom - Atomic Design System v1.0
 
-**File:** `components\design-system\atoms\Checkbox.tsx`
+**File:** `components/design-system/atoms/Checkbox.tsx`
+
+---
+
+#### `DownloadButton`
+
+**Props:**
+
+- `url`: `string`
+- `filename`: `string`
+- `label`: `string`
+- `variant`: `"primary" | "secondary" | "outline" | "ghost" | "link"`
+- `size`: `"default" | "sm" | "lg" | "icon"`
+- `className`: `string`
+
+**File:** `components/design-system/atoms/DownloadButton.tsx`
 
 ---
 
 #### `Flex`
 
-**File:** `components\design-system\atoms\Layout.tsx`
-
----
-
-#### `H1`
-
-Typography Atoms - Enterprise UI Standardization (Google M3)
-
-**File:** `components\design-system\atoms\Typography.tsx`
+**File:** `components/design-system/atoms/Layout.tsx`
 
 ---
 
@@ -58,7 +65,7 @@ Typography Atoms - Enterprise UI Standardization (Google M3)
 
 Icon Atom - Atomic Design System v1.0
 
-**File:** `components\design-system\atoms\Icon.tsx`
+**File:** `components/design-system/atoms/Icon.tsx`
 
 ---
 
@@ -66,19 +73,29 @@ Icon Atom - Atomic Design System v1.0
 
 Input Atom - Atomic Design System v1.0
 
-**File:** `components\design-system\atoms\Input.tsx`
+**File:** `components/design-system/atoms/Input.tsx`
 
 ---
 
-#### `Skeleton`
+#### `LargeTitle`
 
-**File:** `components\design-system\atoms\Skeleton.tsx`
+LargeTitle - Hero sections, main navigation (34px, Bold)
+
+**File:** `components/design-system/atoms/Typography.tsx`
 
 ---
 
 #### `SpotlightCard`
 
-**File:** `components\design-system\atoms\SpotlightCard.tsx`
+**File:** `components/design-system/atoms/SpotlightCard.tsx`
+
+---
+
+#### `StatusBadge`
+
+StatusBadge Atom - Atomic Design System v6.0
+
+**File:** `components/design-system/atoms/StatusBadge.tsx`
 
 ---
 
@@ -90,13 +107,41 @@ Input Atom - Atomic Design System v1.0
 **Props:**
 
 - `actions`: `Action[]`
-- `align`: `"left" |"center" |"right"`
+- `align`: `"left" | "center" | "right"`
 - `className`: `string`
 
-**File:** `components\design-system\molecules\ActionButtonGroup.tsx`
+**File:** `components/design-system/molecules/ActionButtonGroup.tsx`
 
 ---
 
+#### `ActionConfirmationModal`
+
+**Props:**
+
+- `isOpen`: `boolean`
+- `onClose`: `() => void`
+- `onConfirm`: `() => void`
+- `title`: `string`
+- `subtitle`: `string`
+- `warningText`: `string`
+- `confirmLabel`: `string`
+- `cancelLabel`: `string`
+- `variant`: `"warning" | "error"`
+
+**File:** `components/design-system/molecules/ActionConfirmationModal.tsx`
+
+---
+
+#### `DetailField`
+
+**Props:**
+
+- `label`: `string`
+- `value`: `string | number | null | undefined`
+- `icon`: `React.ReactNode`
+- `className`: `string`
+
+**File:** `components/design-system/molecules/DetailField.tsx`
 
 ---
 
@@ -112,7 +157,7 @@ Input Atom - Atomic Design System v1.0
 - `className`: `string`
 - `maxWidth`: `string`
 
-**File:** `components\design-system\molecules\Dialog.tsx`
+**File:** `components/design-system/molecules/Dialog.tsx`
 
 ---
 
@@ -124,7 +169,7 @@ Input Atom - Atomic Design System v1.0
 - `stages`: `DocumentStage[]`
 - `className`: `string`
 
-**File:** `components\design-system\molecules\DocumentJourney.tsx`
+**File:** `components/design-system/molecules/DocumentJourney.tsx`
 
 ---
 
@@ -138,7 +183,7 @@ Input Atom - Atomic Design System v1.0
 - `action`: `ReactNode`
 - `className`: `string`
 
-**File:** `components\design-system\molecules\EmptyState.tsx`
+**File:** `components/design-system/molecules/EmptyState.tsx`
 
 ---
 
@@ -146,7 +191,7 @@ Input Atom - Atomic Design System v1.0
 
 FormField Molecule - Atomic Design System v1.0
 
-**File:** `components\design-system\molecules\FormField.tsx`
+**File:** `components/design-system/molecules/FormField.tsx`
 
 ---
 
@@ -161,7 +206,7 @@ FormField Molecule - Atomic Design System v1.0
 - `onClick`: `() => void`
 - `className`: `string`
 
-**File:** `components\design-system\molecules\NavigationCard.tsx`
+**File:** `components/design-system/molecules/NavigationCard.tsx`
 
 ---
 
@@ -176,7 +221,7 @@ FormField Molecule - Atomic Design System v1.0
 - `onPageSizeChange`: `(size: number) => void`
 - `pageSizeOptions`: `number[]`
 
-**File:** `components\design-system\molecules\Pagination.tsx`
+**File:** `components/design-system/molecules/Pagination.tsx`
 
 ---
 
@@ -189,7 +234,7 @@ FormField Molecule - Atomic Design System v1.0
 - `onPageChange`: `(page: number) => void`
 - `itemName`: `string`
 
-**File:** `components\design-system\molecules\PaginationControls.tsx`
+**File:** `components/design-system/molecules/PaginationControls.tsx`
 
 ---
 
@@ -209,7 +254,7 @@ SearchBar Molecule - Atomic Design System v1.0
 - `className`: `string`
 - `variant`: `"default" | "neumorphic"`
 
-**File:** `components\design-system\molecules\SearchBar.tsx`
+**File:** `components/design-system/molecules/SearchBar.tsx`
 
 ---
 
@@ -219,10 +264,21 @@ SearchBar Molecule - Atomic Design System v1.0
 
 - `className`: `string`
 
-**File:** `components\design-system\molecules\SearchTrigger.tsx`
+**File:** `components/design-system/molecules/SearchTrigger.tsx`
 
 ---
 
+#### `StatBlock`
+
+**Props:**
+
+- `label`: `string`
+- `value`: `string | number`
+- `delta`: `{
+        value: string`
+- `trend`: `"up" | "down" | "neutral"`
+
+**File:** `components/design-system/molecules/StatBlock.tsx`
 
 ---
 
@@ -235,29 +291,33 @@ SearchBar Molecule - Atomic Design System v1.0
 - `icon`: `keyof typeof LucideIcons`
 - `className`: `string`
 
-**File:** `components\design-system\molecules\StatusTag.tsx`
+**File:** `components/design-system/molecules/StatusTag.tsx`
 
 ---
 
 #### `TableHeaderCell`
 
-**File:** `components\design-system\molecules\TableCells.tsx`
+**File:** `components/design-system/molecules/TableCells.tsx`
 
 ---
 
 #### `TableHeaderCell`
 
-**File:** `components\design-system\molecules\TableHeaderCell.tsx`
+TableHeaderCell Molecule - Atomic Design System v1.0
+
+**File:** `components/design-system/molecules/TableHeaderCell.tsx`
 
 ---
 
 #### `Tabs`
 
-**File:** `components\design-system\molecules\Tabs.tsx`
+**File:** `components/design-system/molecules/Tabs.tsx`
 
 ---
 
 #### `TextField`
+
+Shared Form Components
 
 **Props:**
 
@@ -267,34 +327,15 @@ SearchBar Molecule - Atomic Design System v1.0
 - `placeholder`: `string`
 - `required`: `boolean`
 - `disabled`: `boolean`
-- `type`: `"text" |"email" |"tel" |"date"`
+- `type`: `"text" | "email" | "tel" | "date"`
 
-**File:** `components\design-system\molecules\FormFields.tsx`
-
----
-
-#### `WarningModal`
-
-WarningModal Molecule - Atomic Design System v1.0
-
-**Props:**
-
-- `open`: `boolean`
-- `title`: `string`
-- `message`: `string`
-- `onConfirm`: `() => void`
-- `onCancel`: `() => void`
-- `confirmLabel`: `string`
-- `cancelLabel`: `string`
-- `confirmVariant`: `"default" | "destructive"`
-
-**File:** `components\design-system\molecules\WarningModal.tsx`
+**File:** `components/design-system/molecules/FormFields.tsx`
 
 ---
 
 #### `useToast`
 
-**File:** `components\design-system\molecules\Toast.tsx`
+**File:** `components/design-system/molecules/Toast.tsx`
 
 ---
 
@@ -303,19 +344,19 @@ WarningModal Molecule - Atomic Design System v1.0
 
 #### `AlertsPanel`
 
-**File:** `components\design-system\organisms\AlertsPanel.tsx`
+**File:** `components/design-system/organisms/AlertsPanel.tsx`
 
 ---
 
 #### `CommandBar`
 
-**File:** `components\design-system\organisms\CommandBar.tsx`
+**File:** `components/design-system/organisms/CommandBar.tsx`
 
 ---
 
 #### `DataTable`
 
-**File:** `components\design-system\organisms\DataTable.tsx`
+**File:** `components/design-system/organisms/DataTable.tsx`
 
 ---
 
@@ -335,7 +376,7 @@ WarningModal Molecule - Atomic Design System v1.0
 - `canDelete`: `boolean`
 - `customActions`: `React.ReactNode`
 
-**File:** `components\design-system\organisms\DocumentActions.tsx`
+**File:** `components/design-system/organisms/DocumentActions.tsx`
 
 ---
 
@@ -348,19 +389,19 @@ DocumentTrace Organism - Atomic Design System v1.0
 - `documents`: `DocumentNode[]`
 - `className`: `string`
 
-**File:** `components\design-system\organisms\DocumentTrace.tsx`
+**File:** `components/design-system/organisms/DocumentTrace.tsx`
 
 ---
 
 #### `GlobalCommandPalette`
 
-**File:** `components\design-system\organisms\GlobalCommandPalette.tsx`
+**File:** `components/design-system/organisms/GlobalCommandPalette.tsx`
 
 ---
 
 #### `GlobalSearch`
 
-**File:** `components\design-system\organisms\GlobalSearch.tsx`
+**File:** `components/design-system/organisms/GlobalSearch.tsx`
 
 ---
 
@@ -371,25 +412,13 @@ DocumentTrace Organism - Atomic Design System v1.0
 - `items`: `any[]`
 - `columns`: `Column<any>[]`
 
-**File:** `components\design-system\organisms\InspectionManifest.tsx`
+**File:** `components/design-system/organisms/InspectionManifest.tsx`
 
 ---
 
 #### `SidebarNav`
 
-**File:** `components\design-system\organisms\SidebarNav.tsx`
-
----
-
-#### `StatusBadge`
-
-**Props:**
-
-- `status`: `string`
-- `variant`: `"success" | "warning" | "error" | "neutral" | "info"`
-- `className`: `string`
-
-**File:** `components\design-system\organisms\StatusBadge.tsx`
+**File:** `components/design-system/organisms/SidebarNav.tsx`
 
 ---
 
@@ -404,13 +433,13 @@ DocumentTrace Organism - Atomic Design System v1.0
 - `className`: `string`
 - `showBadge`: `boolean`
 
-**File:** `components\design-system\organisms\StatusCard.tsx`
+**File:** `components/design-system/organisms/StatusCard.tsx`
 
 ---
 
 #### `SummaryCard`
 
-SummaryCard Organism - Atomic Design System v1.0
+SummaryCard Organism - Atomic Design System v6.0
 
 **Props:**
 
@@ -421,7 +450,7 @@ SummaryCard Organism - Atomic Design System v1.0
         value: string`
 - `direction`: `"up" | "down" | "neutral"`
 
-**File:** `components\design-system\organisms\SummaryCards.tsx`
+**File:** `components/design-system/organisms/SummaryCards.tsx`
 
 ---
 
@@ -443,7 +472,7 @@ CreateEditFormTemplate - Atomic Design System v1.0
 - `loading`: `boolean`
 - `className`: `string`
 
-**File:** `components\design-system\templates\CreateEditFormTemplate.tsx`
+**File:** `components/design-system/templates/CreateEditFormTemplate.tsx`
 
 ---
 
@@ -465,7 +494,7 @@ DetailViewTemplate - Atomic Design System v1.0
 - `children`: `React.ReactNode`
 - `className`: `string`
 
-**File:** `components\design-system\templates\DetailViewTemplate.tsx`
+**File:** `components/design-system/templates/DetailViewTemplate.tsx`
 
 ---
 
@@ -483,7 +512,7 @@ DetailViewTemplate - Atomic Design System v1.0
 - `icon`: `React.ReactNode`
 - `iconLayoutId`: `string`
 
-**File:** `components\design-system\templates\DocumentTemplate.tsx`
+**File:** `components/design-system/templates/DocumentTemplate.tsx`
 
 ---
 
@@ -491,7 +520,7 @@ DetailViewTemplate - Atomic Design System v1.0
 
 ListPageTemplate - Atomic Design System v1.0
 
-**File:** `components\design-system\templates\ListPageTemplate.tsx`
+**File:** `components/design-system/templates/ListPageTemplate.tsx`
 
 ---
 
@@ -499,7 +528,7 @@ ListPageTemplate - Atomic Design System v1.0
 
 ReportsPageTemplate - Atomic Design System v1.0
 
-**File:** `components\design-system\templates\ReportsPageTemplate.tsx`
+**File:** `components/design-system/templates/ReportsPageTemplate.tsx`
 
 ---
 
