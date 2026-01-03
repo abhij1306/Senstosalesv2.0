@@ -52,9 +52,9 @@ def get_po_stats(db: sqlite3.Connection = Depends(get_db)):
         # Assuming current fiscal year for simplicity or specific logic
         total_value_ytd = total_value  # Placeholder
 
-        # Pending Approval (e.g. Draft status)
+        # Pending Approval (e.g. Pending status or no status)
         pending_approval_count = db.execute(
-            "SELECT COUNT(*) FROM purchase_orders WHERE po_status = 'Draft'"
+            "SELECT COUNT(*) FROM purchase_orders WHERE po_status = 'Pending' OR po_status IS NULL OR po_status = ''"
         ).fetchone()[0]
 
         # Open Orders (e.g. Open status)
@@ -307,6 +307,7 @@ async def upload_po_html(file: UploadFile = File(...), db: sqlite3.Connection = 
             po_num = po_header.get("PURCHASE ORDER")
             po_date = po_header.get("DATE")
             if po_num and po_date:
+                pass
                 # fy = get_financial_year(po_date)
                 # Example: If strict uniqueness is desired, uncomment and adjust
                 # existing = db.execute(

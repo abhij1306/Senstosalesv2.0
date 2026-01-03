@@ -196,7 +196,7 @@ export function SRVListClient({ initialSRVs, initialStats }: SRVListClientProps)
             },
             {
                 key: "total_ord",
-                label: "Ord",
+                label: "Ordered",
                 width: "15%",
                 align: "right",
                 render: (v, row) => {
@@ -206,7 +206,7 @@ export function SRVListClient({ initialSRVs, initialStats }: SRVListClientProps)
             },
             {
                 key: "total_recd",
-                label: "Recd", // Renamed from REC
+                label: "Received", // Renamed from REC
                 width: "15%",
                 align: "right",
                 render: (v, row) => {
@@ -216,7 +216,7 @@ export function SRVListClient({ initialSRVs, initialStats }: SRVListClientProps)
             },
             {
                 key: "total_rejd",
-                label: "Rej",
+                label: "Rejected",
                 width: "15%",
                 align: "right",
                 render: (v, row) => {
@@ -311,7 +311,7 @@ export function SRVListClient({ initialSRVs, initialStats }: SRVListClientProps)
 
     return (
         <ListPageTemplate
-            title="MATERIAL RECEIPTS"
+            title="SRV Ingestion"
             subtitle="Order-centric audit trail for Stores Receipt Vouchers (SRV)"
             icon={<Box size={22} />}
             iconLayoutId="srv-icon"

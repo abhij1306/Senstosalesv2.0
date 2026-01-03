@@ -262,7 +262,7 @@ def get_invoice_detail(invoice_number: str, db: sqlite3.Connection = Depends(get
             t_recd = agg["total_recd"] or 0
             header_dict["status"] = calculate_entity_status(t_ord, t_del, t_recd)
         else:
-            header_dict["status"] = "Draft"
+            header_dict["status"] = "Pending"
 
         # Fetch buyer details from settings if not in invoice
         if not header_dict.get("buyer_name") or not header_dict.get("buyer_gstin"):

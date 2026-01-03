@@ -40,7 +40,7 @@ import { motion } from "framer-motion";
 const createActivityColumns = (router: AppRouterInstance): Column<ActivityItem>[] => [
     {
         key: "number",
-        label: "RECORD",
+        label: "Record",
         width: "40%",
         render: (_value, item) => (
             <Flex
@@ -83,7 +83,7 @@ const createActivityColumns = (router: AppRouterInstance): Column<ActivityItem>[
     },
     {
         key: "amount",
-        label: "AMOUNT",
+        label: "Amount",
         width: "25%",
         align: "right",
         render: (_value, item) => (
@@ -97,18 +97,18 @@ const createActivityColumns = (router: AppRouterInstance): Column<ActivityItem>[
     },
     {
         key: "status",
-        label: "STATUS",
+        label: "Status",
         width: "20%",
         align: "center",
         render: (_value, item) => (
             <div className="flex justify-center">
-                <StatusBadge status={item.status} className="border-none shadow-none bg-app-overlay/5" />
+                <StatusBadge status={String(item.status).toUpperCase()} className="border-none shadow-none bg-app-overlay/5" />
             </div>
         ),
     },
     {
         key: "date",
-        label: "DATE",
+        label: "Date",
         width: "15%",
         align: "right",
         render: (_value, item) => (
@@ -285,30 +285,31 @@ export function DashboardShell({ summary, activity }: DashboardShellProps) {
                     transition={{ duration: 0.4, delay: 0.2 }}
                     className="lg:col-span-2 space-y-5"
                 >
-                    <Flex align="center" justify="between">
-                        <Title2 className="text-text-primary font-semibold">
+                    <Flex align="center" justify="between" className="px-1">
+                        <Title2 className="text-text-primary text-[15px] font-medium tracking-tight">
                             Transaction Ledger
                         </Title2>
                         <Button
                             variant="ghost"
                             size="compact"
                             onClick={handleAnalytics}
-                            className="font-medium text-system-blue hover:bg-system-blue/10"
+                            className="text-[10px] font-bold text-text-tertiary hover:text-system-blue uppercase tracking-widest bg-transparent hover:bg-transparent"
                         >
-                            View All
+                            VIEW ALL
                         </Button>
                     </Flex>
 
-                    {/* macOS Style Table Container */}
-                    <Card variant="glass" padding="none" className="overflow-hidden">
+                    {/* Transaction Ledger Table */}
+                    <div className="overflow-hidden rounded-2xl border-none">
                         <DataTable
                             columns={activityColumns}
                             data={activity}
                             keyField="number"
                             pageSize={8}
-                            className="h-full"
+                            className="h-full border-none shadow-none bg-transparent"
+                            density="compact"
                         />
-                    </Card>
+                    </div>
                 </motion.div>
 
                 {/* Execution Center Section */}

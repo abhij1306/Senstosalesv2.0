@@ -41,7 +41,7 @@ export function Title1({ children, className, ...props }: TypographyProps) {
     return (
         <h1
             className={cn(
-                'font-display text-[32px] font-regular tracking-tight text-text-primary text-vibrancy leading-tight',
+                'font-display text-[26px] font-regular tracking-tight text-text-primary text-vibrancy leading-tight',
                 className
             )}
             {...props}

@@ -104,8 +104,8 @@ class POService:
             t_dispatched_raw = row["total_dispatched_raw"]
             t_received = row["total_received"]
 
-            # Pending calculated based on Dispatch (Global Invariant)
-            t_pending = calculate_pending_quantity(t_ordered, t_delivered)
+            # Pending calculated based on max of Dispatch or Receipt (Global Invariant)
+            t_pending = calculate_pending_quantity(t_ordered, max(t_delivered, t_received))
 
             # Determine Status using centralized service
             status = calculate_entity_status(t_ordered, t_dispatched_raw, t_received)
@@ -114,12 +114,8 @@ class POService:
             # ERP/Manual Override Logic
             if t_pending > 0.1:
                 status = "Pending"
-                if raw_db_status == "Draft":
-                    status = "Draft"
             elif raw_db_status == "Closed":
                 status = "Closed"
-            elif status == "Pending" and t_dispatched_raw == 0 and t_ordered > 0:
-                status = raw_db_status if raw_db_status != "Draft" else "Draft"
 
             results.append(
                 POListItem(
@@ -184,7 +180,7 @@ class POService:
             t_recd = agg["total_recd"] or 0
             header_dict["po_status"] = calculate_entity_status(t_ord, t_del, t_recd)
         else:
-            header_dict["po_status"] = "Draft"
+            header_dict["po_status"] = "Pending"
 
         # Inject Consignee Details (Derived)
         # BHEL is the standard client, so we default to it if not explicit

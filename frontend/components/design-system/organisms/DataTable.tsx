@@ -6,7 +6,6 @@ import { Button } from "../atoms/Button";
 import { Checkbox } from "../atoms/Checkbox";
 import { Body, Caption1, Accounting, Caption2 } from "../atoms/Typography";
 import { ChevronLeft, ChevronRight, FileDown, Inbox, ChevronDown } from "lucide-react"; // Replaced custom sort icon with lucide
-import { TableRowSkeleton } from "../atoms/Skeleton";
 import { cn } from "@/lib/utils";
 
 export interface Column<T = any> {
@@ -225,7 +224,7 @@ const DataTableComponent = <T extends Record<string, any>,>({
                                                 (column.isNumeric || column.isCurrency || column.align === "right") ? "justify-end" :
                                                     column.align === "center" ? "justify-center" : "justify-start"
                                             )}>
-                                                <Caption2 className="uppercase tracking-widest font-medium opacity-60">
+                                                <Caption2 className="font-medium text-text-secondary">
                                                     {column.label}
                                                 </Caption2>
                                                 {column.sortable && currentSortKey === column.key && (
@@ -240,13 +239,7 @@ const DataTableComponent = <T extends Record<string, any>,>({
                             </thead>
                         )}
                         <tbody className="bg-transparent">
-                            {loading ? Array.from({ length: Math.min(pageSize, 10) }).map((_, i) => (
-                                <tr key={`skeleton-${i}`}>
-                                    <td colSpan={columns.length + (selectable ? 1 : 0) + (renderSubRow ? 1 : 0)}>
-                                        <TableRowSkeleton columns={columns.length} />
-                                    </td>
-                                </tr>
-                            )) : processedData.map((row, index) => {
+                            {processedData.map((row, index) => {
                                 const rowKey = (row[keyField] !== undefined && row[keyField] !== null)
                                     ? String(row[keyField])
                                     : `row-${index}`;

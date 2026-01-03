@@ -350,7 +350,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="lg:col-span-4 space-y-6">
-                    <div className="rounded-3xl p-6 bg-surface-secondary border border-app-border elevation-3 relative overflow-hidden group">
+                    <div className="rounded-3xl p-6 bg-surface-secondary border-none elevation-3 relative overflow-hidden group">
                       <motion.div
                         className="absolute top-0 right-0 p-4 opacity-5 group-hover:rotate-12 transition-transform duration-500"
                         whileHover={{ scale: 1.2 }}
@@ -402,242 +402,282 @@ export default function SettingsPage() {
               </TabsContent>
 
               {/* --- Tab: Buyer --- */}
-              <TabsContent value="buyer" className="space-y-6 mt-0">
-                <Flex align="center" justify="between" className="mb-4">
-                  <Stack gap={1}>
-                    <H3>Counterparty Registry</H3>
-                    <SmallText>Management of external entities for transaction mapping.</SmallText>
-                  </Stack>
-                  <Button
-                    variant="primary"
-                    onClick={() => {
-                      handleCancelBuyerForm();
-                      setIsAddingBuyer(true);
-                    }}
-                    disabled={isAddingBuyer || !!editingBuyerId}
-                  >
-                    <Plus size={16} /> Registered Entity
-                  </Button>
-                </Flex>
+              <TabsContent value="buyer" className="mt-0">
+                <Grid cols="1" className="lg:grid-cols-12" gap={6}>
+                  <div className="lg:col-span-8">
+                    <div className="bg-app-surface rounded-2xl border-none p-6 elevation-2 relative overflow-hidden group">
+                      {/* Ambient Blobs */}
+                      <Box className="absolute top-0 right-0 w-64 h-64 bg-app-accent/5 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-app-accent/10 transition-all duration-700" />
 
-                <AnimatePresence mode="wait">
-                  {(isAddingBuyer || editingBuyerId) && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="mb-8"
-                    >
-                      <Card className="p-8 border-none bg-app-surface elevation-3">
-                        <Flex
-                          align="center"
-                          justify="between"
-                          className="mb-8 pb-4 shadow-none"
-                        >
-                          <Flex align="center" gap={2}>
-                            <div className="p-2 rounded-lg bg-app-accent/10 text-app-accent">
-                              {editingBuyerId ? <Edit2 size={16} /> : <Plus size={16} />}
-                            </div>
-                            <H3 className="text-sm">
-                              {editingBuyerId ? "Modify Market Entity" : "New Market Entity"}
-                            </H3>
+                      <div className="relative z-10 w-full">
+                        <Stack gap={8}>
+                          <Flex align="center" justify="between" className="mb-4 w-full">
+                            <Stack gap={1}>
+                              <H3>Buyer Identity</H3>
+                            </Stack>
+                            <Button
+                              variant="primary"
+                              className="bg-blue-600 hover:bg-blue-700 text-white border-none shadow-lg shadow-blue-500/20"
+                              onClick={() => {
+                                handleCancelBuyerForm();
+                                setIsAddingBuyer(true);
+                              }}
+                              disabled={isAddingBuyer || !!editingBuyerId}
+                            >
+                              <Plus size={16} /> Registered Entity
+                            </Button>
                           </Flex>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleCancelBuyerForm}
-                            className="rounded-full"
-                          >
-                            <X size={16} />
-                          </Button>
-                        </Flex>
 
-                        <Grid cols={1} className="md:grid-cols-2 lg:grid-cols-3" gap={8}>
-                          <FormGroup label="Legal Entity Name">
-                            <Input
-                              placeholder="e.g. Bharat Electronics Ltd"
-                              value={buyerForm.name}
-                              onChange={(e) => setBuyerForm({ ...buyerForm, name: e.target.value })}
-                              className="bg-app-overlay/30"
-                            />
-                          </FormGroup>
-                          <FormGroup label="GSTIN">
-                            <Input
-                              placeholder="Valid 15-char GSTIN"
-                              className="font-mono uppercase bg-app-overlay/30"
-                              value={buyerForm.gstin}
-                              onChange={(e) =>
-                                setBuyerForm({
-                                  ...buyerForm,
-                                  gstin: e.target.value.toUpperCase(),
-                                })
-                              }
-                            />
-                          </FormGroup>
-                          <FormGroup label="Operating Region">
-                            <Input
-                              placeholder="e.g. Bengaluru"
-                              value={buyerForm.place_of_supply}
-                              onChange={(e) =>
-                                setBuyerForm({
-                                  ...buyerForm,
-                                  place_of_supply: e.target.value,
-                                })
-                              }
-                              className="bg-app-overlay/30"
-                            />
-                          </FormGroup>
-                          <Box className="md:col-span-2">
-                            <FormGroup label="Consignee Address">
-                              <Input
-                                placeholder="Complete registered billing address"
-                                value={buyerForm.billing_address}
-                                onChange={(e) =>
-                                  setBuyerForm({
-                                    ...buyerForm,
-                                    billing_address: e.target.value,
-                                  })
-                                }
-                                className="bg-app-overlay/30"
-                              />
-                            </FormGroup>
-                          </Box>
-                          <FormGroup label="State / Jurisdiction">
-                            <Flex gap={2}>
-                              <Input
-                                placeholder="Karnataka"
-                                value={buyerForm.state}
-                                onChange={(e) =>
-                                  setBuyerForm({
-                                    ...buyerForm,
-                                    state: e.target.value,
-                                  })
-                                }
-                                className="flex-1 bg-app-overlay/5 border-none"
-                              />
-                              <Input
-                                placeholder="29"
-                                className="w-16 font-mono text-center bg-app-overlay/5 border-none"
-                                value={buyerForm.state_code}
-                                onChange={(e) =>
-                                  setBuyerForm({
-                                    ...buyerForm,
-                                    state_code: e.target.value,
-                                  })
-                                }
-                              />
-                            </Flex>
-                          </FormGroup>
-                        </Grid>
+                          <AnimatePresence mode="wait">
+                            {(isAddingBuyer || editingBuyerId) && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="mb-8"
+                              >
+                                <Card className="p-8 border-none bg-app-group elevation-3">
+                                  <Flex
+                                    align="center"
+                                    justify="between"
+                                    className="mb-8 pb-4 shadow-none"
+                                  >
+                                    <Flex align="center" gap={2}>
+                                      <div className="p-2 rounded-lg bg-app-accent/10 text-app-accent">
+                                        {editingBuyerId ? <Edit2 size={16} /> : <Plus size={16} />}
+                                      </div>
+                                      <H3 className="text-sm">
+                                        {editingBuyerId ? "Modify Market Entity" : "New Market Entity"}
+                                      </H3>
+                                    </Flex>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={handleCancelBuyerForm}
+                                      className="rounded-full"
+                                    >
+                                      <X size={16} />
+                                    </Button>
+                                  </Flex>
 
-                        <Flex
-                          justify="end"
-                          gap={3}
-                          className="mt-10 pt-6 shadow-none"
-                        >
-                          <Button variant="secondary" onClick={handleCancelBuyerForm}>
-                            Cancel
-                          </Button>
-                          <Button
-                            variant="primary"
-                            onClick={handleSaveBuyer}
-                            disabled={saving}
-                            className="px-10 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors border-none"
-                          >
-                            {saving ? (
-                              <Loader2 className="animate-spin" size={14} />
-                            ) : (
-                              <Check size={14} />
+                                  <Grid cols={1} className="md:grid-cols-2" gap={8}>
+                                    <FormGroup label="Legal Entity Name">
+                                      <Input
+                                        placeholder="e.g. Bharat Electronics Ltd"
+                                        value={buyerForm.name}
+                                        onChange={(e) => setBuyerForm({ ...buyerForm, name: e.target.value })}
+                                        className="bg-app-overlay/30"
+                                      />
+                                    </FormGroup>
+                                    <FormGroup label="GSTIN">
+                                      <Input
+                                        placeholder="Valid 15-char GSTIN"
+                                        className="font-mono uppercase bg-app-overlay/30"
+                                        value={buyerForm.gstin}
+                                        onChange={(e) =>
+                                          setBuyerForm({
+                                            ...buyerForm,
+                                            gstin: e.target.value.toUpperCase(),
+                                          })
+                                        }
+                                      />
+                                    </FormGroup>
+                                    <FormGroup label="Operating Region">
+                                      <Input
+                                        placeholder="e.g. Bengaluru"
+                                        value={buyerForm.place_of_supply}
+                                        onChange={(e) =>
+                                          setBuyerForm({
+                                            ...buyerForm,
+                                            place_of_supply: e.target.value,
+                                          })
+                                        }
+                                        className="bg-app-overlay/30"
+                                      />
+                                    </FormGroup>
+                                    <Box className="md:col-span-2">
+                                      <FormGroup label="Consignee Address">
+                                        <Input
+                                          placeholder="Complete registered billing address"
+                                          value={buyerForm.billing_address}
+                                          onChange={(e) =>
+                                            setBuyerForm({
+                                              ...buyerForm,
+                                              billing_address: e.target.value,
+                                            })
+                                          }
+                                          className="bg-app-overlay/30"
+                                        />
+                                      </FormGroup>
+                                    </Box>
+                                    <FormGroup label="State / Jurisdiction">
+                                      <Flex gap={2}>
+                                        <Input
+                                          placeholder="Karnataka"
+                                          value={buyerForm.state}
+                                          onChange={(e) =>
+                                            setBuyerForm({
+                                              ...buyerForm,
+                                              state: e.target.value,
+                                            })
+                                          }
+                                          className="flex-1 bg-app-overlay/5 border-none"
+                                        />
+                                        <Input
+                                          placeholder="29"
+                                          className="w-16 font-mono text-center bg-app-overlay/5 border-none"
+                                          value={buyerForm.state_code}
+                                          onChange={(e) =>
+                                            setBuyerForm({
+                                              ...buyerForm,
+                                              state_code: e.target.value,
+                                            })
+                                          }
+                                        />
+                                      </Flex>
+                                    </FormGroup>
+                                  </Grid>
+
+                                  <Flex
+                                    justify="end"
+                                    gap={3}
+                                    className="mt-10 pt-6 shadow-none"
+                                  >
+                                    <Button variant="secondary" onClick={handleCancelBuyerForm}>
+                                      Cancel
+                                    </Button>
+                                    <Button
+                                      variant="primary"
+                                      onClick={handleSaveBuyer}
+                                      disabled={saving}
+                                      className="px-10 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors border-none"
+                                    >
+                                      {saving ? (
+                                        <Loader2 className="animate-spin" size={14} />
+                                      ) : (
+                                        <Check size={14} />
+                                      )}
+                                      Commit Record
+                                    </Button>
+                                  </Flex>
+                                </Card>
+                              </motion.div>
                             )}
-                            Commit Record
-                          </Button>
-                        </Flex>
-                      </Card>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                          </AnimatePresence>
 
-                <Grid cols={1} className="md:grid-cols-2 lg:grid-cols-3" gap={6}>
-                  {buyers.map((buyer) => (
-                    <SpotlightCard
-                      key={buyer.id}
-                      className="p-6 h-full flex flex-col group border-none elevation-1 hover:elevation-2"
-                    >
-                      <Flex justify="between" align="start" className="mb-6">
-                        <Stack gap={1} className="flex-1 min-w-0">
-                          <Flex align="center" gap={2}>
-                            <Body className="font-bold truncate group-hover:text-app-accent transition-colors">
-                              {buyer.name}
-                            </Body>
-                            {buyer.is_default && (
-                              <Badge variant="success" className="text-xs h-4">
-                                Default
-                              </Badge>
-                            )}
-                          </Flex>
-                          <Accounting className="text-app-fg-muted uppercase">
-                            {buyer.gstin}
-                          </Accounting>
+                          <Grid cols={1} className="md:grid-cols-2 lg:grid-cols-2" gap={6}>
+                            {buyers.map((buyer) => (
+                              <SpotlightCard
+                                key={buyer.id}
+                                className="p-6 h-full flex flex-col group border-none elevation-1 hover:elevation-2 bg-app-surface relative overflow-hidden"
+                              >
+                                <Flex justify="between" align="start" className="mb-6 z-10">
+                                  <Stack gap={1} className="flex-1 min-w-0">
+                                    <Flex align="center" gap={2}>
+                                      <Body className="font-normal text-lg text-text-primary truncate group-hover:text-blue-600 transition-colors">
+                                        {buyer.name}
+                                      </Body>
+                                      {buyer.is_default && (
+                                        <Badge variant="secondary" className="text-[10px] h-5 bg-text-tertiary/10 text-text-secondary font-medium px-2 rounded-full">
+                                          Default
+                                        </Badge>
+                                      )}
+                                    </Flex>
+                                    <div className="font-mono text-xs text-text-tertiary uppercase tracking-wide">
+                                      {buyer.gstin || "NO GSTIN"}
+                                    </div>
+                                  </Stack>
+                                  <Flex gap={1} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 rounded-full hover:bg-blue-50 text-text-tertiary hover:text-blue-600"
+                                      onClick={() => handleStartEditBuyer(buyer)}
+                                    >
+                                      <Edit2 size={14} />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 rounded-full hover:bg-red-50 text-text-tertiary hover:text-red-500"
+                                      onClick={() => handleDeleteBuyer(buyer.id)}
+                                    >
+                                      <Trash2 size={14} />
+                                    </Button>
+                                  </Flex>
+                                </Flex>
+
+                                <Stack gap={6} className="flex-1 z-10">
+                                  <Flex
+                                    align="start"
+                                    gap={3}
+                                    className="text-text-secondary min-h-[2.5rem]"
+                                  >
+                                    <MapPin
+                                      size={16}
+                                      className="mt-0.5 text-text-tertiary shrink-0"
+                                    />
+                                    <span className="text-sm leading-relaxed line-clamp-2">
+                                      {buyer.billing_address || "No registered address"}
+                                    </span>
+                                  </Flex>
+
+                                  <div className="grid grid-cols-2 gap-4 pt-4 mt-auto shadow-none">
+                                    <Stack gap={1}>
+                                      <div className="text-[10px] font-medium text-text-tertiary uppercase tracking-widest">
+                                        REGIONAL ZONE
+                                      </div>
+                                      <div className="text-sm font-medium text-text-secondary">
+                                        {buyer.state || "N/A"}
+                                      </div>
+                                    </Stack>
+                                    <Stack gap={1}>
+                                      <div className="text-[10px] font-medium text-text-tertiary uppercase tracking-widest">
+                                        SUPPLY CODE
+                                      </div>
+                                      <div className="text-sm font-normal text-text-primary font-mono">
+                                        {buyer.state_code || "00"}
+                                      </div>
+                                    </Stack>
+                                  </div>
+                                </Stack>
+                              </SpotlightCard>
+                            ))}
+                          </Grid>
                         </Stack>
-                        <Flex gap={1} className="shrink-0">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 rounded-full hover:bg-app-accent/10 text-app-fg-muted hover:text-app-accent"
-                            onClick={() => handleStartEditBuyer(buyer)}
-                          >
-                            <Edit2 size={12} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 rounded-full hover:bg-app-status-error/10 text-app-fg-muted hover:text-app-status-error"
-                            onClick={() => handleDeleteBuyer(buyer.id)}
-                          >
-                            <Trash2 size={12} />
-                          </Button>
-                        </Flex>
-                      </Flex>
+                      </div>
+                    </div>
+                  </div>
 
-                      <Stack gap={4} className="flex-1">
-                        <Flex
-                          align="start"
-                          gap={3}
-                          className="text-app-fg-muted h-10"
-                        >
-                          <MapPin
-                            size={14}
-                            className="mt-0.5 text-app-fg-muted shrink-0"
-                          />
-                          <span className="line-clamp-2 leading-relaxed">
-                            {buyer.billing_address}
-                          </span>
-                        </Flex>
+                  {/* Sidebar Preview Column */}
+                  <div className="lg:col-span-4 space-y-6">
+                    <div className="rounded-3xl p-6 bg-surface-secondary border-none elevation-3 relative overflow-hidden group">
+                      <motion.div
+                        className="absolute top-0 right-0 p-4 opacity-5 group-hover:rotate-12 transition-transform duration-500"
+                        whileHover={{ scale: 1.2 }}
+                      >
+                        <Users size={120} className="text-text-primary" />
+                      </motion.div>
+                      <Label className="text-text-tertiary mb-6 tracking-[0.2em]">
+                        REGISTRY PREVIEW
+                      </Label>
+                      <H2 className="mb-2 text-text-primary line-clamp-2">
+                        {buyers.length} Market Entities
+                      </H2>
+                      <Accounting className="text-text-secondary text-sm mb-8 block">
+                        {buyers.filter(b => b.is_default).length > 0 ? "Default entity assigned" : "No default entity"}
+                      </Accounting>
 
-                        <div className="grid grid-cols-2 gap-2 pt-4 shadow-none opacity-80">
-                          <Stack gap={0.5}>
-                            <Label className="mb-0 opacity-60">REGIONAL ZONE</Label>
-                            <Body className="font-semibold">{buyer.state || "N/A"}</Body>
-                          </Stack>
-                          <Stack gap={0.5}>
-                            <Label className="mb-0 opacity-60">SUPPLY CODE</Label>
-                            <Accounting className="font-bold text-left">
-                              {buyer.state_code || "00"}
-                            </Accounting>
-                          </Stack>
-                        </div>
+                      <Stack gap={4} className="pt-6 shadow-none">
+                        <Flex align="center" gap={3}>
+                          <ShieldAlert size={14} className="text-text-tertiary" />
+                          <Body className="text-xs text-text-secondary leading-relaxed font-normal">
+                            Verify all GSTINs before mapping.
+                          </Body>
+                        </Flex>
                       </Stack>
-
-                      {!buyer.is_default && (
-                        <button
-                          onClick={() => api.setBuyerDefault(buyer.id).then(loadData)}
-                          className="mt-6 uppercase text-app-fg-muted hover:text-app-accent transition-colors opacity-0 group-hover:opacity-100 self-end"
-                        >
-                          Set as Primary
-                        </button>
-                      )}
-                    </SpotlightCard>
-                  ))}
+                    </div>
+                  </div>
                 </Grid>
               </TabsContent>
 

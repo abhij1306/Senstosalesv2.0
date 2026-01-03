@@ -284,7 +284,7 @@ def get_dc_detail(dc_number: str, db: sqlite3.Connection = Depends(get_db)):
         t_recd = agg["total_recd"] or 0
         header_dict["status"] = calculate_entity_status(t_ord, t_del, t_recd)
     else:
-        header_dict["status"] = "Draft"
+        header_dict["status"] = "Pending"
 
     try:
         # Get DC items with PO item details

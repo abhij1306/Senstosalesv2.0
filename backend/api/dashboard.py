@@ -115,7 +115,12 @@ def get_recent_activity(
                    po.created_at,
                    (SELECT COALESCE(SUM(ord_qty), 0) FROM purchase_order_items WHERE po_number = po.po_number) as t_ord,
                    (SELECT COALESCE(SUM(dispatch_qty), 0) FROM delivery_challan_items dci JOIN purchase_order_items poi ON dci.po_item_id = poi.id WHERE poi.po_number = po.po_number) as t_del,
-                   (SELECT COALESCE(SUM(received_qty), 0) FROM srv_items WHERE po_number = po.po_number) as t_recd
+                   (
+                       SELECT COALESCE(SUM(pod.received_qty), 0) 
+                       FROM purchase_order_deliveries pod 
+                       JOIN purchase_order_items poi ON pod.po_item_id = poi.id 
+                       WHERE poi.po_number = po.po_number
+                   ) as t_recd
             FROM purchase_orders po
             ORDER BY po.created_at DESC LIMIT ?
         """,

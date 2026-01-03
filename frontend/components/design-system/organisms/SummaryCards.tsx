@@ -4,7 +4,6 @@ import React from "react";
 import { H2, SmallText, Caption1, Caption2 } from "../atoms/Typography";
 import { Card } from "../atoms/Card";
 import { cn } from "@/lib/utils";
-import { SummaryCardSkeleton } from "../atoms/Skeleton";
 import { motion, Variants } from "framer-motion";
 
 /**
@@ -160,15 +159,6 @@ export const SummaryCards = React.memo(function SummaryCards({
     loading,
     className,
 }: SummaryCardsProps) {
-    if (loading) {
-        return (
-            <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4", className)}>
-                {Array.from({ length: 4 }).map((_, i) => (
-                    <SummaryCardSkeleton key={i} />
-                ))}
-            </div>
-        );
-    }
     return (
         <motion.div
             variants={container}

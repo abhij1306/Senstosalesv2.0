@@ -66,7 +66,7 @@ const SearchBarInternal = React.forwardRef<HTMLInputElement, SearchBarProps>(
                     placeholder={placeholder}
                     icon={<Search size={18} className="text-app-fg/40 group-focus-within:text-app-accent transition-colors" />}
                     className={cn(
-                        "pr-20 h-[44px] rounded-full transition-all duration-300 pl-14 border-none",
+                        "pr-20 h-[44px] rounded-full transition-all duration-300 !pl-14 border-none",
                         variant === "default" && "bg-blue-500/5 focus:shadow-xl focus:shadow-app-accent/5 focus:bg-blue-500/10 shadow-none"
                     )}
                 />

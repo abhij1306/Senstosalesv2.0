@@ -82,6 +82,10 @@ const ReportsCharts = ({ activeTab, chartData }: ReportsChartsProps) => {
                                         }}
                                     />
                                     <Tooltip
+                                        formatter={(value: number | undefined, name: string | undefined) => [
+                                            (value ? Math.round(value).toLocaleString() : "0"),
+                                            name || ""
+                                        ]}
                                         contentStyle={{
                                             borderRadius: "12px",
                                             border: "1px solid hsl(var(--system-blue) / 0.2)",
@@ -182,7 +186,7 @@ const ReportsCharts = ({ activeTab, chartData }: ReportsChartsProps) => {
                                 <PieChart>
                                     <Pie
                                         data={[
-                                            { name: "Growth", value: 75, fill: "rgb(var(--app-accent))" },
+                                            { name: "Growth", value: 75, fill: "#2563EB" },
                                             { name: "Remaining", value: 25, fill: "hsl(var(--system-blue) / 0.15)" },
                                         ]}
                                         cx="50%"

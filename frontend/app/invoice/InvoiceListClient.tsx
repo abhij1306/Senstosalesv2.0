@@ -35,7 +35,7 @@ import { SearchBar } from "@/components/design-system/molecules/SearchBar";
 const columns: Column<InvoiceListItem>[] = [
     {
         key: "invoice_number",
-        label: "INVOICE #",
+        label: "Invoice #",
         sortable: true,
         width: "12%",
         render: (_value, inv) => (
@@ -51,7 +51,7 @@ const columns: Column<InvoiceListItem>[] = [
     },
     {
         key: "invoice_date",
-        label: "DATE",
+        label: "Date",
         sortable: true,
         width: "10%",
         render: (v) => (
@@ -62,7 +62,7 @@ const columns: Column<InvoiceListItem>[] = [
     },
     {
         key: "dc_number",
-        label: "LINKED DCS",
+        label: "Linked DCs",
         width: "14%",
         render: (v) => (
             <Flex wrap gap={1}>
@@ -88,7 +88,7 @@ const columns: Column<InvoiceListItem>[] = [
     },
     {
         key: "po_numbers",
-        label: "LINKED POS",
+        label: "Linked POs",
         width: "14%",
         render: (v) => (
             <Flex wrap gap={1}>
@@ -114,7 +114,7 @@ const columns: Column<InvoiceListItem>[] = [
     },
     {
         key: "total_items",
-        label: "ITEMS",
+        label: "Items",
         width: "6%",
         align: "right",
         isNumeric: true,
@@ -126,7 +126,7 @@ const columns: Column<InvoiceListItem>[] = [
     },
     {
         key: "total_dispatched_quantity",
-        label: "DLV",
+        label: "Delivered",
         width: "8%",
         align: "right",
         isNumeric: true,
@@ -138,7 +138,7 @@ const columns: Column<InvoiceListItem>[] = [
     },
     {
         key: "total_received_quantity",
-        label: "RECD",
+        label: "Received",
         width: "8%",
         align: "right",
         isNumeric: true,
@@ -150,7 +150,7 @@ const columns: Column<InvoiceListItem>[] = [
     },
     {
         key: "total_invoice_value",
-        label: "VALUE",
+        label: "Value",
         sortable: true,
         align: "right",
         width: "12%",
@@ -163,7 +163,7 @@ const columns: Column<InvoiceListItem>[] = [
     },
     {
         key: "status",
-        label: "STATUS",
+        label: "Status",
         sortable: true,
         width: "10%",
         align: "center",
@@ -254,7 +254,7 @@ export function InvoiceListClient({ initialInvoices, initialStats }: InvoiceList
 
     return (
         <ListPageTemplate
-            title="GST INVOICES"
+            title="GST Invoices"
             subtitle="Manage all billing documentation and compliance"
             icon={<Receipt size={22} />}
             iconLayoutId="invoice-icon"

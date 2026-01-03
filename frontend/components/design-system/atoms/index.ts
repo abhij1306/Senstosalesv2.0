@@ -5,6 +5,5 @@ export * from "./Checkbox";
 export * from "./Icon";
 export * from "./Input";
 export * from "./Layout";
-export * from "./Skeleton";
 export * from "./SpotlightCard";
 export * from "./Typography";

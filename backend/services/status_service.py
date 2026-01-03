@@ -13,8 +13,7 @@ def calculate_entity_status(
     Rules:
     1. Closed: Transaction Complete (All items received/accepted).
     2. Delivered: Physically Shipped (All items dispatched).
-    3. Draft: Not started (Zero dispatch).
-    4. Pending: In progress (Partial dispatch).
+    3. Pending: Not complete (Zero or partial dispatch).
     """
     a_ord = float(total_ordered or 0)
     a_disp = float(total_dispatched or 0)
@@ -24,15 +23,13 @@ def calculate_entity_status(
     # Delivered status is purely based on Physical Dispatch (DC).
     # Reconciliation (SRV) leads to "Closed" status.
 
-    if a_disp < 0.001:
-        # If no dispatch yet, it must be Draft (unless SRV came in without DC, which shouldn't happen)
-        if a_recd > 0.001:
-            return "Pending"  # Reached via SRV but no DC? Edge case.
-        return "Draft"
-
     if a_recd >= a_ord - 0.001:
         # Transaction is complete once everything is received/accepted
         return "Closed"
+
+    if a_disp < 0.001:
+        # If no dispatch yet, still considered Pending (not Draft)
+        return "Pending"
 
     if a_disp >= a_ord - 0.001:
         # Fully dispatched but not yet fully received
@@ -49,7 +46,7 @@ def translate_raw_status(raw_status: str) -> str:
         return "Open"
     if s == "2":
         return "Closed"
-    return s or "Draft"
+    return s or "Pending"
 
 
 def calculate_pending_quantity(ordered: float, fulfilled: float) -> float:

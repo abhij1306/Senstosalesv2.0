@@ -30,7 +30,7 @@ const navGroups = [
     items: [
       { name: "Purchase Order", href: "/po", icon: ShoppingCart },
       { name: "Delivery Challan", href: "/dc", icon: Truck },
-      { name: "Invoice", href: "/invoice", icon: Receipt },
+      { name: "GST Invoices", href: "/invoice", icon: Receipt },
       { name: "SRV Ingestion", href: "/srv", icon: Box },
     ]
   },
@@ -51,24 +51,20 @@ export function SidebarNav() {
       {/* Brand Header */}
       <div className="h-16 flex items-center px-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-system-blue to-system-cyan rounded-xl elevation-1 flex items-center justify-center text-white">
+          <div className="w-10 h-10 bg-blue-600 rounded-xl elevation-1 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
             <Package className="w-5 h-5" />
           </div>
           <div className="flex flex-col justify-center">
-            <Body className="leading-tight text-text-primary">Sensto Sales</Body>
-            <Caption2 className="text-text-secondary opacity-90 leading-tight">Pro Enterprise</Caption2>
+            <span className="leading-tight text-text-primary font-bold tracking-tight text-lg">Senstosales</span>
           </div>
         </div>
       </div>
 
-      {/* Navigation Groups */}
-      <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-6 no-scrollbar">
+      <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-1 no-scrollbar">
         {navGroups.map((group) => (
           <div key={group.label}>
-            <Caption1 className="px-3 mb-2 pl-4 text-text-tertiary tracking-wide uppercase opacity-80">
-              {group.label}
-            </Caption1>
-            <ul className="space-y-1">
+            {/* Subheaders removed per user request */}
+            <ul className="space-y-0.5">
               {group.items.map((item) => {
                 const isActive =
                   pathname === item.href ||
@@ -79,37 +75,35 @@ export function SidebarNav() {
                     <Link
                       href={item.href}
                       className={cn(
-                        "flex items-center px-3.5 py-2 rounded-xl transition-all duration-200 group relative active:scale-[0.98] z-10",
+                        "flex items-center px-3 py-2 rounded-lg transition-all duration-200 group relative z-10",
+                        "text-sm font-medium",
                         isActive
-                          ? "text-system-blue"
-                          : "text-text-secondary hover:text-text-primary"
+                          ? "text-white font-medium shadow-md"
+                          : "text-text-secondary hover:bg-black/5 dark:hover:bg-white/5 hover:text-text-primary"
                       )}
                     >
                       {isActive && (
                         <motion.div
                           layoutId="sidebar-selection-capsule"
-                          className="absolute inset-0 bg-gradient-to-r from-system-blue/15 via-system-blue/10 to-system-blue/5 backdrop-blur-xl rounded-xl shadow-lg shadow-system-blue/20"
-                          style={{
-                            background: "linear-gradient(135deg, hsl(var(--system-blue) / 0.18), hsl(var(--system-blue) / 0.08))"
-                          }}
+                          className="absolute inset-0 bg-blue-600/90 backdrop-blur-md rounded-lg shadow-lg shadow-blue-500/30 -z-10 border border-white/10"
                           transition={{
                             type: "spring",
-                            stiffness: 400,
-                            damping: 35,
-                            mass: 0.8
+                            stiffness: 500,
+                            damping: 30
                           }}
                         />
                       )}
                       <item.icon
                         size={18}
                         className={cn(
-                          "mr-3 transition-colors relative z-10",
-                          isActive ? "text-system-blue" : "text-text-tertiary group-hover:text-text-primary"
+                          "mr-3 transition-colors",
+                          isActive ? "text-white/90" : "text-text-tertiary group-hover:text-text-primary"
                         )}
+                        strokeWidth={2}
                       />
-                      <Body className={cn("text-[14px] transition-colors relative z-10", isActive ? "text-system-blue font-medium" : "text-inherit")}>
+                      <span>
                         {item.name}
-                      </Body>
+                      </span>
                     </Link>
                   </li>
                 );
@@ -119,22 +113,6 @@ export function SidebarNav() {
         ))}
       </nav>
 
-      {/* Premium Profile Footer */}
-      <div className="p-4">
-        <div className="flex items-center p-3 bg-white/5 dark:bg-black/5 rounded-xl transition-smooth active:scale-[0.98] group cursor-pointer hover:bg-white/10">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-blue-300 text-white flex items-center justify-center text-xs shadow-md elevation-1">
-            <span>AS</span>
-          </div>
-          <div className="ml-3 flex-1 overflow-hidden">
-            <Footnote className="text-text-primary truncate">Abhijit S.</Footnote>
-            <div className="flex items-center mt-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-system-green mr-1.5 opacity-80"></span>
-              <Caption2 className="text-text-secondary truncate">Administrator</Caption2>
-            </div>
-          </div>
-          <Settings size={18} className="text-text-tertiary group-hover:text-text-primary transition-colors" />
-        </div>
-      </div>
     </aside>
   );
 }

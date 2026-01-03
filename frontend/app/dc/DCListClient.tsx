@@ -22,7 +22,7 @@ import { SearchBar } from "@/components/design-system/molecules/SearchBar";
 const columns: Column<DCListItem>[] = [
     {
         key: "dc_number",
-        label: "CHALLAN #",
+        label: "Challan #",
         sortable: true,
         width: "15%",
         render: (_value, dc) => (
@@ -35,7 +35,7 @@ const columns: Column<DCListItem>[] = [
     },
     {
         key: "dc_date",
-        label: "DATE",
+        label: "Date",
         sortable: true,
         width: "12%",
         render: (v) => (
@@ -46,7 +46,7 @@ const columns: Column<DCListItem>[] = [
     },
     {
         key: "po_number",
-        label: "CONTRACT",
+        label: "Contract",
         sortable: true,
         width: "12%",
         render: (v) => (
@@ -59,7 +59,7 @@ const columns: Column<DCListItem>[] = [
     },
     {
         key: "total_ordered_quantity",
-        label: "ORD",
+        label: "Ordered",
         align: "right",
         width: "10%",
         isNumeric: true,
@@ -69,7 +69,7 @@ const columns: Column<DCListItem>[] = [
     },
     {
         key: "total_dispatched_quantity",
-        label: "DLV",
+        label: "Delivered",
         align: "right",
         width: "10%",
         isNumeric: true,
@@ -81,7 +81,7 @@ const columns: Column<DCListItem>[] = [
     },
     {
         key: "total_pending_quantity",
-        label: "BAL",
+        label: "Balance",
         align: "right",
         width: "10%",
         isNumeric: true,
@@ -93,7 +93,7 @@ const columns: Column<DCListItem>[] = [
     },
     {
         key: "total_received_quantity",
-        label: "RECD",
+        label: "Received",
         sortable: true,
         align: "right",
         width: "10%",
@@ -104,7 +104,7 @@ const columns: Column<DCListItem>[] = [
     },
     {
         key: "status",
-        label: "STATUS",
+        label: "Status",
         sortable: true,
         align: "center",
         width: "11%",

@@ -432,7 +432,7 @@ class ReconciliationService:
                 if dlv_qty > 0 or rcd_qty > 0:
                     any_activity = True
 
-            new_status = "Draft"
+            new_status = "Pending"
             if all_received:
                 new_status = "Closed"
             elif all_dispatched:

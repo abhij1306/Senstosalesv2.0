@@ -53,13 +53,13 @@ export default function BatchUploadCard() {
                 <div
                     className={cn(
                         "rounded-[2.5rem] transition-all duration-300 overflow-hidden",
-                        "glass-panel shadow-macos-soft border border-white/40 dark:border-white/10",
+                        "glass-panel shadow-macos-soft border-none",
                         minimized ? "p-2 pr-6" : "p-0"
                     )}
                 >
                     {minimized ? (
                         <Flex align="center" gap={3.5}>
-                            <Box className="relative w-12 h-12 flex items-center justify-center bg-blue-50/50 dark:bg-blue-900/20 rounded-full shadow-inner border border-blue-100/20 dark:border-white/5">
+                            <Box className="relative w-12 h-12 flex items-center justify-center bg-blue-50/50 dark:bg-blue-900/20 rounded-full shadow-inner border-none">
                                 <svg className="w-full h-full transform -rotate-90 p-2">
                                     <circle
                                         cx="16"
@@ -110,10 +110,10 @@ export default function BatchUploadCard() {
                             <Flex justify="between" align="start" className="mb-8">
                                 <Flex align="center" gap={4.5}>
                                     <Box className={cn(
-                                        "w-16 h-16 rounded-[22px] flex items-center justify-center shadow-lg transition-all duration-500 border border-white/40 shadow-blue-500/20",
+                                        "w-16 h-16 rounded-[22px] flex items-center justify-center shadow-lg transition-all duration-500 border-none shadow-blue-500/20",
                                         isComplete
                                             ? "bg-green-500 text-white"
-                                            : "bg-primary text-white"
+                                            : "bg-blue-600 text-white"
                                     )}>
                                         {isComplete ? <CheckCircle size={32} /> : <Loader2 size={32} className="animate-spin" />}
                                     </Box>
@@ -159,11 +159,11 @@ export default function BatchUploadCard() {
                                             {Math.round((progress.current / (progress.total || 1)) * 100)}%
                                         </div>
                                     </Flex>
-                                    <div className="h-4 w-full bg-blue-100/30 dark:bg-white/5 rounded-full overflow-hidden border border-blue-200/20 dark:border-white/5 p-1">
+                                    <div className="h-4 w-full bg-blue-100/30 dark:bg-white/5 rounded-full overflow-hidden border-none p-1">
                                         <motion.div
                                             className={cn(
                                                 "h-full rounded-full shadow-[0_0_12px_rgba(0,122,255,0.4)] relative overflow-hidden transition-all duration-300",
-                                                isComplete ? "bg-green-500" : "bg-primary"
+                                                isComplete ? "bg-green-500" : "bg-blue-600"
                                             )}
                                             initial={{ width: 0 }}
                                             animate={{
@@ -178,7 +178,7 @@ export default function BatchUploadCard() {
 
                                 {/* Grid Stats */}
                                 <div className="grid grid-cols-2 gap-5 w-full">
-                                    <Box className="flex flex-col items-center justify-center p-6 bg-green-50/50 dark:bg-green-500/10 border border-green-500/20 rounded-[2rem] shadow-sm h-32 group hover:scale-[1.02] transition-all">
+                                    <Box className="flex flex-col items-center justify-center p-6 bg-green-50/50 dark:bg-green-500/10 border-none rounded-[2rem] shadow-sm h-32 group hover:scale-[1.02] transition-all">
                                         <Flex align="center" gap={2} className="mb-2">
                                             <CheckCircle size={14} className="text-green-500" />
                                             <div className="text-[11px] font-bold uppercase tracking-widest text-green-600 dark:text-green-400 opacity-80">Accepted</div>
@@ -187,10 +187,10 @@ export default function BatchUploadCard() {
                                     </Box>
 
                                     <Box className={cn(
-                                        "flex flex-col items-center justify-center p-6 rounded-[2rem] shadow-sm h-32 border transition-all hover:scale-[1.02] group",
+                                        "flex flex-col items-center justify-center p-6 rounded-[2rem] shadow-sm h-32 border-none transition-all hover:scale-[1.02] group",
                                         rejectedCount > 0
-                                            ? "bg-red-50/50 dark:bg-red-500/10 border-red-500/20"
-                                            : "bg-gray-50/50 dark:bg-white/5 border-gray-200/40 dark:border-white/10"
+                                            ? "bg-red-50/50 dark:bg-red-500/10"
+                                            : "bg-gray-50/50 dark:bg-white/5"
                                     )}>
                                         <Flex align="center" gap={2} className="mb-2">
                                             <AlertCircle size={14} className={rejectedCount > 0 ? "text-red-500" : "text-text-tertiary"} />
@@ -206,7 +206,7 @@ export default function BatchUploadCard() {
                                         variant="outline"
                                         size="lg"
                                         onClick={cancelUpload}
-                                        className="w-full text-red-500 hover:text-white hover:bg-red-500 border-red-500/20 h-14 font-bold tracking-[0.1em] text-[12px] uppercase rounded-[20px] transition-all"
+                                        className="w-full text-red-500 hover:text-white hover:bg-red-500 border-none h-14 font-bold tracking-[0.1em] text-[12px] uppercase rounded-[20px] transition-all"
                                     >
                                         Halt Provisioning
                                     </Button>
@@ -214,7 +214,7 @@ export default function BatchUploadCard() {
                                 {isComplete && (
                                     <Button
                                         onClick={resetUpload}
-                                        className="w-full bg-primary hover:bg-primary/90 text-white shadow-xl shadow-blue-500/30 h-14 font-bold tracking-[0.1em] text-[12px] uppercase rounded-[20px] transition-all"
+                                        className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-500/30 h-14 font-bold tracking-[0.1em] text-[12px] uppercase rounded-[20px] transition-all"
                                     >
                                         Dismiss Ledger
                                     </Button>

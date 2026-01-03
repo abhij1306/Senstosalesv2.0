@@ -30,7 +30,7 @@ import { Flex } from "@/components/design-system/atoms/Layout";
 const columns: Column<POListItem>[] = [
     {
         key: "po_number",
-        label: "NUMBER",
+        label: "Number",
         width: "15%",
         render: (_value, po) => (
             <Link href={`/po/${po.po_number}`} className="block group">
@@ -42,7 +42,7 @@ const columns: Column<POListItem>[] = [
     },
     {
         key: "po_date",
-        label: "DATE",
+        label: "Date",
         width: "15%",
         render: (v) => (
             <Footnote className="text-text-secondary">
@@ -52,7 +52,7 @@ const columns: Column<POListItem>[] = [
     },
     {
         key: "total_items_count",
-        label: "ITM",
+        label: "Items",
         width: "8%",
         align: "center",
         render: (v) => (
@@ -61,7 +61,7 @@ const columns: Column<POListItem>[] = [
     },
     {
         key: "total_ordered_quantity",
-        label: "ORD",
+        label: "Ordered",
         width: "12%",
         align: "right",
         isNumeric: true,
@@ -73,7 +73,7 @@ const columns: Column<POListItem>[] = [
     },
     {
         key: "total_dispatched_quantity",
-        label: "DLV",
+        label: "Delivered",
         width: "12%",
         align: "right",
         isNumeric: true,
@@ -85,7 +85,7 @@ const columns: Column<POListItem>[] = [
     },
     {
         key: "total_pending_quantity",
-        label: "BAL",
+        label: "Balance",
         width: "12%",
         align: "right",
         isNumeric: true,
@@ -99,7 +99,7 @@ const columns: Column<POListItem>[] = [
     },
     {
         key: "total_received_quantity",
-        label: "RECD",
+        label: "Received",
         width: "12%",
         align: "right",
         isNumeric: true,
@@ -111,7 +111,7 @@ const columns: Column<POListItem>[] = [
     },
     {
         key: "po_status",
-        label: "STATUS",
+        label: "Status",
         width: "14%",
         align: "center",
         render: (v) => (
