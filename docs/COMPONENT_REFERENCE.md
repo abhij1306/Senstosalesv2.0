@@ -1,6 +1,6 @@
 # Component Reference
 
-**Generated:** 2026-01-03 03:07:14  
+**Generated:** 2026-01-03 03:36:43  
 **Auto-synced from JSDoc comments**
 
 ## Design System Components
